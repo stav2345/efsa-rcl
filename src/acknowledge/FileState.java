@@ -1,11 +1,18 @@
-package table_list;
+package acknowledge;
 
-public enum TablesHeader {
+import webservice.GetAck;
+
+/**
+ * Response of the {@link GetAck} request.
+ * @author avonva
+ *
+ */
+public enum FileState {
 	
-	TABLE_NAME("tableName"),
-	HTML_FILENAME("htmlFileName"),
-	GENERATE_RECORD("generateRecord"),
-	KEEP_VERSION("keepVersion");
+	READY("READY"),
+	WAIT("WAIT"),
+	FAIL("FAIL"),
+	OTHER("OTHER");
 	
 	private String headerName;
 	
@@ -14,7 +21,7 @@ public enum TablesHeader {
 	 * header name that is present in the xlsx
 	 * @param headerName
 	 */
-	private TablesHeader(String headerName) {
+	private FileState(String headerName) {
 		this.headerName = headerName;
 	}
 	
@@ -31,13 +38,13 @@ public enum TablesHeader {
 	 * @param text
 	 * @return
 	 */
-	public static TablesHeader fromString(String text) {
+	public static FileState fromString(String text) {
 		
-		for (TablesHeader b : TablesHeader.values()) {
+		for (FileState b : FileState.values()) {
 			if (b.headerName.equalsIgnoreCase(text)) {
 				return b;
 			}
 		}
-		return null;
+		return OTHER;
 	}
 }

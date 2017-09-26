@@ -17,7 +17,7 @@ import dataset.DatasetList;
  * @author avonva
  *
  */
-public class GetDatasetList extends SOAPAction {
+public class GetDatasetList extends SOAPRequest {
 
 	// web service link of the getDatasetList service
 	private static final String URL = "https://dcf-elect.efsa.europa.eu/elect2/";

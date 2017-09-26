@@ -11,7 +11,7 @@ import javax.xml.soap.SOAPMessage;
  * @author avonva
  *
  */
-public abstract class GetFile extends SOAPAction {
+public abstract class GetFile extends SOAPRequest {
 
 	private static final String NAMESPACE = "http://dcf-elect.efsa.europa.eu/";
 	private static final String URL = "https://dcf-elect.efsa.europa.eu/elect2";

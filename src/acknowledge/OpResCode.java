@@ -1,11 +1,9 @@
-package table_list;
+package acknowledge;
 
-public enum TablesHeader {
-	
-	TABLE_NAME("tableName"),
-	HTML_FILENAME("htmlFileName"),
-	GENERATE_RECORD("generateRecord"),
-	KEEP_VERSION("keepVersion");
+public enum OpResCode {
+	OK("OK"),
+	KO("KO"),
+	OTHER("OTHER");
 	
 	private String headerName;
 	
@@ -14,7 +12,7 @@ public enum TablesHeader {
 	 * header name that is present in the xlsx
 	 * @param headerName
 	 */
-	private TablesHeader(String headerName) {
+	private OpResCode(String headerName) {
 		this.headerName = headerName;
 	}
 	
@@ -31,13 +29,13 @@ public enum TablesHeader {
 	 * @param text
 	 * @return
 	 */
-	public static TablesHeader fromString(String text) {
+	public static OpResCode fromString(String text) {
 		
-		for (TablesHeader b : TablesHeader.values()) {
+		for (OpResCode b : OpResCode.values()) {
 			if (b.headerName.equalsIgnoreCase(text)) {
 				return b;
 			}
 		}
-		return null;
+		return OTHER;
 	}
 }

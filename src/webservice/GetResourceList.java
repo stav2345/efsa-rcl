@@ -23,7 +23,7 @@ import resource.ResourceReference;
  * @author avonva
  *
  */
-public class GetResourceList extends SOAPAction {
+public class GetResourceList extends SOAPRequest {
 
 	private String dataCollectionCode;
 	

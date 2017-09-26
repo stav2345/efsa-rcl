@@ -274,11 +274,11 @@ public abstract class TableDialog {
 	 * @param message
 	 * @param icon
 	 */
-	protected void warnUser(String title, String message, int icon) {
+	protected int warnUser(String title, String message, int icon) {
 		MessageBox mb = new MessageBox(getDialog(), icon);
 		mb.setText(title);
 		mb.setMessage(message);
-		mb.open();
+		return mb.open();
 	}
 	
 	/**
@@ -286,11 +286,11 @@ public abstract class TableDialog {
 	 * @param title
 	 * @param message
 	 */
-	protected void warnUser(String title, String message) {
+	protected int warnUser(String title, String message) {
 		MessageBox mb = new MessageBox(getDialog(), SWT.ICON_ERROR);
 		mb.setText(title);
 		mb.setMessage(message);
-		mb.open();
+		return mb.open();
 	}
 	
 	/**

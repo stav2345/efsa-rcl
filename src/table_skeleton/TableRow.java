@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import duplicates_detector.Checkable;
 import table_database.TableDao;
+import table_list.TableMetaData;
 import xlsx_reader.TableHeaders.XlsxHeader;
 import xlsx_reader.TableSchema;
 import xml_catalog_reader.Selection;
@@ -72,6 +73,54 @@ public class TableRow implements Checkable {
 		} catch (NumberFormatException e) {}
 		
 		return id;
+	}
+	
+	/**
+	 * Get the version of the table represented by this row
+	 * @return
+	 */
+	public TableColumnValue getVersion() {
+		
+		TableMetaData metaData = TableMetaData.getTableByName(schema.getSheetName());
+		
+		if(!metaData.isKeepVersion()) {
+			System.err.println("TableRow: Cannot get version for table that has keepVersion set to false");
+			return null;
+		}
+		
+		String versionKey = schema.getVersionField();
+		
+		TableColumnValue value = this.get(versionKey);
+		
+		if (value == null) {
+			System.err.println("TableRow: found keepVersion set to true, but no " + versionKey + " field found");
+		}
+		
+		return value;
+	}
+	
+	/**
+	 * Create a new version of the row
+	 */
+	public void createNewVersion() {
+		
+		TableColumnValue version = getVersion();
+		
+		if (version == null)
+			return;
+		
+		// get the current version
+		String versionCode = version.getCode();
+		
+		// increase the version
+		String newVersionCode = TableVersion.createNewVersion(versionCode);
+		
+		// update the value
+		version.setCode(newVersionCode);
+		version.setLabel(newVersionCode);
+		
+		// update the object in the row
+		this.put(schema.getVersionField(), version);
 	}
 	
 	/**

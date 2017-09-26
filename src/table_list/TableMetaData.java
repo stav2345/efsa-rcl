@@ -15,11 +15,13 @@ public class TableMetaData {
 	private String tableName;
 	private String htmlFileName;
 	private boolean generateRecord;
+	private boolean keepVersion;
 	
-	public TableMetaData(String tableName, String htmlFileName, boolean generateRecord) {
+	public TableMetaData(String tableName, String htmlFileName, boolean generateRecord, boolean keepVersion) {
 		this.tableName = tableName;
 		this.htmlFileName = htmlFileName;
 		this.generateRecord = generateRecord;
+		this.keepVersion = keepVersion;
 	}
 	
 	public String getTableName() {
@@ -30,6 +32,9 @@ public class TableMetaData {
 	}
 	public boolean isGenerateRecord() {
 		return generateRecord;
+	}
+	public boolean isKeepVersion() {
+		return keepVersion;
 	}
 	
 	/**

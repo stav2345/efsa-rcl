@@ -34,7 +34,7 @@ import user.User;
  *
  */
 
-public abstract class SOAPAction {
+public abstract class SOAPRequest {
 
 	private String namespace;
 
@@ -43,7 +43,7 @@ public abstract class SOAPAction {
 	 * @param url
 	 * @param namespace
 	 */
-	public SOAPAction(String namespace) {
+	public SOAPRequest(String namespace) {
 		this.namespace = namespace;
 	}
 

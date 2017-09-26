@@ -1,4 +1,4 @@
-package export;
+package message_creator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,18 +38,53 @@ public abstract class DatasetXmlCreator {
 	private File file;           // file to create
 	private PrintWriter writer;  // writer of the file
 	
+	private String dcCode;
+	private String opType;
+	
 	public DatasetXmlCreator(String filename) throws FileNotFoundException {
 		this(new File(filename));
 	}
 	
 	/**
 	 * Export a dataset into the selected file
+	 * default operation type = Insert
+	 * default data collection code = the one set in the properties
 	 * @param file
 	 * @throws FileNotFoundException
 	 */
 	public DatasetXmlCreator(File file) throws FileNotFoundException {
 		this.file = file;
 		this.writer = new PrintWriter(file);
+		
+		// default values
+		this.dcCode = PropertiesReader.getDataCollectionCode();
+		this.opType = "Insert";
+	}
+	
+	/**
+	 * Set a different data collection code for the operation
+	 * node, if required.
+	 * @param dcCode
+	 */
+	public void setDcCode(String dcCode) {
+		this.dcCode = dcCode;
+	}
+	
+	/**
+	 * Set the operation type for the report
+	 * @param opType
+	 */
+	public void setOpType(String opType) {
+		this.opType = opType;
+	}
+	
+	/**
+	 * Create an empty report
+	 * @return
+	 * @throws IOException
+	 */
+	public File createEmptyMessage() throws IOException {
+		return export(null);
 	}
 	
 	/**
@@ -120,11 +155,11 @@ public abstract class DatasetXmlCreator {
 		printMetaData("operation", false);
 		
 		// add action node
-		String opType = getXmlNode("opType", "Insert");
+		String opType = getXmlNode("opType", this.opType);
 		writer.print(opType);
 		
 		// add data collection node
-		String dc = getXmlNode("dcCode", PropertiesReader.getDataCollectionCode());
+		String dc = getXmlNode("dcCode", dcCode);
 		writer.print(dc);
 		
 		// add the comment node with the tool name and version
@@ -148,7 +183,11 @@ public abstract class DatasetXmlCreator {
 		Stack<TableRow> nodes = new Stack<>();  // depth-first exploration
 		
 		// add the root to the stack
-		nodes.add(root);
+		// null check is done since it is possible
+		// to create an empty report setting the 
+		// root to null
+		if (root != null)
+			nodes.add(root);
 		
 		// until we have something
 		while (!nodes.isEmpty()) {
@@ -258,6 +297,10 @@ public abstract class DatasetXmlCreator {
 		return node.toString();
 	}
 	
+	/**
+	 * Print the message header in the file
+	 * @throws IOException
+	 */
 	private void printHeader() throws IOException {
 		printMetaData("header", true);
 	}
@@ -275,9 +318,14 @@ public abstract class DatasetXmlCreator {
 		TableRow row = new TableRow(schema);
 		row.initialize();
 
-		// inject the parents
-		for (TableRow parent : getConfigMessageParents()) {
-			Relation.injectParent(parent, row);
+		Collection<TableRow> parents = getConfigMessageParents();
+		
+		if (parents != null) {
+			
+			// inject the parents
+			for (TableRow parent : getConfigMessageParents()) {
+				Relation.injectParent(parent, row);
+			}
 		}
 		
 		row.updateFormulas();
@@ -320,6 +368,7 @@ public abstract class DatasetXmlCreator {
 	 * @return
 	 */
 	public abstract Collection<TableRow> getConfigMessageParents();
+	
 	
 	/**
 	 * Get all the elements of a root node

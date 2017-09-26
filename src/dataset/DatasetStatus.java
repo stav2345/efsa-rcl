@@ -1,22 +1,23 @@
 package dataset;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 /**
  * Enumerator that identifies the status of a {@link Dataset}
  * @author avonva
  *
  */
-
-@XmlRootElement
 public enum DatasetStatus {
 	
 	VALID("Valid"),
+	UPLOADED("Uploaded"),  // dataset sent but no response received yet 
+	PROCESSING("Processing"),
 	VALID_WITH_WARNINGS("Valid with warnings"),
 	REJECTED_EDITABLE("Rejected editable"),
 	REJECTED("Rejected"),
 	DELETED("Deleted"),
-	NOT_RECOGNIZED("Not recognized");
+	SUBMITTED("Submitted"),
+	ACCEPTED_DWH("Accepted dwh"),
+	UPDATED_BY_DATA_RECEIVER("Updated by data receiver"),
+	OTHER("Other");  // error state
 	
 	private String status;
 	private String step;
@@ -63,6 +64,6 @@ public enum DatasetStatus {
 			}
 		}
 		
-		return NOT_RECOGNIZED;
+		return OTHER;
 	}
 }

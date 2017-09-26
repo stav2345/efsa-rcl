@@ -20,6 +20,7 @@ public class TableListParser extends XlsxReader {
 	private String tableName;
 	private String htmlFilename;
 	private boolean generateRecord;
+	private boolean keepVersion;
 	
 	private Collection<TableMetaData> helps;
 	
@@ -66,6 +67,9 @@ public class TableListParser extends XlsxReader {
 		case GENERATE_RECORD:
 			this.generateRecord = BooleanValue.isTrue(value);
 			break;
+		case KEEP_VERSION:
+			this.keepVersion = BooleanValue.isTrue(value);
+			break;
 		}
 	}
 
@@ -79,7 +83,7 @@ public class TableListParser extends XlsxReader {
 			return;
 		
 		// create a new help and put it into the collection
-		TableMetaData help = new TableMetaData(tableName, htmlFilename, generateRecord);
+		TableMetaData help = new TableMetaData(tableName, htmlFilename, generateRecord, keepVersion);
 		helps.add(help);
 	}
 }

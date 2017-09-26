@@ -47,6 +47,15 @@ public class TableSchema extends ArrayList<TableColumn> {
 	}
 	
 	/**
+	 * get the version field id if it was
+	 * set in the xlsx schema
+	 * @return
+	 */
+	public String getVersionField() {
+		return getSheetName() + "Version";
+	}
+	
+	/**
 	 * Get all the tables that are a direct parent of this table
 	 * @return
 	 * @throws IOException

@@ -14,7 +14,7 @@ import org.w3c.dom.Node;
  * @author avonva
  *
  */
-public class Ping extends SOAPAction {
+public class Ping extends SOAPRequest {
 
 	// The correct value that the ping should return to be correct
 	private static final String PING_CORRECT_VALUE = "TRXOK";
