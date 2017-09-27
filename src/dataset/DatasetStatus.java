@@ -7,6 +7,7 @@ package dataset;
  */
 public enum DatasetStatus {
 	
+	UPLOAD_FAILED("Upload failed"),  // local status, used if send message fails
 	VALID("Valid"),
 	UPLOADED("Uploaded"),  // dataset sent but no response received yet 
 	PROCESSING("Processing"),

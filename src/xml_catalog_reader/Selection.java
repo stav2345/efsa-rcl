@@ -1,5 +1,7 @@
 package xml_catalog_reader;
 
+import table_skeleton.TableColumnValue;
+
 /**
  * Class which models a single node of a configuration .xml file
  * It also represents a single cell of the report (i.e. a value of a column of the report table)
@@ -34,8 +36,17 @@ public class Selection {
 	
 	@Override
 	public boolean equals(Object arg0) {
-		Selection other = (Selection) arg0;
-		return other.code.equals(code);
+		
+		if (arg0 instanceof Selection) {
+			Selection other = (Selection) arg0;
+			return other.code.equals(code);
+		}
+		else if (arg0 instanceof TableColumnValue) {
+			TableColumnValue other = (TableColumnValue) arg0;
+			return other.getCode().equals(code);
+		}
+		else
+			return super.equals(arg0);
 	}
 	
 	public void print() {

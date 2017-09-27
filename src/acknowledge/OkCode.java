@@ -1,6 +1,6 @@
 package acknowledge;
 
-public enum OpResCode {
+public enum OkCode {
 	OK("OK"),
 	KO("KO"),
 	OTHER("OTHER");
@@ -12,7 +12,7 @@ public enum OpResCode {
 	 * header name that is present in the xlsx
 	 * @param headerName
 	 */
-	private OpResCode(String headerName) {
+	private OkCode(String headerName) {
 		this.headerName = headerName;
 	}
 	
@@ -29,9 +29,9 @@ public enum OpResCode {
 	 * @param text
 	 * @return
 	 */
-	public static OpResCode fromString(String text) {
+	public static OkCode fromString(String text) {
 		
-		for (OpResCode b : OpResCode.values()) {
+		for (OkCode b : OkCode.values()) {
 			if (b.headerName.equalsIgnoreCase(text)) {
 				return b;
 			}

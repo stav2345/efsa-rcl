@@ -10,17 +10,21 @@ import xml_catalog_reader.Selection;
  */
 public class TableColumnValue {
 	
-	String code;
-	String label;
+	private boolean changed;
+	
+	private String code;
+	private String label;
 	
 	public TableColumnValue() {
 		this.code = "";
 		this.label = "";
+		this.changed = true;
 	}
 	
 	public TableColumnValue(Selection sel) {
 		this.code = sel.getCode();
 		this.label = sel.getDescription();
+		this.changed = true;
 	}
 	
 	
@@ -33,6 +37,8 @@ public class TableColumnValue {
 		// as code
 		if (code == null || code.isEmpty())
 			this.code = label;
+		
+		this.changed = true;
 	}
 	
 	public void setLabel(String label) {
@@ -40,6 +46,8 @@ public class TableColumnValue {
 		
 		if (this.label == null)
 			this.label = "";
+		
+		this.changed = true;
 	}
 	
 	public String getCode() {
@@ -48,6 +56,14 @@ public class TableColumnValue {
 	
 	public String getLabel() {
 		return label;
+	}
+	
+	public boolean isChanged() {
+		return changed;
+	}
+	
+	public void setChanged(boolean changed) {
+		this.changed = changed;
 	}
 	
 	/**

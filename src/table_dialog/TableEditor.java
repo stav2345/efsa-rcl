@@ -47,6 +47,7 @@ public class TableEditor extends EditingSupport {
 		CellEditor editor = null;
 		
 		switch(column.getType()) {
+		
 		case PICKLIST:
 			ComboBoxViewerCellEditor combo = new ComboBoxViewerCellEditor(viewer.getTable());
 			
@@ -69,6 +70,7 @@ public class TableEditor extends EditingSupport {
 			
 			editor = combo;
 			break;
+			
 		case PASSWORD:
 			editor = new TextCellEditor(viewer.getTable(), SWT.PASSWORD);
 			break;
@@ -110,6 +112,12 @@ public class TableEditor extends EditingSupport {
 	@Override
 	protected void setValue(Object arg0, Object value) {
 		
+		// avoid refreshing if same value
+		Object oldValue = getValue(arg0);
+		
+		if (value == null || (oldValue != null && value.equals(oldValue)))
+			return;
+		
 		TableRow row = (TableRow) arg0;
 
 		switch(column.getType()) {
@@ -142,10 +150,6 @@ public class TableEditor extends EditingSupport {
 			
 			Selection sel = (Selection) value;
 			
-			// if nothing is selected
-			if (sel == null)
-				break;
-			
 			TableColumnValue newSelection = new TableColumnValue(sel);
 			row.put(column.getId(), newSelection);
 			break;
@@ -165,7 +169,6 @@ public class TableEditor extends EditingSupport {
 		// save the row in the db
 		row.save();
 
-		// refresh the table
 		viewer.refresh(row);
 	}
 	

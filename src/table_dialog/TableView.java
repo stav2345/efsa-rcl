@@ -122,13 +122,12 @@ public class TableView {
 		composite.setLayout(new GridLayout());
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		this.tableViewer = new TableViewer(composite, SWT.BORDER | SWT.SINGLE
+		this.tableViewer = new TableViewer(composite, SWT.VIRTUAL | SWT.BORDER | SWT.SINGLE
 				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
 		
 		this.tableViewer.getTable().setHeaderVisible(true);
 		this.tableViewer.setContentProvider(new ContentProvider());
 		this.tableViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
 		// create the columns based on the schema
 		createColumns();
 	}
@@ -161,13 +160,12 @@ public class TableView {
 		this.tableElements.addAll(rows);
 	}
 	
-	
 	/**
 	 * Clear all the elements of the table
 	 */
 	public void clear() {
-		this.tableViewer.setInput(null);
 		this.tableElements.clear();
+		this.tableViewer.setInput(tableElements);
 	}
 	
 	/**
@@ -248,7 +246,7 @@ public class TableView {
 	}
 	
 	public void refresh(TableRow row) {
-		
+
 		this.tableViewer.refresh(row);
 		
 		// call listener

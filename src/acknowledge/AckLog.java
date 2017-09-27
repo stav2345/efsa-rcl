@@ -37,24 +37,32 @@ public class AckLog {
 	 * Get the operation res code
 	 * @return
 	 */
-	public OpResCode getOpResCode() {
+	public OkCode getOpResCode() {
 		
 		String code = getFirstNodeText("opResCode");
 		
 		if (code == null || code.isEmpty())
 			return null;
 		
-		return OpResCode.fromString(code);
+		return OkCode.fromString(code);
 	}
 	
 	/**
 	 * Get the error message that is attached to the
 	 * operation node. Only present if the {@link #getOpResCode()}
-	 * is {@link OpResCode#KO}.
+	 * is {@link OkCode#KO}.
 	 * @return
 	 */
 	public String getOpComment() {
 		return getFirstNodeText("opResLog");
+	}
+	
+	/**
+	 * Get the retrieved dataset id
+	 * @return
+	 */
+	public String getDatasetId() {
+		return getFirstNodeText("datasetId");
 	}
 	
 	/**
@@ -72,11 +80,12 @@ public class AckLog {
 	}
 	
 	/**
-	 * Get by the node name the text of the first encountered node
+	 * Get the text of the first encountered node with name
+	 * equal to {@code nodeName}.
 	 * @param nodeName
 	 * @return
 	 */
-	private String getFirstNodeText(String nodeName) {
+	public String getFirstNodeText(String nodeName) {
 		
 		NodeList messageCodeList = log.getElementsByTagName(nodeName);
 		
@@ -95,6 +104,7 @@ public class AckLog {
 	public String toString() {
 		return "messageResValCode=" + getMessageValResCode() 
 			+ "; opResCode=" + getOpResCode()
+			+ "; datasetId=" + getDatasetId()
 			+ "; datasetStatus=" + getDatasetStatus();
 	}
 }

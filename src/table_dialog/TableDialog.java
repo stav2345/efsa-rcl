@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import table_database.TableDao;
@@ -28,6 +27,7 @@ import table_list.TableMetaData;
 import table_relations.Relation;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
+import warn_user.Warnings;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 import xml_catalog_reader.Selection;
@@ -235,7 +235,7 @@ public abstract class TableDialog {
 		this.parentFilter = null;
 		
 		// disable the panel
-		if (mode == RowCreationMode.SELECTOR)
+		if (mode != RowCreationMode.NONE)
 			this.panel.setEnabled(false);
 	}
 	
@@ -275,10 +275,7 @@ public abstract class TableDialog {
 	 * @param icon
 	 */
 	protected int warnUser(String title, String message, int icon) {
-		MessageBox mb = new MessageBox(getDialog(), icon);
-		mb.setText(title);
-		mb.setMessage(message);
-		return mb.open();
+		return Warnings.warnUser(getDialog(), title, message, icon);
 	}
 	
 	/**
@@ -287,10 +284,7 @@ public abstract class TableDialog {
 	 * @param message
 	 */
 	protected int warnUser(String title, String message) {
-		MessageBox mb = new MessageBox(getDialog(), SWT.ICON_ERROR);
-		mb.setText(title);
-		mb.setMessage(message);
-		return mb.open();
+		return Warnings.warnUser(getDialog(), title, message, SWT.ICON_ERROR);
 	}
 	
 	/**

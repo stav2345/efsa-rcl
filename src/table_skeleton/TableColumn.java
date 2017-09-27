@@ -90,7 +90,7 @@ public class TableColumn implements Comparable<TableColumn> {
 					return b;
 				}
 			}
-			return null;
+			return ColumnType.STRING;
 		}
 	}
 	

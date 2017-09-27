@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import app_config.AppPaths;
 import app_config.BooleanValue;
+import app_config.PropertiesReader;
 import table_relations.Relation;
 import xml_catalog_reader.Selection;
 import xml_catalog_reader.XmlLoader;
@@ -85,7 +86,8 @@ public class Formula {
 		if (formula == null || formula.isEmpty())
 			return "";
 
-		String value = formula.replace(" ", "");
+		//String value = formula.replace(" ", "");
+		String value = formula;
 		
 		// solve dates
 		value = solveDateFormula(value);
@@ -137,8 +139,7 @@ public class Formula {
 		
 		print(value, "TRIMS");
 
-		// remove all spaces TODO remove
-		this.solvedFormula = value.replace(" ", "");
+		this.solvedFormula = value.trim();
 		
 		return solvedFormula;
 	}
@@ -152,7 +153,7 @@ public class Formula {
 		
 		String command = value;
 		
-		String pattern = "END_TRIM\\(.*?," + INTEGER + "\\)";
+		String pattern = "END_TRIM\\s*\\(\\s*.*?\\s*,\\s*" + INTEGER + "\\s*\\)";
 
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(value);
@@ -162,7 +163,7 @@ public class Formula {
 			String match = m.group();
 			
 			// get match
-			String elements = match.replace("END_TRIM(", "");
+			String elements = match.replace("END_TRIM\\s*(", "");
 			
 			String[] split = elements.split(",");
 			
@@ -171,8 +172,8 @@ public class Formula {
 				return command;
 			}
 			
-			String string = split[0];
-			String charNumStr = split[1].replace(")", "");
+			String string = split[0].trim();
+			String charNumStr = split[1].replace(")", "").trim();
 			
 			try {
 				
@@ -216,8 +217,8 @@ public class Formula {
 				return command;
 			}
 			
-			String string = split[0];
-			String charNumStr = split[1].replace(")", "");
+			String string = split[0].trim();
+			String charNumStr = split[1].replace(")", "").trim();
 			
 			try {
 				
@@ -270,9 +271,9 @@ public class Formula {
 				return value;
 			}
 
-			String condition = split[0];
-			String trueCond = split[1];
-			String falseCond = split[2].replace(")", "");
+			String condition = split[0].trim();
+			String trueCond = split[1].trim();
+			String falseCond = split[2].replace(")", "").trim();
 			
 			// if we have a not null value
 			if(!condition.isEmpty())
@@ -312,9 +313,9 @@ public class Formula {
 				return value;
 			}
 
-			String condition = split[0];
-			String trueCond = split[1];
-			String falseCond = split[2].replace(")", "");
+			String condition = split[0].trim();
+			String trueCond = split[1].trim();
+			String falseCond = split[2].replace(")", "").trim();
 			
 			// if we have a true value
 			if(BooleanValue.isTrue(condition))
@@ -338,7 +339,7 @@ public class Formula {
 		String pattern = "SUM\\("  + NUMBER + "," + NUMBER + "(," + NUMBER + ")*\\)";
 		
 		Pattern r = Pattern.compile(pattern);
-		Matcher m = r.matcher(value.replace(" ", ""));
+		Matcher m = r.matcher(value);
 		
 		// if there is a sum
 		if(m.find()) {
@@ -349,7 +350,7 @@ public class Formula {
 			// compute the sum
 			double sum = 0;
 			while(st.hasMoreTokens()) {
-				String next = st.nextToken();
+				String next = st.nextToken().trim();
 				sum = sum + Double.valueOf(next);
 			}
 			
@@ -504,7 +505,7 @@ public class Formula {
 			command = command.replace(hit, match);
 		}
 
-		return command.replace(" ", "");
+		return command;
 	}
 	
 	/**
@@ -554,7 +555,7 @@ public class Formula {
 		cal.setTime(today);
 		
 		// add the today timestamp if needed
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+		final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
 		String todayTs = sdf.format(cal.getTime());
 		command = command.replace("today.timestamp", todayTs.replace(" ", ""));
 		
@@ -589,6 +590,11 @@ public class Formula {
 		
 		// replace row id statement with the actual row id
 		result = result.replace("{rowId}", String.valueOf(row.getId()));
+
+		// app keywords
+		result = result.replace("{app.name}", PropertiesReader.getAppName());
+		result = result.replace("{app.version}", PropertiesReader.getAppVersion());
+		result = result.replace("{app.dcCode}", PropertiesReader.getDataCollectionCode());
 		
 		// concatenation keyword
 		return result;

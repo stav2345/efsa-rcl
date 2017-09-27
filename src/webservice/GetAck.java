@@ -79,11 +79,23 @@ public class GetAck extends SOAPRequest {
 		// get the state from the response
 		FileState state = extractState(soapResponse);
 		
-		// get the log
-		AckLog log = extractAcklog(soapResponse);
-		
-		if (state == null || log == null)
+		if (state == null) {
+			System.err.println("No state found for message: " + messageId);
 			return null;
+		}
+		
+		AckLog log = null;
+		
+		// no attachment in these cases
+		if (state != FileState.FAIL && state != FileState.OTHER ) {
+			
+			log = extractAcklog(soapResponse);
+			
+			if (log == null) {
+				System.err.println("No log found for message: " + messageId);
+				return null;
+			}
+		}
 		
 		// create the ack object
 		Ack ack = new Ack(state, log);

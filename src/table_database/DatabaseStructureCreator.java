@@ -127,11 +127,7 @@ public class DatabaseStructureCreator extends XlsxReader {
 		else if (h == XlsxHeader.TYPE) {
 
 			// get the type of field
-			try {
-				this.currentColumnType = ColumnType.fromString(value);
-			} catch (IllegalArgumentException e) {
-				this.currentColumnType = ColumnType.STRING;
-			}
+			this.currentColumnType = ColumnType.fromString(value);
 		}
 	}
 
@@ -141,6 +137,14 @@ public class DatabaseStructureCreator extends XlsxReader {
 	@Override
 	public void endRow(Row row) {
 
+		if (this.currentColumnType == null) {
+			
+			System.err.println("Empty " + XlsxHeader.TYPE + " field found. Setting " 
+					+ ColumnType.STRING + " as default.");
+			
+			this.currentColumnType = ColumnType.STRING;
+		}
+		
 		// append the id name as variable name
 		// set the field as string
 		switch (this.currentColumnType) {

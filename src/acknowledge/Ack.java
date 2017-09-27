@@ -22,6 +22,10 @@ public class Ack {
 		return log;
 	}
 	
+	public boolean isCorrect() {
+		return state == FileState.READY;
+	}
+	
 	@Override
 	public String toString() {
 		return "Ack: state=" + state + "; " + log;

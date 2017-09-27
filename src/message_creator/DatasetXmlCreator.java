@@ -1,14 +1,18 @@
 package message_creator;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Stack;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import app_config.AppPaths;
-import app_config.PropertiesReader;
 import table_list.TableMetaData;
 import table_relations.Relation;
 import table_skeleton.TableColumn;
@@ -34,47 +38,40 @@ public abstract class DatasetXmlCreator {
 		this.xsdModel = xsdModel;
 	}*/
 
-	private int rowCounter;      // number of processed rows
-	private File file;           // file to create
-	private PrintWriter writer;  // writer of the file
+	private int rowCounter;       // number of processed rows
+	private File file;            // file to create
+	private PrintWriter writer;   // writer of the file
 	
-	private String dcCode;
-	private String opType;
+	private OperationType opType; // operation which needs to be done for the dataset
 	
-	public DatasetXmlCreator(String filename) throws FileNotFoundException {
-		this(new File(filename));
-	}
+	private Document gde2Xsd;
 	
 	/**
 	 * Export a dataset into the selected file
 	 * default operation type = Insert
 	 * default data collection code = the one set in the properties
 	 * @param file
-	 * @throws FileNotFoundException
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
 	 */
-	public DatasetXmlCreator(File file) throws FileNotFoundException {
+	public DatasetXmlCreator(File file) throws ParserConfigurationException, SAXException, IOException {
+		
+		// get the gde2 .xsd
+		XmlReader reader = new XmlReader(AppPaths.MESSAGE_GDE2_XSD);
+		this.gde2Xsd = reader.parse();
+
 		this.file = file;
 		this.writer = new PrintWriter(file);
-		
-		// default values
-		this.dcCode = PropertiesReader.getDataCollectionCode();
-		this.opType = "Insert";
-	}
-	
-	/**
-	 * Set a different data collection code for the operation
-	 * node, if required.
-	 * @param dcCode
-	 */
-	public void setDcCode(String dcCode) {
-		this.dcCode = dcCode;
+
+		this.opType = OperationType.INSERT;
 	}
 	
 	/**
 	 * Set the operation type for the report
 	 * @param opType
 	 */
-	public void setOpType(String opType) {
+	public void setOpType(OperationType opType) {
 		this.opType = opType;
 	}
 	
@@ -119,9 +116,7 @@ public abstract class DatasetXmlCreator {
 		writer.println("<?xml version='1.0' encoding='UTF-8'?>");
 		
 		// add first node
-		writer.println("<message xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' "
-				+ "xsi:noNamespaceSchemaLocation="
-				+ "'file:///D:/Work%20in%20progress/GDE_MasterVersioning/GDE-Schemas/SSD/GDE2_message.xsd'>");
+		writer.println("<message>");
 
 		// print the header
 		printHeader();
@@ -144,32 +139,74 @@ public abstract class DatasetXmlCreator {
 	}
 	
 	/**
-	 * print the operation node
+	 * Print the header of the message
+	 * @throws IOException
+	 */
+	private void printHeader() throws IOException {
+		XsdParser parser = new XsdParser(gde2Xsd);
+		List<XSElement> headerNodes = parser.getHeaderElements();
+		printElementList(headerNodes, "header");
+	}
+	
+	/**
+	 * Print the header of the message
 	 * @throws IOException
 	 */
 	private void printOperation() throws IOException {
+		XsdParser parser = new XsdParser(gde2Xsd);
+		List<XSElement> opNodes = parser.getOperationElements();
+		printElementList(opNodes, "operation");
+	}
+	
+	/**
+	 * Print in the writer a list of elements
+	 * @param list list of elements to be printed
+	 * @param nodeName node that will contain all the node of the list in the .xml
+	 * @throws IOException
+	 */
+	private void printElementList(List<XSElement> list, String nodeName) throws IOException {
 		
-		writer.print("<operation>");
+		StringBuilder sb = new StringBuilder();
 		
-		// add the operation nodes
-		printMetaData("operation", false);
+		// get the configuration of the element
+		TableRow config = getMessageConfig();
 		
-		// add action node
-		String opType = getXmlNode("opType", this.opType);
-		writer.print(opType);
-		
-		// add data collection node
-		String dc = getXmlNode("dcCode", dcCode);
-		writer.print(dc);
-		
-		// add the comment node with the tool name and version
-		String toolName = PropertiesReader.getAppName();
-		String version = PropertiesReader.getAppVersion();
-		
-		String comment = getXmlNode("opCom", "File generated with " + toolName + " - version " + version);
-		writer.print(comment);
+		// for each element of the .xsd (in order!)
+		for (XSElement element : list) {
 
-		writer.println("</operation>");
+			String elementName = element.getName();
+			
+			if (elementName == null) {
+				System.err.println("Null element name found during the export.");
+				continue;
+			}
+			
+			// TODO this is an exception since the opType is defined dynamically
+			String nodeValue = null;
+			
+			if (elementName.equals("opType")) {
+				nodeValue = this.opType.getCode();
+			}
+			else {
+				// get the configuration element
+				// using the xml node as match
+				TableColumnValue value = config.get(elementName);
+				
+				if (value == null || value.isEmpty()) {
+					System.err.println("No value found for " + elementName 
+							+ ". Make sure that it is a not mandatory field for opType " + opType);
+					continue;
+				}
+				nodeValue = value.getLabel();
+			}
+			
+			// append the value of the configuration to the xml node
+			sb.append(getXmlNode(elementName, nodeValue));
+		}
+		
+		String text = getXmlNode(nodeName, sb.toString());
+		
+		writer.println(text);
 	}
 	
 	/**
@@ -298,14 +335,6 @@ public abstract class DatasetXmlCreator {
 	}
 	
 	/**
-	 * Print the message header in the file
-	 * @throws IOException
-	 */
-	private void printHeader() throws IOException {
-		printMetaData("header", true);
-	}
-	
-	/**
 	 * Get the configuration for the export
 	 * @return
 	 * @throws IOException 
@@ -323,7 +352,7 @@ public abstract class DatasetXmlCreator {
 		if (parents != null) {
 			
 			// inject the parents
-			for (TableRow parent : getConfigMessageParents()) {
+			for (TableRow parent : parents) {
 				Relation.injectParent(parent, row);
 			}
 		}
@@ -331,35 +360,6 @@ public abstract class DatasetXmlCreator {
 		row.updateFormulas();
 		
 		return row;
-	}
-	
-	/**
-	 * Print a meta data node
-	 * @param type
-	 * @throws IOException
-	 */
-	private void printMetaData(String type, boolean addEnvelop) throws IOException {
-		
-		StringBuilder sb = new StringBuilder();
-		
-		TableRow config = getMessageConfig();
-		
-		for (TableColumn column : config.getSchema()) {
-			
-			// consider only header elements
-			if (!column.getPutInOutput().equalsIgnoreCase(type))
-				continue;
-			
-			// get the value of the row
-			TableColumnValue value = config.get(column.getId());
-			
-			// append the xml header node
-			sb.append(getXmlNode(column.getXmlTag(), value.getLabel()));
-		}
-		
-		String text = addEnvelop ? getXmlNode(type, sb.toString()) : sb.toString();
-		
-		writer.println(text);
 	}
 	
 	/**

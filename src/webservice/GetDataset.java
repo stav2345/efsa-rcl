@@ -1,5 +1,7 @@
 package webservice;
 
+import java.io.File;
+
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConnection;
 import javax.xml.soap.SOAPElement;
@@ -27,6 +29,10 @@ public class GetDataset extends SOAPRequest {
 		this.datasetId = datasetId;
 	}
 	
+	public void get() throws SOAPException {
+		makeRequest(URL);
+	}
+	
 	/**
 	 * Get the url for making get file requests
 	 * @return
@@ -44,8 +50,8 @@ public class GetDataset extends SOAPRequest {
 		SOAPElement soapElem = soapBody.addChildElement( "getDataset", "dcf" );
 
 		// add resource id
-		SOAPElement arg = soapElem.addChildElement( "datasetId" );
-		arg.setTextContent( datasetId );
+		SOAPElement arg = soapElem.addChildElement("datasetId");
+		arg.setTextContent(datasetId);
 
 		// save the changes in the message and return it
 		soapMsg.saveChanges();
@@ -56,7 +62,10 @@ public class GetDataset extends SOAPRequest {
 	@Override
 	public Object processResponse(SOAPMessage soapResponse) throws SOAPException {
 		
-		// process the dataset and return it
+		File file = writeZippedAttachment(soapResponse, "xml");
+		
+		//TODO process the dataset and add it to the reports
+
 		return null;
 	}
 }

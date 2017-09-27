@@ -175,6 +175,7 @@ public class TableDao {
 			stmt.setInt(schema.size() + 1, row.getId());
 		}
 	}
+
 	
 	/**
 	 * Add a new row to the table
@@ -250,7 +251,7 @@ public class TableDao {
 		
 		return ok;
 	}
-	
+
 	/**
 	 * Delete all the rows from the table
 	 * @param row

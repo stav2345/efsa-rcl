@@ -26,7 +26,9 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import app_config.AppPaths;
 import user.User;
+import zip_manager.ZipManager;
 
 /**
  * Abstract class used to create soap requests and to process soap responses
@@ -205,13 +207,50 @@ public abstract class SOAPRequest {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			return null;
+			throw new SOAPException();
 		}
 
 		// get the response attachment
 		AttachmentPart attachment = (AttachmentPart) iter.next();
 		
 		return attachment;
+	}
+	
+	/**
+	 * Write a zipped stream into the disk
+	 * @param message message containing the attachment
+	 * @param attachmentFormat format of the file in the zip file
+	 * @return
+	 * @throws SOAPException
+	 */
+	public File writeZippedAttachment(SOAPMessage message, String attachmentFormat) throws SOAPException {
+		
+		AttachmentPart attachmentPart = getFirstAttachmentPart(message);
+		
+		if (attachmentPart == null)
+			return null;
+		
+		// save the unzipped stream in temporary file
+		File file = new File(AppPaths.TEMP_FOLDER + "attachment_" 
+				+ System.currentTimeMillis() + "." + attachmentFormat);
+		
+		InputStream stream = attachmentPart.getRawContent();
+		
+		if (stream == null) {
+			System.err.println("No raw contents in the attachment found");
+			return null;
+		}
+		
+		// unzip the stream into a file
+		ZipManager.unzipStream(stream, file);
+		
+		try {
+			stream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return file;
 	}
 	
 	/**

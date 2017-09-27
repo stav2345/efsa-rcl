@@ -37,7 +37,7 @@ public class TableRow implements Checkable {
 	
 	public TableRow(TableSchema schema, String initialColumnId, TableColumnValue initialValue) {
 		this(schema);
-		this.values.put(initialColumnId, initialValue);
+		this.put(initialColumnId, initialValue);
 	}
 	
 	/**
@@ -51,6 +51,8 @@ public class TableRow implements Checkable {
 		idValue.setCode(index);
 		idValue.setLabel(index);
 		
+		// put directly into the values and not with this.put
+		// to avoid to put the id into the changes hashmap
 		this.values.put(schema.getTableIdField(), idValue);
 	}
 	
@@ -179,9 +181,9 @@ public class TableRow implements Checkable {
 		TableColumnValue row = new TableColumnValue();
 		row.setCode(label);
 		row.setLabel(label);
-		values.put(key, row);
+		this.put(key, row);
 	}
-
+	
 	/**
 	 * Initialize the row with the default values
 	 */
