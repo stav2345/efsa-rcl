@@ -42,6 +42,10 @@ public class TableSchema extends ArrayList<TableColumn> {
 		return sheetName;
 	}
 	
+	private void setTableIdField(String tableIdField) {
+		this.tableIdField = tableIdField;
+	}
+	
 	public String getTableIdField() {
 		return tableIdField;
 	}
@@ -53,6 +57,28 @@ public class TableSchema extends ArrayList<TableColumn> {
 	 */
 	public String getVersionField() {
 		return getSheetName() + "Version";
+	}
+	
+	/**
+	 * Get all the non composite columns
+	 * @return
+	 * @throws IOException
+	 */
+	public TableSchema getNonCompositeColumns() {
+		
+		TableSchema out = new TableSchema();
+		
+		// copy the schema information
+		out.setSheetName(sheetName);
+		out.setRelations(relations);
+		out.setTableIdField(tableIdField);
+
+		for (TableColumn col : this) {
+			if (!col.isComposite())
+				out.add(col);
+		}
+		
+		return out;
 	}
 	
 	/**
@@ -106,6 +132,10 @@ public class TableSchema extends ArrayList<TableColumn> {
 		}
 		
 		return out;
+	}
+	
+	private void setRelations(Collection<Relation> relations) {
+		this.relations = relations;
 	}
 	
 	/**

@@ -1,11 +1,10 @@
-package table_skeleton;
+package formula_solver;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,7 +13,11 @@ import app_config.AppPaths;
 import app_config.BooleanValue;
 import app_config.PropertiesReader;
 import table_relations.Relation;
+import table_skeleton.TableColumn;
+import table_skeleton.TableColumnValue;
+import table_skeleton.TableRow;
 import xml_catalog_reader.Selection;
+import xml_catalog_reader.XmlContents;
 import xml_catalog_reader.XmlLoader;
 
 /**
@@ -26,11 +29,11 @@ import xml_catalog_reader.XmlLoader;
  */
 public class Formula {
 	
+	private static HashMap<Cell, Integer> dependenciesCache;
+	
 	// regex components
 	private static final String NUMBER = "[0-9]{1,13}(\\.[0-9]*)?";
 	private static final String INTEGER = "[0-9]+";
-	private static final String LETTER = "[a-zA-Z]";
-	private static final String STRING = "(" + LETTER + ")+";
 	
 	private String formula;
 	private String solvedFormula;
@@ -39,7 +42,13 @@ public class Formula {
 	private TableColumn column;
 	private int dependenciesCount;
 	
+	//private long debugTime;
+	
 	public Formula(TableRow row, TableColumn column, String fieldHeader) {
+		
+		if (dependenciesCache == null)
+			dependenciesCache = new HashMap<>();
+		
 		this.row = row;
 		this.column = column;
 		this.fieldHeader = fieldHeader;
@@ -85,8 +94,7 @@ public class Formula {
 		
 		if (formula == null || formula.isEmpty())
 			return "";
-
-		//String value = formula.replace(" ", "");
+		
 		String value = formula;
 		
 		// solve dates
@@ -145,8 +153,14 @@ public class Formula {
 	}
 	
 	private void print(String value, String header) {
-		//if (column.equals("reportSenderId"))
-		//	System.out.println(header + " => " + value);
+		
+		//if ((column.equals("progInfo")||column.equals("totSamplesTested")) && fieldHeader.equals("labelFormula"))
+		//	System.out.println("column " + column + " " + header + " => " + value);
+		//System.out.println("TIME for " + header + " => " 
+		//		+ (System.currentTimeMillis() - debugTime)/1000.00 + " seconds");
+		
+		// update debug time
+		//debugTime = System.currentTimeMillis();
 	}
 	
 	private String solveTrims(String value) {
@@ -257,7 +271,7 @@ public class Formula {
 		Matcher m = r.matcher(value);
 		
 		// if found
-		if(m.find()) {
+		while (m.find()) {
 
 			String match = m.group();
 			
@@ -342,7 +356,7 @@ public class Formula {
 		Matcher m = r.matcher(value);
 		
 		// if there is a sum
-		if(m.find()) {
+		while (m.find()) {
 			
 			String elements = m.group().replace("SUM(", "").replace(")", "");
 			StringTokenizer st = new StringTokenizer(elements, ",");
@@ -368,7 +382,7 @@ public class Formula {
 	}
 	
 	/**
-	 * Resolve all columns dependencies (\column_name)
+	 * Resolve all columns dependencies ($column_name.(code|label))
 	 * with the columns values
 	 * @param value
 	 * @return
@@ -377,36 +391,57 @@ public class Formula {
 	private String solveColumnsFormula(String value) {
 		
 		String command = value;
+		String pattern = "\\$\\w+?\\.(code|label)";
+		Pattern p = Pattern.compile(pattern);
+
+		Matcher m = p.matcher(command);
 		
-		// replace \columns_names with their values if present
-		// otherwise use the default values
-		for (TableColumn col : row.getSchema()) {
-
-			String code = "";
-			String label = "";
-
-			TableColumnValue colValue = this.row.get(col.getId());
+		// for each match
+		while (m.find()) {
 			
-			if (colValue != null)
-				code = colValue.getCode();
-			else
-				code = col.getCodeFormula();
-
-			// otherwise use value
-			if (colValue != null)
-				label = colValue.getLabel();
-			else
-				label = col.getLabelFormula();
-
-			if (label == null)
-				label = "";
+			String match = m.group();
+			String[] split = match.split("\\.");
 			
-			if (code == null)
-				code = "";
+			// get column id and required field
+			if (split.length != 2) {
+				System.err.println("Wrong column formula, found " + match);
+				return command;
+			}
 			
-			// replace values
-			command = command.replace("\\" + col.getId() + ".code", code);
-			command = command.replace("\\" + col.getId() + ".label", label);
+			String colId = split[0].replace("$", "");
+			String field = split[1];  // required field
+			
+			// get the row value for the required column
+			TableColumnValue colValue = this.row.get(colId);
+			TableColumn col = this.row.getSchema().getById(colId);
+			
+			if (col == null) {
+				System.err.println("No column found for " + colId);
+				return command;
+			}
+			
+			String replacement = null;
+			
+			// if code get code
+			if (field.equals("code")) {
+				if (colValue != null)
+					replacement = colValue.getCode();
+				else
+					replacement = col.getCodeFormula();
+			}
+			else {
+				// otherwise use value
+				if (colValue != null)
+					replacement = colValue.getLabel();
+				else
+					replacement = col.getLabelFormula();
+			}
+
+			if (replacement == null)
+				replacement = "";
+			
+			// replace value
+			command = command.replace(match, replacement);
 		}
 
 		return command;
@@ -469,6 +504,7 @@ public class Formula {
 			
 			if (colVal == null) {
 				System.err.println("No parent data found for " + r + " in the row " + row);
+				System.err.println("Involved code " + match + " of the complete formula: " + command);
 				continue;
 			}
 			
@@ -480,7 +516,7 @@ public class Formula {
 
 			// get the row using the foreign key
 			TableRow row = r.getParentValue(Integer.valueOf(foreignKey));
-
+			
 			if (row == null) {
 				System.err.println("No relation value found for " + foreignKey + "; relation " + r);
 				continue;
@@ -515,25 +551,41 @@ public class Formula {
 	 */
 	private String solveLogicalOperators(String value) {
 		
+		String command = solveLogicalOp(value, "==");
+		command = solveLogicalOp(command, "!=");
+		
+		return command;
+	}
+	
+	private String solveLogicalOp(String value, String op) {
+		
 		String command = value;
 		
-		String operand = "(" + STRING + "|" + NUMBER + ")";
-		String pattern = operand + "==" + operand;
+		String operand = "(.+?)";
+		String pattern = "\\(" + operand + "\\s*" + op + "\\s*" + operand + "\\)";
 		
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(value);
 		
-		if (m.find()) {
+		while (m.find()) {
+
 			// extract operands from the match
 			String match = m.group();
-			String[] split = match.split("==");
-			String leftOp = split[0];
-			String rightOp = split[1];
 			
-			// set the real value
-			String result = leftOp.equalsIgnoreCase(rightOp) ? 
-					BooleanValue.getTrueValue() : BooleanValue.getFalseValue();
-					
+			String[] split = match.split(op);
+			String leftOp = split[0].trim().replace("(", "");
+			String rightOp = split[1].trim().replace(")", "");;
+			
+			boolean comparison = leftOp.equalsIgnoreCase(rightOp);
+			
+			// invert the boolean if we are searching
+			// for differences
+			if (op.equals("!="))
+				comparison = !comparison;
+			
+			// set the correct value
+			String result = comparison ? BooleanValue.getTrueValue() : BooleanValue.getFalseValue();
+
 			// replace match with the logical result
 			command = value.replace(match, result);
 		}
@@ -568,10 +620,20 @@ public class Formula {
 		command = command.replace("lastMonth.year.label", lastYear);
 		
 		// get last month term
-		String lastMonth = String.valueOf(cal.get(Calendar.MONTH) + 1); // months start from 0
+		// months start from 0 so to show the correct number
+		// we add 1
+		String lastMonth = String.valueOf(cal.get(Calendar.MONTH) + 1);
 		
-		Selection monthSel = XmlLoader.getByPicklistKey(AppPaths.MONTHS_LIST)
-				.getList().getSelectionByCode(lastMonth);
+		// pick the months list
+		XmlContents xml = XmlLoader.getByPicklistKey(AppPaths.MONTHS_LIST);
+		
+		if (xml == null) {
+			System.err.println("Cannot resolve formula lastMonth.code/label, since the " 
+					+ AppPaths.MONTHS_LIST + " was not found!");
+			return command;
+		}
+		
+		Selection monthSel = xml.getList().getSelectionByCode(lastMonth);
 
 		command = command.replace("lastMonth.code", monthSel.getCode());
 		command = command.replace("lastMonth.label", monthSel.getDescription());
@@ -595,7 +657,7 @@ public class Formula {
 		result = result.replace("{app.name}", PropertiesReader.getAppName());
 		result = result.replace("{app.version}", PropertiesReader.getAppVersion());
 		result = result.replace("{app.dcCode}", PropertiesReader.getDataCollectionCode());
-		
+
 		// concatenation keyword
 		return result;
 	}
@@ -612,12 +674,20 @@ public class Formula {
 	 * @param value
 	 * @return
 	 */
-	private boolean isDependentBy(TableColumn col, String value) {
+	private int isDependentBy(TableColumn col, String value) {
 		
 		if (value == null)
-			return false;
+			return 0;
 		
-		return value.contains("\\" + col.getId());
+		Pattern p = Pattern.compile("\\$" + col.getId() + "\\.(code|label)");
+		Matcher m = p.matcher(value);
+		
+		int counter = 0;
+		
+		while(m.find())
+			counter++;
+		
+		return counter;
 	}
 	
 	/**
@@ -629,33 +699,69 @@ public class Formula {
 	 */
 	private void evalDependencies() {
 		
-		ArrayList<Integer> dependencies = new ArrayList<>();
+		Cell cell = new Cell(row.getSchema().getSheetName(), column.getId(), fieldHeader);
+		Integer cacheDep = dependenciesCache.get(cell);
 		
-		int count = 0;
+		// use cache if possible
+		if (cacheDep != null) {
+			this.dependenciesCount = cacheDep;
+			return;
+		}
+		
+		int dependencies = 0;
 		
 		// Check columns dependencies
 		for (TableColumn col : row.getSchema()) {
 			
 			// evaluate the dependency just for different columns
 			// this avoid recursive definitions
-			if (!col.equals(column) && isDependentBy(col, formula)) {
+			if (!col.equals(column)) {
 				
-				count++;
+				int numOfDep = isDependentBy(col, formula);
 				
-				Formula child = new Formula(row, col, fieldHeader);
-				dependencies.add(child.getDependenciesCount());
+				// add number of occurrences as dependencies
+				dependencies = dependencies + numOfDep;
+
+				// if we have dependencies (i.e. we found a $column...)
+				// also evaluate the column to check if there are nested
+				// dependencies
+				if (numOfDep > 0) {
+					
+					// evaluate column dependencies recursively
+					Formula child = new Formula(row, col, fieldHeader);
+					
+					// also add the column dependencies to the current
+					// number of dependencies
+					dependencies = dependencies + child.getDependenciesCount();
+				}
 			}
 		}
 		
-		// no children, we are in a leaf
-		if (count == 0) {
-			this.dependenciesCount = 0;
+		this.dependenciesCount = dependencies;
+		
+		// save cache
+		dependenciesCache.put(cell, dependencies);
+	}
+	
+	private class Cell {
+		private String tableName;
+		private String columnId;
+		private String columnHeader;
+		
+		public Cell(String tableName, String columnId, String columnHeader) {
+			this.tableName = tableName;
+			this.columnId = columnId;
+			this.columnHeader = columnHeader;
 		}
-		else {
+		
+		@Override
+		public boolean equals(Object obj) {
 			
-			// conquer, get the max num of dependencies of the children
-			// and add the new one for the current level
-			this.dependenciesCount = Collections.max(dependencies) + 1;
+			Cell cell = (Cell) obj;
+			
+			return tableName.equals(cell.tableName)
+					&& columnId.equals(cell.columnId)
+					&& columnHeader.equals(cell.columnHeader);
 		}
 	}
 }

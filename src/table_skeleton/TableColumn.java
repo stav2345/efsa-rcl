@@ -1,6 +1,8 @@
 package table_skeleton;
 
 import app_config.BooleanValue;
+import formula_solver.Formula;
+import formula_solver.FormulaSolver;
 import table_dialog.TableView;
 import xlsx_reader.TableHeaders.XlsxHeader;
 import xml_catalog_reader.Selection;
@@ -171,6 +173,16 @@ public class TableColumn implements Comparable<TableColumn> {
 		}
 		
 		return value;
+	}
+	
+	/**
+	 * Check if the column is automatically computed using a formula.
+	 * @return
+	 */
+	public boolean isComposite() {
+		boolean codeF = codeFormula != null && !codeFormula.isEmpty();
+		boolean labelF = labelFormula != null && !labelFormula.isEmpty();
+		return codeF || labelF;
 	}
 	
 	/**
@@ -345,7 +357,9 @@ public class TableColumn implements Comparable<TableColumn> {
 	public boolean isMandatory(TableRow row) {
 		return isTrue(row, XlsxHeader.MANDATORY.getHeaderName());
 	}
-	
+	public String getMandatoryFormula() {
+		return mandatory;
+	}
 	public void setMandatory(String mandatory) {
 		this.mandatory = mandatory;
 	}

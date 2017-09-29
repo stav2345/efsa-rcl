@@ -39,7 +39,7 @@ public class TableListParser extends XlsxReader {
 		return helps;
 	}
 	
-	public static boolean isHelpSheet(String sheetName) {
+	public static boolean isTablesSheet(String sheetName) {
 		return AppPaths.TABLES_SHEET.equals(sheetName);
 	}
 

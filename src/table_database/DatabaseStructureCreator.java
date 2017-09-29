@@ -1,6 +1,8 @@
 package table_database;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -23,6 +25,9 @@ public class DatabaseStructureCreator extends XlsxReader {
 	private StringBuilder query;  // it contains the query to create the database
 	private ColumnType currentColumnType;
 	private String currentColumnId;
+	private List<String> foreignKeys;
+	private boolean isCompositeCode;
+	private boolean isCompositeLabel;
 	
 	/**
 	 * Initialize the creator.
@@ -31,6 +36,9 @@ public class DatabaseStructureCreator extends XlsxReader {
 	 */
 	public DatabaseStructureCreator(String filename) throws IOException {
 		super(filename);
+		this.isCompositeCode = false;
+		this.isCompositeLabel = false;
+		this.foreignKeys = new ArrayList<>();
 	}
 
 	/**
@@ -48,12 +56,12 @@ public class DatabaseStructureCreator extends XlsxReader {
 			
 			// skip special sheets
 			if (RelationParser.isRelationsSheet(sheet.getSheetName())
-					|| TableListParser.isHelpSheet(sheet.getSheetName()))
+					|| TableListParser.isTablesSheet(sheet.getSheetName()))
 				continue;
 			
 			addTableStatement(sheet.getSheetName());
 		}
-
+		System.out.println(query.toString());
 		return query.toString();
 	}
 
@@ -74,6 +82,9 @@ public class DatabaseStructureCreator extends XlsxReader {
 		
 		// add the columns to the statement (also primary key)
 		addColumnsStatement(sheetName);
+		
+		// add foreign keys
+		addIntegrityConstraints(sheetName);
 	}
 	
 	/**
@@ -94,7 +105,7 @@ public class DatabaseStructureCreator extends XlsxReader {
 	private void addPrimaryKeyStatement(String primaryKeyName) {
 
 		query.append(primaryKeyName)
-			.append(" integer not null primary key generated always as identity (start with 1, increment by 1),\n");
+			.append(" integer not null primary key generated always as identity (start with 1, increment by 1)");
 	}
 	
 	/**
@@ -104,14 +115,42 @@ public class DatabaseStructureCreator extends XlsxReader {
 	 * @throws IOException
 	 */
 	private void addColumnsStatement(String sheetName) throws IOException {
-		
+
 		// read the sheet to activate processCell and start/end row methods
 		this.read(sheetName);
 	}
 	
+
+	/**
+	 * 
+	 * @param sheetName
+	 */
+	private void addIntegrityConstraints(String sheetName) {
+	
+		for (String foreignKey : foreignKeys) {
+			
+			// get the foreign table name from the foreign key
+			// by removing the Id word
+			String foreignTable = foreignKey.replace("Id", "");
+			
+			query.append("alter table APP.")
+				.append(sheetName)
+				.append(" add foreign key(")
+				.append(foreignKey)
+				.append(") references APP.")
+				.append(foreignTable)
+				.append("(")
+				.append(foreignKey)  // (convention) the id name is the same in the foreign table
+				.append(") on delete cascade;\n");  // cascade delete is default
+		}
+		
+		// restart
+		foreignKeys.clear();
+	}
+	
 	@Override
 	public void processCell(String header, String value) {
-		
+
 		XlsxHeader h = null;
 		try {
 			h = XlsxHeader.fromString(header);  // get enum from string
@@ -129,10 +168,21 @@ public class DatabaseStructureCreator extends XlsxReader {
 			// get the type of field
 			this.currentColumnType = ColumnType.fromString(value);
 		}
+		/*else if (h == XlsxHeader.CODE_FORMULA) {
+			this.isCompositeCode = !(value == null || value.isEmpty() || value.equals("null"));
+		}
+		else if (h == XlsxHeader.LABEL_FORMULA) {
+			this.isCompositeLabel = !(value == null || value.isEmpty() || value.equals("null"));
+		}*/
 	}
 
 	@Override
-	public void startRow(Row row) {}
+	public void startRow(Row row) {
+		
+		// reset values
+		this.isCompositeCode = false;
+		this.isCompositeLabel = false;
+	}
 
 	@Override
 	public void endRow(Row row) {
@@ -144,32 +194,39 @@ public class DatabaseStructureCreator extends XlsxReader {
 			
 			this.currentColumnType = ColumnType.STRING;
 		}
-		
-		// append the id name as variable name
-		// set the field as string
-		switch (this.currentColumnType) {
-		case FOREIGNKEY:
-			query.append(this.currentColumnId)
-			.append(" integer not null\n");
-			break;
-		default:
-			query.append(this.currentColumnId)
-			.append(" varchar(1000)");
-			break;
-		}
-		
-		int last = row.getSheet().getLastRowNum();
-		
-		boolean isLast = row.getRowNum() == last;
-		
-		// if not last row, then add also the
-		// comma to be able to add other 
-		// columns to the table
-		if (!isLast) {
+
+
+		// add the field just for non composite fields
+		//if (!this.isCompositeCode && !this.isCompositeLabel) {
+
+			// new variable
 			query.append(",\n");
-		}
-		else {
-			// else if last row, then close the
+			
+			// append the id name as variable name
+			// set the field as string
+			switch (this.currentColumnType) {
+			case FOREIGNKEY:
+				
+				// save the foreign key column id
+				foreignKeys.add(this.currentColumnId);
+				
+				query.append(this.currentColumnId)
+				.append(" integer not null");
+				break;
+			default:
+				query.append(this.currentColumnId)
+				.append(" varchar(1000)");
+				break;
+			}
+		//}
+		
+			
+		int last = row.getSheet().getLastRowNum();
+			
+		boolean isLast = row.getRowNum() == last;
+			
+		if (isLast) {
+			// if last row, then close the
 			// create table statement and put a semicolon
 			query.append(");\n\n");
 		}

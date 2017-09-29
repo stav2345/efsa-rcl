@@ -2,6 +2,7 @@ package app_config;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -18,6 +19,9 @@ public class PropertiesReader {
 	private static final String APP_TEST_REPORT_PROPERTY = "Application.TestReportCode";
 	private static final String APP_STARTUP_HELP_PROPERTY = "Application.StartupHelpFile";
 	
+	// cache properties, they do not change across time. We avoid
+	// continuous access to the file
+	private static final HashMap<String, String> cache = new HashMap<>();
 	
 	/**
 	 * Read the application properties from the xml file
@@ -103,11 +107,21 @@ public class PropertiesReader {
 	 */
 	private static String getValue(String property, String defaultValue) {
 		
+		// use cache if possible
+		String cachedValue = cache.get(property);
+		if (cachedValue != null)
+			return cachedValue;
+		
 		Properties prop = PropertiesReader.getProperties(AppPaths.APP_CONFIG_FILE);
 		
 		if ( prop == null )
 			return defaultValue;
 		
-		return prop.getProperty(property);
+		String value = prop.getProperty(property);
+		
+		// save the new value in the cache
+		cache.put(property, value);
+		
+		return value;
 	}
 }

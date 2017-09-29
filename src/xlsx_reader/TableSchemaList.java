@@ -37,7 +37,7 @@ public class TableSchemaList {
 				
 				// skip special sheets
 				if (RelationParser.isRelationsSheet(sheet.getSheetName())
-						|| TableListParser.isHelpSheet(sheet.getSheetName()))
+						|| TableListParser.isTablesSheet(sheet.getSheetName()))
 					continue;
 				
 				// parse

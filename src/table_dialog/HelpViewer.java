@@ -26,6 +26,15 @@ public class HelpViewer {
 	private Label info;
 	private Label helpBtn;
 	
+	/**
+	 * Panel that displays an help label with an help icon. The
+	 * help icon can be clicked to trigger the listener set 
+	 * with the {@link #setListener(MouseListener)} method.
+	 * It is also possible to set a tooltip text for the help icon
+	 * by setting {@link #setToolTipText(String)}.
+	 * @author avonva
+	 *
+	 */
 	public HelpViewer(Composite parent, String title) {
 		this.parent = parent;
 		this.title = title;

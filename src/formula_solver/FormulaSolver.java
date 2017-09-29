@@ -1,8 +1,11 @@
-package table_skeleton;
+package formula_solver;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+import table_skeleton.TableColumn;
+import table_skeleton.TableRow;
 
 /**
  * Class which solves the formulas included in the columns schema
@@ -59,7 +62,7 @@ public class FormulaSolver {
 		
 		// sort the formulas based on their number of dependencies
 		Collections.sort(formulas, new DependenciesSorter());
-
+		
 		// solve all the formulas starting from the
 		// formulas with 0 dependencies
 		for (Formula formula : formulas) {

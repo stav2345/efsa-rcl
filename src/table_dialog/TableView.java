@@ -4,21 +4,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 
-import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -28,7 +22,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 
 import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
 import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
@@ -42,13 +35,13 @@ import xlsx_reader.TableSchemaList;
  */
 public class TableView {
 
-	private Composite parent;
-	TableViewerColumn validator;
+	private Composite parent;                    // parent widget
 	private TableViewer tableViewer;             // main table
 	private TableSchema schema;                  // defines the table columns
 	private ArrayList<TableRow> tableElements;   // cache of the table elements to do sorting by column
-	private boolean editable;
-	private Listener inputChangedListener;
+	private boolean editable;                    // table is editable or not?
+	private Listener inputChangedListener;       // called when table data changes
+	private TableViewerColumn validator;         // data validator, only if needed
 	
 	/**
 	 * Create a report table using a predefined schema for the columns
@@ -67,51 +60,6 @@ public class TableView {
 			e.printStackTrace();
 		}
 	}
-	
-	public void setValidatorLabelProvider(RowValidatorLabelProvider validatorLabelProvider) {
-		
-		if (this.validator == null)
-			return;
-		
-		this.validator.setLabelProvider(validatorLabelProvider);
-	}
-	
-	public TableViewer getViewer() {
-		return tableViewer;
-	}
-	
-	public Table getTable() {
-		return tableViewer.getTable();
-	}
-	
-	public boolean isEditable() {
-		return editable;
-	}
-	
-	public void setInputChangedListener(Listener inputChangedListener) {
-		this.inputChangedListener = inputChangedListener;
-	}
-	
-	
-	public TableSchema getSchema() {
-		return schema;
-	}
-	
-	public ArrayList<TableRow> getTableElements() {
-		return tableElements;
-	}
-	
-	/**
-	 * Check if the whole table is correct
-	 * @return
-	 */
-	public boolean areMandatoryFilled() {
-		for (TableRow row : tableElements) {
-			if (!row.areMandatoryFilled())
-				return false;
-		}
-		return true;
-	}
 
 	/**
 	 * Create the interface into the composite 
@@ -122,148 +70,18 @@ public class TableView {
 		composite.setLayout(new GridLayout());
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
+		// create the table
 		this.tableViewer = new TableViewer(composite, SWT.VIRTUAL | SWT.BORDER | SWT.SINGLE
 				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
 		
 		this.tableViewer.getTable().setHeaderVisible(true);
-		this.tableViewer.setContentProvider(new ContentProvider());
+		this.tableViewer.setContentProvider(new TableContentProvider());
 		this.tableViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		
 		// create the columns based on the schema
 		createColumns();
 	}
 	
-	/**
-	 * Set menu to the table
-	 * @param menu
-	 */
-	public void setMenu(Menu menu) {
-		this.tableViewer.getTable().setMenu(menu);
-	}
-	
-	/**
-	 * Add an element to the table viewer
-	 * @param row
-	 */
-	public void add(TableRow row) {
-		this.tableViewer.add(row);
-		this.tableElements.add(row);
-	}
-	
-	/**
-	 * Add an element to the table viewer
-	 * @param row
-	 */
-	public void addAll(Collection<TableRow> rows) {
-		for (TableRow r : rows) {
-			this.tableViewer.add(r);
-		}
-		this.tableElements.addAll(rows);
-	}
-	
-	/**
-	 * Clear all the elements of the table
-	 */
-	public void clear() {
-		this.tableElements.clear();
-		this.tableViewer.setInput(tableElements);
-	}
-	
-	/**
-	 * Remove an element from the table viewer
-	 * @param row
-	 */
-	public void delete(TableRow row) {
-		this.tableViewer.remove(row);
-		this.tableElements.remove(row);
-		row.delete();
-	}
-	
-	/**
-	 * Remove the selected row
-	 */
-	public void removeSelectedRow() {
-		TableRow row = getSelection();
-		
-		if(row == null)
-			return;
-		
-		delete(row);
-	}
-	
-	/**
-	 * Set the input of the table
-	 * @param elements
-	 */
-	public void setInput(Collection<TableRow> elements) {
-		this.tableViewer.setInput(elements);
-		this.tableElements = new ArrayList<>(elements);
-		this.tableViewer.refresh();
-	}
-	
-	/**
-	 * Add a listener which is called when the table changes the highlighted element
-	 * @param listener
-	 */
-	public void addSelectionChangedListener(ISelectionChangedListener listener) {
-		this.tableViewer.addSelectionChangedListener(listener);
-	}
-	
-	/**
-	 * Add a listener which is called when the table changes the highlighted element
-	 * @param listener
-	 */
-	public void addDoubleClickListener(IDoubleClickListener listener) {
-		this.tableViewer.addDoubleClickListener(listener);
-	}
-	
-	/**
-	 * Get the selected element if present
-	 * @return
-	 */
-	public TableRow getSelection() {
-		
-		IStructuredSelection selection = (IStructuredSelection) this.tableViewer.getSelection();
-		
-		if (selection.isEmpty())
-			return null;
-		
-		return (TableRow) selection.getFirstElement();
-	}
-	
-	/**
-	 * Get the number of elements contained in the table
-	 * @return
-	 */
-	public int getItemCount() {
-		return this.tableViewer.getTable().getItemCount();
-	}
-	
-	/**
-	 * Check if the table is empty or not
-	 */
-	public boolean isEmpty() {
-		return getItemCount() == 0;
-	}
-	
-	public void refresh(TableRow row) {
-
-		this.tableViewer.refresh(row);
-		
-		// call listener
-		if (inputChangedListener != null) {
-			Event event = new Event();
-			event.data = row;
-			inputChangedListener.handleEvent(event);
-		}
-	}
-	
-	/**
-	 * Refresh all the elements
-	 */
-	public void refresh() {
-		this.tableViewer.setInput(tableElements);
-	}
-
 	/**
 	 * Create all the columns which are related to the schema
 	 * Only visible columns are added
@@ -294,22 +112,16 @@ public class TableView {
 			TableViewerColumn columnViewer = new TableViewerColumn(this.tableViewer, SWT.NONE);
 
 			// set the label provider for column
-			columnViewer.setLabelProvider(new LabelProvider(col.getId()));
+			columnViewer.setLabelProvider(new TableLabelProvider(col.getId()));
+
+			// set width according to type and label
+			columnViewer.getColumn().setWidth(getColumnWidth(col));
 			
-			int size = 80;
-			switch (col.getType()) {
-			case INTEGER:
-				size = 80;
-				break;
-			default:
-				size = 80 + col.getLabel().length() * 4;
-				break;
-			}
-			columnViewer.getColumn().setWidth(size);
-			
+			// set text
 			if (col.getLabel() != null)
 				columnViewer.getColumn().setText(col.getLabel());
 			
+			// set tool tip
 			if(col.getTip() != null)
 				columnViewer.getColumn().setToolTipText(col.getTip());
 			
@@ -317,10 +129,33 @@ public class TableView {
 			if (editable)
 				columnViewer.setEditingSupport(new TableEditor(this, col));
 
+			// add possibility to sort record by clicking
+			// in the column name
 			addColumnSorter(col, columnViewer);
 		}
 	}
 
+	/**
+	 * Get the width of a column
+	 * @param column
+	 * @return
+	 */
+	private int getColumnWidth(TableColumn column) {
+		
+		// decide the width of the column
+		int size = 80;
+		switch (column.getType()) {
+		case INTEGER:
+			size = 80;
+			break;
+		default:
+			size = 80 + column.getLabel().length() * 4;
+			break;
+		}
+		
+		return size;
+	}
+	
 	/**
 	 * Add a click to the column header that sorts
 	 * the table by the clicked field
@@ -353,142 +188,225 @@ public class TableView {
 	}
 
 	/**
-	 * Sort the table elements by a variable identified by the columnKey
-	 * @param columnKey
+	 * Sort the table elements by a column
+	 * @param column
 	 * @param ascendant if true ascendant order, otherwise descendant
 	 */
 	private void orderRowsBy(TableColumn column, boolean ascendant) {
 		
 		// sort elements
-		Collections.sort(tableElements, new Comparator<TableRow>() {
-			public int compare(TableRow row1, TableRow row2) {
-				
-				String value1 = null;
-				String value2 = null;
-				
-				TableColumnValue sel1 = row1.get(column.getId());
-				TableColumnValue sel2 = row2.get(column.getId());
-				
-				// get values
-				if (sel1 != null)
-					value1 = sel1.getLabel();
-				
-				if (sel2 != null)
-					value2 = sel2.getLabel();
-				
-				int compare = 0;
-				
-				switch(column.getType()) {
-				case U_INTEGER:
-				case INTEGER:
-					
-					int intValue1;
-					int intValue2;
-					
-					// set default values if no value is retrieved
-					if (value1 == null)
-						intValue1 = ascendant ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-					else
-						intValue1 = Integer.valueOf(value1);
-					
-					if (value2 == null)
-						intValue2 = ascendant ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-					else
-						intValue2 = Integer.valueOf(value2);
-
-					// check if equal
-					if ( intValue1 == intValue2)
-						compare = 0;
-					else {
-						
-						// if not equal check greater/less than
-						boolean result = ascendant ? intValue1 > intValue2 : intValue2 > intValue1;
-						
-						// convert boolean to integer
-						compare = result ? 1 : -1;
-					}
-
-					break;
-				default:
-					
-					// check null values
-					if (value1 == null)
-						value1 = "";
-					
-					if (value2 == null)
-						value2 = "";
-					
-					compare = ascendant ? value1.compareTo(value2) : value2.compareTo(value1);
-					break;
-				}
-				
-				return compare;
-			};
-		});
+		Collections.sort(tableElements, new TableRowComparator(column, ascendant));
 		
 		// reset input with ordered elements
 		this.tableViewer.setInput(tableElements);
 	}
 	
-	private class ContentProvider implements IStructuredContentProvider {
+	/**
+	 * Get all the table rows
+	 * @return
+	 */
+	public ArrayList<TableRow> getTableElements() {
+		return tableElements;
+	}
+	
+	/**
+	 * Get the table viewer
+	 * @return
+	 */
+	public TableViewer getViewer() {
+		return tableViewer;
+	}
+	
+	/**
+	 * Get the table
+	 * @return
+	 */
+	public Table getTable() {
+		return tableViewer.getTable();
+	}
+	
+	/**
+	 * Get the selected element if present
+	 * @return
+	 */
+	public TableRow getSelection() {
+		
+		IStructuredSelection selection = (IStructuredSelection) this.tableViewer.getSelection();
+		
+		if (selection.isEmpty())
+			return null;
+		
+		return (TableRow) selection.getFirstElement();
+	}
+	
+	
+	/**
+	 * Get the number of elements contained in the table
+	 * @return
+	 */
+	public int getItemCount() {
+		return this.tableViewer.getTable().getItemCount();
+	}
+	
+	/**
+	 * Check if the table is empty or not
+	 */
+	public boolean isEmpty() {
+		return getItemCount() == 0;
+	}
+	
+	
+	/**
+	 * Check if the table is editable or not
+	 * @return
+	 */
+	public boolean isEditable() {
+		return editable;
+	}
 
-		@Override
-		public void dispose() {}
+	/**
+	 * Get the table schema
+	 * @return
+	 */
+	public TableSchema getSchema() {
+		return schema;
+	}
+	
+	/**
+	 * Check if the whole table is correct
+	 * @return
+	 */
+	public boolean areMandatoryFilled() {
+		for (TableRow row : tableElements) {
+			if (!row.areMandatoryFilled())
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Add an element to the table viewer
+	 * @param row
+	 */
+	public void addRow(TableRow row) {
+		this.tableViewer.add(row);
+		this.tableElements.add(row);
+	}
+	
+	/**
+	 * Add an element to the table viewer
+	 * @param row
+	 */
+	public void addAll(Collection<TableRow> rows) {
+		for (TableRow r : rows) {
+			this.tableViewer.add(r);
+		}
+		this.tableElements.addAll(rows);
+	}
+	
+	/**
+	 * Remove an element from the table viewer
+	 * @param row
+	 */
+	public void removeRow(TableRow row) {
+		this.tableViewer.remove(row);
+		this.tableElements.remove(row);
+		row.delete();
+	}
+	
+	/**
+	 * Remove the selected row
+	 */
+	public void removeSelectedRow() {
+		TableRow row = getSelection();
+		
+		if(row == null)
+			return;
+		
+		removeRow(row);
+	}
+	
+	/**
+	 * Clear all the elements of the table
+	 */
+	public void removeAll() {
+		this.tableElements.clear();
+		this.tableViewer.getTable().removeAll();
+	}
 
-		@Override
-		public void inputChanged(Viewer arg0, Object oldInput, Object newInput) {}
+	/**
+	 * Set the input of the table
+	 * @param elements
+	 */
+	public void setInput(Collection<TableRow> elements) {
+		this.tableViewer.setInput(elements);
+		this.tableElements = new ArrayList<>(elements);
+	}
+	
+	/**
+	 * Set menu to the table
+	 * @param menu
+	 */
+	public void setMenu(Menu menu) {
+		this.tableViewer.getTable().setMenu(menu);
+	}
+	
+	/**
+	 * Set the validator label provider
+	 * @param validatorLabelProvider
+	 */
+	public void setValidatorLabelProvider(RowValidatorLabelProvider validatorLabelProvider) {
+		
+		if (this.validator == null)
+			return;
+		
+		this.validator.setLabelProvider(validatorLabelProvider);
+	}
+	
+	/**
+	 * Refresh a single row of the table
+	 * @param row
+	 */
+	public void refresh(TableRow row) {
 
-		@SuppressWarnings("unchecked")
-		@Override
-		public Object[] getElements(Object arg0) {
-			return ((Collection<TableRow>) arg0).toArray();
+		this.tableViewer.refresh(row);
+		
+		// call listener
+		if (inputChangedListener != null) {
+			Event event = new Event();
+			event.data = row;
+			inputChangedListener.handleEvent(event);
 		}
 	}
 	
-	private class LabelProvider extends ColumnLabelProvider {
-
-		private String key;
-		public LabelProvider(String key) {
-			this.key = key;
-		}
-		
-		@Override
-		public void addListener(ILabelProviderListener arg0) {}
-
-		@Override
-		public void dispose() {}
-
-		@Override
-		public boolean isLabelProperty(Object arg0, String arg1) {
-			return false;
-		}
-
-		@Override
-		public void removeListener(ILabelProviderListener arg0) {}
-
-		@Override
-		public Image getImage(Object arg0) {
-			return null;
-		}
-
-		@Override
-		public String getText(Object arg0) {
-
-			TableRow row = (TableRow) arg0;
-			TableColumnValue cell = row.get(key);
-
-			if (cell == null || cell.getLabel() == null)
-				return null;
-			
-			TableColumn col = row.getSchema().getById(key);
-			
-			if (col.isPassword()) {
-				// show as password with dots
-				String ECHARSTR = Character.toString((char)9679);
-				return cell.getLabel().replaceAll(".", ECHARSTR);
-			}
-			else
-				return cell.getLabel();
-		}
+	/**
+	 * Refresh all the elements
+	 */
+	public void refresh() {
+		this.tableViewer.setInput(tableElements);
+	}
+	
+	/**
+	 * Add a listener which is called when the table changes the highlighted element
+	 * @param listener
+	 */
+	public void addSelectionChangedListener(ISelectionChangedListener listener) {
+		this.tableViewer.addSelectionChangedListener(listener);
+	}
+	
+	/**
+	 * Add a listener which is called when the table changes the highlighted element
+	 * @param listener
+	 */
+	public void addDoubleClickListener(IDoubleClickListener listener) {
+		this.tableViewer.addDoubleClickListener(listener);
+	}
+	
+	/**
+	 * Called when the input of the table changes
+	 * @param inputChangedListener
+	 */
+	public void setInputChangedListener(Listener inputChangedListener) {
+		this.inputChangedListener = inputChangedListener;
 	}
 }

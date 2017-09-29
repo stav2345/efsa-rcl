@@ -15,6 +15,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import app_config.BooleanValue;
+
 public abstract class XlsxReader implements Closeable {
 
 	private ArrayList<String> headers;
@@ -136,7 +138,7 @@ public abstract class XlsxReader implements Closeable {
 	 * @return
 	 */
 	protected boolean getBoolean(String field) {
-		return field.equalsIgnoreCase("yes");
+		return BooleanValue.isTrue(field);
 	}
 	
 	/**

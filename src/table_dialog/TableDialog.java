@@ -88,9 +88,6 @@ public abstract class TableDialog {
 	private TableSchema schema;                 // schema of the table that is shown
 	
 	private String title;
-	private String helpMessage;
-	private boolean editable;
-	private RowCreationMode mode;
 	private boolean createPopUp;
 	private boolean addSaveBtn;
 	
@@ -105,14 +102,10 @@ public abstract class TableDialog {
 	 * @param createPopUp true to create a new shell, false to use the parent shell
 	 * @param addSaveBtn true to create a button below the table
 	 */
-	public TableDialog(Shell parent, String title, String helpMessage, boolean editable, 
-			RowCreationMode mode, boolean createPopUp, boolean addSaveBtn) {
+	public TableDialog(Shell parent, String title, boolean createPopUp, boolean addSaveBtn) {
 
 		this.parent = parent;
 		this.title = title;
-		this.helpMessage = helpMessage;
-		this.editable = editable;
-		this.mode = mode;
 		this.createPopUp = createPopUp;
 		this.addSaveBtn = addSaveBtn;
 		
@@ -122,205 +115,16 @@ public abstract class TableDialog {
 		try {
 			this.schema = TableSchemaList.getByName(getSchemaSheetName());
 			this.schema.sort();
-			create();
+			//create();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	/**
-	 * A table with save button.
-	 * @param parent
-	 * @param title
-	 * @param helpMessage
-	 */
-	public TableDialog(Shell parent, String title, String helpMessage, boolean editable, 
-			RowCreationMode mode, boolean createPopUp) {
-		this(parent, title, helpMessage, editable, mode, createPopUp, true);
-	}
-	
-	/**
-	 * A table in a new pop up. Save button is also added.
-	 * @param parent
-	 * @param title
-	 * @param helpMessage
-	 */
-	public TableDialog(Shell parent, String title, String helpMessage, boolean editable, 
-			RowCreationMode mode) {
-		this(parent, title, helpMessage, editable, mode, true, true);
-	}
-	
-	/**
-	 * A table in a new pop up with no row creation. Save button is also added.
-	 * @param parent
-	 * @param title
-	 * @param helpMessage
-	 */
-	public TableDialog(Shell parent, String title, String helpMessage, boolean editable) {
-		this(parent, title, helpMessage, editable, RowCreationMode.NONE, true, true);
-	}
-	
-	/**
-	 * Editable table in a new pop up with no row creation. Save button is also added.
-	 * @param parent
-	 * @param title
-	 * @param helpMessage
-	 */
-	public TableDialog(Shell parent, String title, String helpMessage) {
-		this(parent, title, helpMessage, true, RowCreationMode.NONE, true, true);
-	}
-	
-	public TableSchema getSchema() {
-		return schema;
-	}
-	
-	/**
-	 * If the current table is in many to one relation
-	 * with a parent table, then use this method to
-	 * set the parent. This will be passed then to the
-	 * {@link #loadContents(TableSchema)} methods
-	 * in order to allow loading just the records
-	 * related to the parent table.
-	 * @param parentTable
-	 */
-	public void setParentFilter(TableRow parentFilter) {
-
-		// remove the old parent filter
-		parentTables.remove(this.parentFilter);
-		
-		if (parentFilter == null)
-			return;
-		
-		// add the new filter as parent table
-		parentTables.add(parentFilter);
-		
-		// save the new filter
-		this.parentFilter = parentFilter;
-		
-		this.panel.clearTable();
-		this.panel.addAll(getRows());
-	}
-	
-	/**
-	 * Add a parent table to the current table
-	 * @param parentTable
-	 */
-	public void addParentTable(TableRow parentTable) {
-		
-		if (parentTable == null)
-			return;
-		
-		this.parentTables.add(parentTable);
-	}
-	
-	/**
-	 * Remove a parent table from the current table
-	 * @param parentTable
-	 */
-	public void removeParentTable(TableRow parentTable) {
-		
-		if (parentTable == null)
-			return;
-		
-		this.parentTables.remove(parentTable);
-	}
-	
-	/**
-	 * Clear all the table rows
-	 * and the parent table object
-	 */
-	public void clear() {
-		
-		panel.clearTable();
-		this.parentFilter = null;
-		
-		// disable the panel
-		if (mode != RowCreationMode.NONE)
-			this.panel.setEnabled(false);
-	}
-	
-	/**
-	 * Load the rows which are defined in the {@link #loadInitialRows(TableSchema, TableRow)}
-	 * method
-	 */
-	public void loadRows() {
-		
-		panel.clearTable();
-		
-		// load the rows
-		Collection<TableRow> rows = loadInitialRows(panel.getSchema(), parentFilter);
-
-		// skip if null parameter
-		if (rows == null)
-			return;
-		
-		// add them to the table
-		for (TableRow row : rows) {
-			panel.add(row);
-		}
-	}
-	
-	/**
-	 * Get the parent table if it was set
-	 * @return
-	 */
-	public TableRow getParentFilter() {
-		return parentFilter;
-	}
-	
-	/**
-	 * Warn the user with an ERROR message box
-	 * @param title
-	 * @param message
-	 * @param icon
-	 */
-	protected int warnUser(String title, String message, int icon) {
-		return Warnings.warnUser(getDialog(), title, message, icon);
-	}
-	
-	/**
-	 * Warn the user with a message box with custom icon
-	 * @param title
-	 * @param message
-	 */
-	protected int warnUser(String title, String message) {
-		return Warnings.warnUser(getDialog(), title, message, SWT.ICON_ERROR);
-	}
-	
-	/**
-	 * Open the dialog and wait that it is closed
-	 */
-	public void open() {
-		
-		this.dialog.open();
-		
-		// Event loop
-		while ( !dialog.isDisposed() ) {
-			if ( !dialog.getDisplay().readAndDispatch() )
-				dialog.getDisplay().sleep();
-		}
-	}
-	
-	/**
-	 * Set the text of the button
-	 * @param text
-	 */
-	public void setButtonText(String text) {
-		
-		if (!addSaveBtn) {
-			System.err.println("DataDialog-" + getSchemaSheetName() + ":Cannot set the button text to " 
-					+ text + " since the button was not created. Please set addSaveBtn to true");
-			return;
-		}
-		
-		this.saveButton.setText(text);
-		this.saveButton.pack();
-	}
-	
-	/**
 	 * Create the interface
 	 */
-	private void create() {
+	protected void create() {
 
 		// new shell if required
 		if (createPopUp) {
@@ -339,7 +143,17 @@ public abstract class TableDialog {
 		this.dialog.setLayout(new GridLayout(1,false));
 		this.dialog.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		this.panel = new TableViewWithHelp(dialog, getSchemaSheetName(), helpMessage, editable, mode);
+		this.panel = new TableViewWithHelp(dialog);
+		
+		// add all the required widgets to the panel
+		addWidgets(this.panel);
+		
+		if (!this.panel.isTableDefined()) {
+			System.err.println("Error. Cannot instantiate TableDialog without a table. Please check addWidgets().");
+			return;
+		}
+		
+		//this.panel = new TableViewWithHelp(dialog, getSchemaSheetName(), helpMessage, editable, mode);
 		this.panel.setMenu(createMenu());
 		
 		// set the validator label provider
@@ -418,10 +232,148 @@ public abstract class TableDialog {
 		dialog.setSize(dialog.getSize().x, dialog.getSize().y + 50);
 	}
 	
+	
+	/**
+	 * Open the dialog and wait that it is closed
+	 */
+	public void open() {
+		
+		// create the dialog if not created before
+		if (dialog == null)
+			create();
+		
+		this.dialog.open();
+		
+		// Event loop
+		while ( !dialog.isDisposed() ) {
+			if ( !dialog.getDisplay().readAndDispatch() )
+				dialog.getDisplay().sleep();
+		}
+	}
+	
+	
+	/**
+	 * Load the rows which are defined in the {@link #loadInitialRows(TableSchema, TableRow)}
+	 * method
+	 */
+	public void loadRows() {
+		
+		panel.clearTable();
+		
+		// load the rows
+		Collection<TableRow> rows = loadInitialRows(panel.getSchema(), parentFilter);
+
+		// skip if null parameter
+		if (rows == null)
+			return;
+		
+		// add them to the table
+		for (TableRow row : rows) {
+			panel.add(row);
+		}
+	}
+	
+	/**
+	 * If the current table is in many to one relation
+	 * with a parent table, then use this method to
+	 * set the parent. This will be passed then to the
+	 * {@link #loadContents(TableSchema)} methods
+	 * in order to allow loading just the records
+	 * related to the parent table.
+	 * @param parentTable
+	 */
+	public void setParentFilter(TableRow parentFilter) {
+
+		// remove the old parent filter
+		parentTables.remove(this.parentFilter);
+		
+		if (parentFilter == null)
+			return;
+		
+		// add the new filter as parent table
+		parentTables.add(parentFilter);
+		
+		// save the new filter
+		this.parentFilter = parentFilter;
+		
+		this.panel.clearTable();
+		
+		Collection<TableRow> rows = getRows();
+		this.panel.setInput(rows);
+	}
+	
+	/**
+	 * Add a parent table to the current table
+	 * @param parentTable
+	 */
+	public void addParentTable(TableRow parentTable) {
+		
+		if (parentTable == null)
+			return;
+		
+		this.parentTables.add(parentTable);
+	}
+	
+	/**
+	 * Remove a parent table from the current table
+	 * @param parentTable
+	 */
+	public void removeParentTable(TableRow parentTable) {
+		
+		if (parentTable == null)
+			return;
+		
+		this.parentTables.remove(parentTable);
+	}
+	
+	/**
+	 * Clear all the table rows
+	 * and the parent table object
+	 */
+	public void clear() {
+		
+		panel.clearTable();
+		this.parentFilter = null;
+		
+		// disable the panel
+		this.panel.setEnabled(false);
+	}
+
+	/**
+	 * Set the text of the button
+	 * @param text
+	 */
+	public void setButtonText(String text) {
+		
+		if (!addSaveBtn) {
+			System.err.println("DataDialog-" + getSchemaSheetName() + ":Cannot set the button text to " 
+					+ text + " since the button was not created. Please set addSaveBtn to true");
+			return;
+		}
+		
+		this.saveButton.setText(text);
+		this.saveButton.pack();
+	}
+	
+	/**
+	 * Enable/disable the creation of new records
+	 * @param enabled
+	 */
+	public void setRowCreationEnabled(boolean enabled) {
+		this.panel.setEnabled(enabled);
+	}
+
+	/**
+	 * Refresh a single row of the table
+	 * @param row
+	 */
 	public void refresh(TableRow row) {
 		this.panel.refresh(row);
 	}
 	
+	/**
+	 * Refresh the entire table
+	 */
 	public void refresh() {
 		this.panel.refresh();
 	}
@@ -441,7 +393,86 @@ public abstract class TableDialog {
 		help.openHelp();
 	}
 	
+	/**
+	 * Get the parent table if it was set
+	 * @return
+	 */
+	public TableRow getParentFilter() {
+		return parentFilter;
+	}
 	
+	/**
+	 * Get the table schema
+	 * @return
+	 */
+	public TableSchema getSchema() {
+		return schema;
+	}
+	
+	/**
+	 * Get the selected row
+	 * @return
+	 */
+	public TableRow getSelection() {
+		return this.panel.getSelection();
+	}
+	
+	/**
+	 * Get the shell related to this window
+	 * @return
+	 */
+	public Shell getDialog() {
+		return dialog;
+	}
+	
+	/**
+	 * Set the window size
+	 * @param width
+	 * @param height
+	 */
+	public void setSize(int width, int height) {
+		this.dialog.setSize(width, height);
+	}
+	
+	/**
+	 * Set the window height
+	 * @param height
+	 */
+	public void setHeight(int height) {
+		setSize(dialog.getSize().x, height);
+	}
+	
+	/**
+	 * Add height to the dialog 
+	 * @param height
+	 */
+	public void addHeight(int height) {
+		setSize(dialog.getSize().x, dialog.getSize().y + height);
+	}
+	
+	/**
+	 * Warn the user with an ERROR message box
+	 * @param title
+	 * @param message
+	 * @param icon
+	 */
+	protected int warnUser(String title, String message, int icon) {
+		return Warnings.warnUser(getDialog(), title, message, icon);
+	}
+	
+	/**
+	 * Warn the user with a message box with custom icon
+	 * @param title
+	 * @param message
+	 */
+	protected int warnUser(String title, String message) {
+		return Warnings.warnUser(getDialog(), title, message, SWT.ICON_ERROR);
+	}
+
+	/**
+	 * Add a new row to the table given a selected catalogue item (it can be null)
+	 * @param selectedItem
+	 */
 	private void addNewRow(Selection selectedItem) {
 
 		// create a new row and
@@ -463,6 +494,9 @@ public abstract class TableDialog {
 		// set the id for the new row
 		row.setId(id);
 
+		// refresh row id
+		row.initialize();
+		
 		// update the formulas
 		row.updateFormulas();
 
@@ -471,106 +505,9 @@ public abstract class TableDialog {
 
 		// add the row to the table
 		add(row);
-		
+
 		// call external function
 		processNewRow(row);
-	}
-	
-	/**
-	 * Set the selector label text
-	 * @param text
-	 */
-	public void setRowCreatorLabel(String text) {
-		
-		if (mode == RowCreationMode.NONE)
-			return;
-		
-		this.panel.setSelectorLabelText(text);
-	}
-	
-	/**
-	 * Set an xml list for the combo box. All the values in the
-	 * list will be picked up. If a filter needs to be set, 
-	 * please see {@link #setSelectorList(String, String)}.
-	 * @param selectionListCode
-	 */
-	public void setSelectorList(String selectionListCode) {
-		
-		if (mode != RowCreationMode.SELECTOR)
-			return;
-		
-		this.panel.setSelectorList(selectionListCode);
-	}
-	
-	/**
-	 * Set an xml list for the combo box and get only a subset
-	 * identified by the selectionId. The selection id identifies
-	 * a sub node of the xml list and allows taking just the values
-	 * under the matched node.
-	 * @param selectionListCode
-	 * @param selectionId
-	 */
-	public void setSelectorList(String selectionListCode, String selectionId) {
-		
-		if (mode != RowCreationMode.SELECTOR)
-			return;
-		
-		this.panel.setSelectorList(selectionListCode, selectionId);
-	}
-	
-	
-	/**
-	 * Add listener to the selector if it was added (i.e. {@link #addSelector} true)
-	 * @param listener
-	 */
-	public void addSelectionListener(CatalogChangedListener listener) {
-		if (mode != RowCreationMode.NONE) {
-			this.panel.addSelectionListener(listener);
-		}
-	}
-	
-	public void addTableSelectionListener(ISelectionChangedListener listener) {
-		this.panel.addSelectionChangedListener(listener);
-	}
-	
-	public void addTableDoubleClickListener(IDoubleClickListener listener) {
-		this.panel.addDoubleClickListener(listener);
-	}
-	
-	/**
-	 * Check if the table is empty or not
-	 * @return
-	 */
-	public boolean isTableEmpty() {
-		return this.panel.isTableEmpty();
-	}
-	
-	/**
-	 * Enable/disable the creation of new records
-	 * @param enabled
-	 */
-	public void setRowCreationEnabled(boolean enabled) {
-		if (mode != RowCreationMode.NONE)
-			this.panel.setEnabled(enabled);
-	}
-	
-	public Shell getDialog() {
-		return dialog;
-	}
-	
-	public void setSize(int width, int height) {
-		this.dialog.setSize(width, height);
-	}
-	public void setDialogHeight(int height) {
-		setSize(dialog.getSize().x, height);
-	}
-	
-	/**
-	 * Add height to the dialog 
-	 * @param height
-	 */
-	public void addDialogHeight(int height) {
-		setSize(dialog.getSize().x, dialog.getSize().y + height);
 	}
 	
 	/**
@@ -607,9 +544,47 @@ public abstract class TableDialog {
 
 		// otherwise filter by id
 		rows = dao.getByParentId(parentFilter.getSchema().getSheetName(), parentFilter.getId());
-		
 		return rows;
 	}
+	
+	/**
+	 * Add listener to the selector if it was added (i.e. {@link #addSelector} true)
+	 * @param listener
+	 */
+	public void addSelectionListener(CatalogChangedListener listener) {
+		this.panel.addSelectionListener(listener);
+	}
+	
+	/**
+	 * Called when an element of the table is selected
+	 * @param listener
+	 */
+	public void addTableSelectionListener(ISelectionChangedListener listener) {
+		this.panel.addSelectionChangedListener(listener);
+	}
+	
+	/**
+	 * Called when an element of the table is double clicked
+	 * @param listener
+	 */
+	public void addTableDoubleClickListener(IDoubleClickListener listener) {
+		this.panel.addDoubleClickListener(listener);
+	}
+	
+	/**
+	 * Check if the table is empty or not
+	 * @return
+	 */
+	public boolean isTableEmpty() {
+		return this.panel.isTableEmpty();
+	}
+
+	/**
+	 * Create the structure of the table. Use the {@code viewer}
+	 * methods to add widgets.
+	 * @param viewer
+	 */
+	public abstract void addWidgets(TableViewWithHelp viewer);
 	
 	/**
 	 * Get the sheet which includes the schema for the table

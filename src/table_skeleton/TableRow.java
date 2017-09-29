@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import duplicates_detector.Checkable;
+import formula_solver.Formula;
+import formula_solver.FormulaSolver;
 import table_database.TableDao;
 import table_list.TableMetaData;
 import xlsx_reader.TableHeaders.XlsxHeader;
@@ -19,8 +21,7 @@ public class TableRow implements Checkable {
 
 	public enum RowStatus {
 		OK,
-		MANDATORY_MISSING,
-		ERROR,
+		MANDATORY_MISSING
 	};
 
 	private HashMap<String, TableColumnValue> values;
@@ -156,6 +157,39 @@ public class TableRow implements Checkable {
 	}
 	
 	/**
+	 * Get the label of an element of the row
+	 * @param row
+	 * @param field
+	 * @return
+	 */
+	public String getLabel(String field) {
+		return getField(field, true);
+	}
+	
+	/**
+	 * Get the code of an element of the row
+	 * @param row
+	 * @param field
+	 * @return
+	 */
+	public String getCode(String field) {
+		return getField(field, false);
+	}
+	
+	private String getField(String field, boolean label) {
+		
+		TableColumnValue value = this.get(field);
+		
+		if (value == null || value.isEmpty())
+			return "";
+		
+		if (label)
+			return value.getLabel();
+		else
+			return value.getCode();
+	}
+	
+	/**
 	 * Put a selection into the data
 	 * @param key
 	 * @param value
@@ -227,16 +261,17 @@ public class TableRow implements Checkable {
 			return;
 		
 		TableColumnValue colVal = this.get(f.getColumn().getId());
-		
+
 		if (h == XlsxHeader.CODE_FORMULA && !f.getSolvedFormula().isEmpty()) {
 			colVal.setCode(f.getSolvedFormula());
 		}
 		else if (h == XlsxHeader.LABEL_FORMULA && !f.getSolvedFormula().isEmpty()) {
 			colVal.setLabel(f.getSolvedFormula());
 			
-			// set label in the code if it is empty
-			//if (colVal.getCode().isEmpty())
-			//	colVal.setCode(f.getSolvedFormula());
+			// if the field has not a code formula and it is not a picklist, then
+			// update the code using the label
+			if (!f.getColumn().isPicklist() && f.getColumn().getCodeFormula().isEmpty())
+				colVal.setCode(f.getSolvedFormula());
 		}
 		else // else do nothing
 			return;
@@ -302,27 +337,16 @@ public class TableRow implements Checkable {
 		
 		for (TableColumn column : schema) {
 			
-			if (column.isMandatory(this) && emptyField(column))
-				return false;
+			if (column.isMandatory(this)) {
+				
+				TableColumnValue value = this.get(column.getId());
+				
+				if (value.isEmpty())
+					return false;
+			}
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * Check if a column value is empty or not
-	 * @param col
-	 * @return
-	 */
-	private boolean emptyField(TableColumn col) {
-		
-		TableColumnValue value = this.get(col.getId());
-		
-		if (value == null || value.getLabel() == null 
-				|| value.getLabel().isEmpty())
-			return true;
-		
-		return false;
 	}
 	
 	/**

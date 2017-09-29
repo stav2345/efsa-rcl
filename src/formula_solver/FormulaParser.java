@@ -1,7 +1,9 @@
-package table_skeleton;
+package formula_solver;
 
 import java.util.ArrayList;
 
+import table_skeleton.TableColumn;
+import table_skeleton.TableRow;
 import xlsx_reader.TableHeaders.XlsxHeader;
 
 /**

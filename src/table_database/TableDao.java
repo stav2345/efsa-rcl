@@ -29,10 +29,13 @@ public class TableDao {
 
 	private String tableName;
 	private TableSchema schema;
+	private TableSchema completeSchema;
 	
 	public TableDao(TableSchema schema) {
 		this.tableName = "APP." + schema.getSheetName();
-		this.schema = schema;
+		this.completeSchema = schema;
+		this.schema = schema; // TODO save just the needed information
+		//this.schema = schema.getNonCompositeColumns();  // we save just the editable columns
 		this.schema.sortById();
 	}
 	
@@ -48,7 +51,9 @@ public class TableDao {
 		// set the columns names
 		Iterator<TableColumn> iterator = schema.iterator();
 		while (iterator.hasNext()) {
+			
 			TableColumn col = iterator.next();
+			
 			query.append(col.getId());
 			
 			// append the comma if there is another field
@@ -66,7 +71,7 @@ public class TableDao {
 		while (iterator.hasNext()) {
 			
 			// go to the next
-			iterator.next();
+			TableColumn col = iterator.next();
 			
 			query.append("?");
 			
@@ -94,6 +99,7 @@ public class TableDao {
 		while (iterator.hasNext()) {
 			
 			TableColumn col = iterator.next();
+			
 			query.append(col.getId());
 			query.append(" = ?");
 			
@@ -136,10 +142,12 @@ public class TableDao {
 	 */
 	private void setParameters(TableRow row, PreparedStatement stmt, boolean setWhereId) throws SQLException {
 
+		int currentIndex = 1;
+		
 		for (int i = 0; i < schema.size(); ++i) {
 			
 			TableColumn col = schema.get(i);
-
+			
 			TableColumnValue colValue = row.get(col.getId());
 			
 			if (colValue == null) {
@@ -159,20 +167,23 @@ public class TableDao {
 			try {
 				
 				if (isRelationId(col.getId()))
-					stmt.setInt(1 + i, Integer.valueOf(value));
+					stmt.setInt(currentIndex, Integer.valueOf(value));
 				else {
-					stmt.setString(1 + i, value);
+					stmt.setString(currentIndex, value);
 				}
 				
 			} catch (NumberFormatException | IOException e) {
 				e.printStackTrace();
 				System.err.println("Wrong integer field " + col.getId() + " with value " + value);
 			}
+			
+			// increase current index
+			currentIndex++;
 		}
 		
 		// set also the id of the row
 		if (setWhereId) {
-			stmt.setInt(schema.size() + 1, row.getId());
+			stmt.setInt(currentIndex, row.getId());
 		}
 	}
 
@@ -320,14 +331,18 @@ public class TableDao {
 	 */
 	public TableRow getByResultSet(ResultSet rs) throws SQLException {
 		
-		TableRow row = new TableRow(schema);
+		// here we need all the columns because we also
+		// compute composite fields
+		TableRow row = new TableRow(completeSchema);
 		
 		// put the id
 		int id = rs.getInt(schema.getTableIdField());
+		
 		TableColumnValue sel = new TableColumnValue();
 		sel.setCode(String.valueOf(id));
 		sel.setLabel(String.valueOf(id));
 		row.put(schema.getTableIdField(), sel);
+		
 		
 		for (TableColumn column : schema) {
 			
@@ -349,6 +364,10 @@ public class TableDao {
 			else {
 				
 				String value = rs.getString(column.getId());
+				
+				// if no value go to the next field
+				if (value == null)
+					continue;
 				
 				// if we have a picklist, we need both code and description
 				if (column.isPicklist()) {
@@ -383,7 +402,7 @@ public class TableDao {
 			// insert the element into the row
 			row.put(column.getId(), selection);
 		}
-		
+
 		// solve automatic fields
 		row.updateFormulas();
 		
@@ -410,12 +429,15 @@ public class TableDao {
 			stmt.setInt(1, parentId);
 			
 			try (ResultSet rs = stmt.executeQuery();) {
+				
+				
 				while (rs.next()) {
-					
+
 					TableRow row = getByResultSet(rs);
 					if (row != null)
 						rows.add(row);
 				}
+
 			}
 			catch (SQLException e) {
 				e.printStackTrace();

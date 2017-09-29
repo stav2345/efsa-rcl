@@ -49,18 +49,17 @@ public class TableEditor extends EditingSupport {
 		switch(column.getType()) {
 		
 		case PICKLIST:
-			ComboBoxViewerCellEditor combo = new ComboBoxViewerCellEditor(viewer.getTable());
 			
+			ComboBoxViewerCellEditor combo = new ComboBoxViewerCellEditor(viewer.getTable());
+
 			// get the list of possible values for the current column
 			// filtering by the summarized information type (bse..)
 			SelectionList list = column.getList(row);
 			
-			// if not mandatory column, add an empty value
-			if (!column.isMandatory(row)) {
-				Selection emptySel = getEmptySelection();
-				if (!list.contains(emptySel))
-					list.add(emptySel);
-			}
+			// add also an empty value
+			Selection emptySel = getEmptySelection();
+			if (!list.contains(emptySel))
+				list.add(emptySel);
 			
 			combo.setContentProvider(new ComboBoxContentProvider());
 			combo.setLabelProvider(new ComboBoxLabelProvider());
@@ -129,7 +128,7 @@ public class TableEditor extends EditingSupport {
 			
 			// if change should be done, change
 			if (isNumeric(newValue)) {
-				row.put(column.getId(), newValue);
+				row.put(column.getId(), Integer.valueOf(newValue).toString());
 			}
 			
 			break;
@@ -141,7 +140,7 @@ public class TableEditor extends EditingSupport {
 			
 			// if change should be done, change
 			if (isUnsignedNumeric(unsignedInt)) {
-				row.put(column.getId(), unsignedInt);
+				row.put(column.getId(), Integer.valueOf(unsignedInt).toString());
 			}
 			
 			break;
