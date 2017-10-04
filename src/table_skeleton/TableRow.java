@@ -4,13 +4,14 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import duplicates_detector.Checkable;
-import formula_solver.Formula;
-import formula_solver.FormulaSolver;
+import formula.Formula;
+import formula.FormulaSolver;
 import table_database.TableDao;
 import table_list.TableMetaData;
 import xlsx_reader.TableHeaders.XlsxHeader;
 import xlsx_reader.TableSchema;
 import xml_catalog_reader.Selection;
+import xml_catalog_reader.XmlLoader;
 
 /**
  * Generic element of a {@link Report}.
@@ -28,6 +29,28 @@ public class TableRow implements Checkable {
 	private TableSchema schema;
 	
 	/**
+	 * Careful use
+	 */
+	public TableRow() {
+		this.values = new HashMap<>();
+	}
+	
+	/**
+	 * Careful use
+	 */
+	public void setSchema(TableSchema schema) {
+		this.schema = schema;
+	}
+	
+	/**
+	 * Careful use
+	 */
+	public TableRow(HashMap<String, TableColumnValue> values, TableSchema schema) {
+		this.schema = schema;
+		this.values = values;
+	}
+	
+	/**
 	 * Create a report row
 	 * @param schema columns properties of the row
 	 */
@@ -36,6 +59,21 @@ public class TableRow implements Checkable {
 		this.schema = schema;
 	}
 	
+	/**
+	 * Create a clone of a row
+	 * @param row
+	 */
+	public TableRow(TableRow row) {
+		this.values = row.values;
+		this.schema = row.getSchema();
+	}
+	
+	/**
+	 * Initialize a row with an element already inserted in it
+	 * @param schema
+	 * @param initialColumnId
+	 * @param initialValue
+	 */
 	public TableRow(TableSchema schema, String initialColumnId, TableColumnValue initialValue) {
 		this(schema);
 		this.put(initialColumnId, initialValue);
@@ -126,6 +164,17 @@ public class TableRow implements Checkable {
 		this.put(schema.getVersionField(), version);
 	}
 	
+	public TableRow getParent(TableSchema parentSchema) {
+		
+		// open the child dao
+		TableDao dao = new TableDao(parentSchema);
+
+		// get parent using the id contained in the row
+		TableRow parent = dao.getById(this.getNumLabel(parentSchema.getTableIdField()));
+		
+		return parent;
+	}
+	
 	/**
 	 * Get the rows defined in the child table that are related to
 	 * this parent row.
@@ -164,6 +213,34 @@ public class TableRow implements Checkable {
 	 */
 	public String getLabel(String field) {
 		return getField(field, true);
+	}
+	
+	/**
+	 * Get the label in numeric format
+	 * @param field
+	 * @return
+	 */
+	public int getNumLabel(String field) {
+		return getNumField(field, true);
+	}
+	
+	public int getNumCode(String field) {
+		return getNumField(field, false);
+	}
+	
+	public int getNumField(String field, boolean label) {
+		
+		String value = getField(field, label);
+		
+		int numValue = Integer.MIN_VALUE;
+		try {
+			numValue = Integer.valueOf(value);
+		}
+		catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		
+		return numValue;
 	}
 	
 	/**
@@ -206,7 +283,7 @@ public class TableRow implements Checkable {
 	 */
 	public void put(String key, String label) {
 		
-		if (schema.getById(key) != null && schema.getById(key).isPicklist()) {
+		if (schema != null && schema.getById(key) != null && schema.getById(key).isPicklist()) {
 			System.err.println("Wrong use of ReportRow.put(String,String), "
 					+ "use Report.put(String,Selection) instead for picklist columns");
 			return;
@@ -220,6 +297,8 @@ public class TableRow implements Checkable {
 	
 	/**
 	 * Initialize the row with the default values
+	 * note that this will override all the values of the row
+	 * with their default values!
 	 */
 	public void initialize() {
 		
@@ -327,6 +406,10 @@ public class TableRow implements Checkable {
 			status = RowStatus.MANDATORY_MISSING;
 		
 		return status;
+	}
+	
+	public TableColumnValue getTableColumnValue(String code, String picklistKey) {
+		return new TableColumnValue(XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code));
 	}
 	
 	/**

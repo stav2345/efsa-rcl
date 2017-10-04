@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 
-import table_dialog.TableViewWithHelp.RowCreationMode;
+import table_dialog.PanelBuilder.RowCreationMode;
 import xml_catalog_reader.Selection;
 
 /**

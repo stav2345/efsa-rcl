@@ -44,7 +44,7 @@ public class XmlLoader {
 	 * Refresh the xml contents
 	 */
 	private static void refresh() {
-		
+
 		File dir = new File(AppPaths.XML_FOLDER);
 		
 		// parse each xml and put it into the contents list

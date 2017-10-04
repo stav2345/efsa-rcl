@@ -7,18 +7,19 @@ package dataset;
  */
 public enum DatasetStatus {
 	
-	UPLOAD_FAILED("Upload failed"),  // local status, used if send message fails
-	VALID("Valid"),
-	UPLOADED("Uploaded"),  // dataset sent but no response received yet 
-	PROCESSING("Processing"),
-	VALID_WITH_WARNINGS("Valid with warnings"),
-	REJECTED_EDITABLE("Rejected editable"),
-	REJECTED("Rejected"),
-	DELETED("Deleted"),
-	SUBMITTED("Submitted"),
-	ACCEPTED_DWH("Accepted dwh"),
-	UPDATED_BY_DATA_RECEIVER("Updated by data receiver"),
-	OTHER("Other");  // error state
+	DRAFT("DRAFT"),  // local status, if message was never sent
+	UPLOAD_FAILED("UPLOAD_FAILED"),  // local status, used if send message fails
+	VALID("VALID"),
+	UPLOADED("UPLOADED"),  // dataset sent but no response received yet 
+	PROCESSING("PROCESSING"),
+	VALID_WITH_WARNINGS("VALID_WITH_WARNINGS"),
+	REJECTED_EDITABLE("REJECTED EDITABLE"),
+	REJECTED("REJECTED"),
+	DELETED("DELETED"),
+	SUBMITTED("SUBMITTED"),
+	ACCEPTED_DWH("ACCEPTED DWH"),
+	UPDATED_BY_DATA_RECEIVER("Uploaded by data receiver"),
+	OTHER("OTHER");  // error state
 	
 	private String status;
 	private String step;
@@ -50,7 +51,32 @@ public enum DatasetStatus {
 	public String getStep() {
 		return step;
 	}
+
+	/**
+	 * Check if the dataset is editable or not
+	 * @return
+	 */
+	public boolean isEditable() {
+		return this == DRAFT || this == REJECTED_EDITABLE || this == REJECTED
+				|| this == VALID || this == VALID_WITH_WARNINGS;
+	}
 	
+	/**
+	 * Check if the dataset can be rejected or not
+	 * @return
+	 */
+	public boolean canBeRejected() {
+		return this == VALID || this == VALID_WITH_WARNINGS; 
+	}
+	
+	/**
+	 * Check if the dataset can be submitted or not
+	 * @return
+	 */
+	public boolean canBeSubmitted() {
+		return this == VALID || this == VALID_WITH_WARNINGS; 
+	}
+
 
 	/**
 	 * Get the enumerator that matches the {@code text}

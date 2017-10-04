@@ -11,7 +11,7 @@ import dataset.DatasetList;
 
 /**
  * Get dataset list request for the DCF webservice. It can be used
- * by calling {@link #getlist()} to get all the dataset
+ * by calling {@link #getList()} to get all the dataset
  * of the current user. Note that the username and the password
  * of the user are picked from the {@link CustomPaths#SETTINGS_SHEET} table.
  * @author avonva
@@ -39,7 +39,7 @@ public class GetDatasetList extends SOAPRequest {
 	 * Send the request and get the dataset list
 	 * @throws SOAPException
 	 */
-	public DatasetList getlist() throws SOAPException {
+	public DatasetList getList() throws SOAPException {
 		
 		DatasetList datasets = new DatasetList();
 		
@@ -83,7 +83,7 @@ public class GetDatasetList extends SOAPRequest {
 
 	public static void main(String[] args) throws SOAPException {
 		GetDatasetList list = new GetDatasetList(PropertiesReader.getDataCollectionCode());
-		System.out.println("LIST " + list.getlist());
+		System.out.println("LIST " + list.getList());
 		
 	}
 }

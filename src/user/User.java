@@ -46,6 +46,10 @@ public class User {
 		return password;
 	}
 	
+	/**
+	 * Check if the user is logged in
+	 * @return
+	 */
 	public boolean isLogged() {
 		return username != null && password != null;
 	}

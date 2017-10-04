@@ -16,6 +16,7 @@ public class PropertiesReader {
 	private static final String APP_VERSION_PROPERTY = "Application.Version";
 	private static final String APP_ICON_PROPERTY = "Application.Icon";
 	private static final String APP_DC_CODE_PROPERTY = "Application.DataCollectionCode";
+	private static final String APP_DC_TABLE_PROPERTY = "Application.DataCollectionTable";
 	private static final String APP_TEST_REPORT_PROPERTY = "Application.TestReportCode";
 	private static final String APP_STARTUP_HELP_PROPERTY = "Application.StartupHelpFile";
 	
@@ -73,6 +74,15 @@ public class PropertiesReader {
 	 */
 	public static String getDataCollectionCode() {
 		return getValue(APP_DC_CODE_PROPERTY, "not found");
+	}
+	
+	/**
+	 * Get the data collection table for which the 
+	 * application was created
+	 * @return
+	 */
+	public static String getDataCollectionTable() {
+		return getValue(APP_DC_TABLE_PROPERTY, "not found");
 	}
 	
 	/**

@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import table_database.TableDao;
 import table_dialog.RowCreatorViewer.CatalogChangedListener;
-import table_dialog.TableViewWithHelp.RowCreationMode;
+import table_dialog.PanelBuilder.RowCreationMode;
 import table_list.TableMetaData;
 import table_relations.Relation;
 import table_skeleton.TableColumn;
@@ -80,7 +80,7 @@ public abstract class TableDialog {
 	
 	private Shell parent;
 	private Shell dialog;
-	private TableViewWithHelp panel;
+	private PanelBuilder panel;
 	private Button saveButton;
 	
 	private TableRow parentFilter;              // if set, only the rows children of this parent are shown in the table
@@ -112,13 +112,8 @@ public abstract class TableDialog {
 		// list of parent tables
 		this.parentTables = new ArrayList<>();
 		
-		try {
-			this.schema = TableSchemaList.getByName(getSchemaSheetName());
-			this.schema.sort();
-			//create();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		this.schema = TableSchemaList.getByName(getSchemaSheetName());
+		this.schema.sort();
 	}
 	
 	/**
@@ -143,7 +138,7 @@ public abstract class TableDialog {
 		this.dialog.setLayout(new GridLayout(1,false));
 		this.dialog.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		this.panel = new TableViewWithHelp(dialog);
+		this.panel = new PanelBuilder(dialog);
 		
 		// add all the required widgets to the panel
 		addWidgets(this.panel);
@@ -153,7 +148,6 @@ public abstract class TableDialog {
 			return;
 		}
 		
-		//this.panel = new TableViewWithHelp(dialog, getSchemaSheetName(), helpMessage, editable, mode);
 		this.panel.setMenu(createMenu());
 		
 		// set the validator label provider
@@ -250,7 +244,6 @@ public abstract class TableDialog {
 				dialog.getDisplay().sleep();
 		}
 	}
-	
 	
 	/**
 	 * Load the rows which are defined in the {@link #loadInitialRows(TableSchema, TableRow)}
@@ -379,6 +372,18 @@ public abstract class TableDialog {
 	}
 	
 	/**
+	 * Change table editability
+	 * @param editable
+	 */
+	public void setEditable(boolean editable) {
+		this.panel.setTableEditable(editable);
+	}
+	
+	public boolean isEditable() {
+		return this.panel.isTableEditable();
+	}
+	
+	/**
 	 * Show the html help if possible
 	 */
 	private void showHelp() {
@@ -415,6 +420,14 @@ public abstract class TableDialog {
 	 */
 	public TableRow getSelection() {
 		return this.panel.getSelection();
+	}
+	
+	/**
+	 * Get the panel builder
+	 * @return
+	 */
+	public PanelBuilder getPanelBuilder() {
+		return this.panel;
 	}
 	
 	/**
@@ -584,7 +597,7 @@ public abstract class TableDialog {
 	 * methods to add widgets.
 	 * @param viewer
 	 */
-	public abstract void addWidgets(TableViewWithHelp viewer);
+	public abstract void addWidgets(PanelBuilder viewer);
 	
 	/**
 	 * Get the sheet which includes the schema for the table

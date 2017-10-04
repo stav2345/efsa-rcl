@@ -87,7 +87,7 @@ public class GetAck extends SOAPRequest {
 		AckLog log = null;
 		
 		// no attachment in these cases
-		if (state != FileState.FAIL && state != FileState.OTHER ) {
+		if (state == FileState.READY) {
 			
 			log = extractAcklog(soapResponse);
 			

@@ -4,19 +4,17 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
-import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
-import table_skeleton.TableRow;
+import dataset.Dataset;
 
 /**
- * Label provider of the {@link TableView}
+ * Label provider of the {@link Dataset}
  * @author avonva
  *
  */
-public class TableLabelProvider extends ColumnLabelProvider {
+public class DatasetLabelProvider extends ColumnLabelProvider {
 
 	private String key;
-	public TableLabelProvider(String key) {
+	public DatasetLabelProvider(String key) {
 		this.key = key;
 	}
 	
@@ -42,20 +40,24 @@ public class TableLabelProvider extends ColumnLabelProvider {
 	@Override
 	public String getText(Object arg0) {
 
-		TableRow row = (TableRow) arg0;
-		TableColumnValue cell = row.get(key);
-
-		if (cell == null || cell.getLabel() == null)
-			return null;
+		Dataset dataset = (Dataset) arg0;
 		
-		TableColumn col = row.getSchema().getById(key);
-		
-		if (col.isPassword()) {
-			// show as password with dots
-			String ECHARSTR = Character.toString((char)9679);
-			return cell.getLabel().replaceAll(".", ECHARSTR);
+		String text = null;
+		switch(key) {
+		case "id":
+			text = dataset.getId();
+			break;
+		case "senderId":
+			text = dataset.getSenderId();
+			break;
+		case "status":
+			text = dataset.getStatus().getStatus();
+			break;
+		default:
+			text = "";
+			break;
 		}
-		else
-			return cell.getLabel();
+
+		return text;
 	}
 }

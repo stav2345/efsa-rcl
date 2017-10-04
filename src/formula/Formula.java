@@ -1,4 +1,4 @@
-package formula_solver;
+package formula;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -34,6 +34,9 @@ public class Formula {
 	// regex components
 	private static final String NUMBER = "[0-9]{1,13}(\\.[0-9]*)?";
 	private static final String INTEGER = "[0-9]+";
+	private static final String LETTER = "[a-zA-Z]";
+	private static final String STRING = "(" + LETTER + ")+";
+	private static final String VARIABLE = "(" + NUMBER + "|" + LETTER + ")+";
 	
 	private String formula;
 	private String solvedFormula;
@@ -127,15 +130,15 @@ public class Formula {
 		
 		print(value, "CONDITIONS");
 		
-		// solve the if statements
-		value = solveIf(value);
-		
-		print(value, "IF");
-		
 		// solve logical comparisons
 		value = solveLogicalOperators(value);
 		
 		print(value, "LOGIC");
+		
+		// solve the if statements
+		value = solveIf(value);
+		
+		print(value, "IF");
 		
 		// solve padding
 		value = solvePadding(value);
@@ -154,7 +157,7 @@ public class Formula {
 	
 	private void print(String value, String header) {
 		
-		//if ((column.equals("progInfo")||column.equals("totSamplesTested")) && fieldHeader.equals("labelFormula"))
+		//if ((column.equals("allele1")) && fieldHeader.equals("visible"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
 		//System.out.println("TIME for " + header + " => " 
 		//		+ (System.currentTimeMillis() - debugTime)/1000.00 + " seconds");
@@ -382,7 +385,7 @@ public class Formula {
 	}
 	
 	/**
-	 * Resolve all columns dependencies ($column_name.(code|label))
+	 * Resolve all columns dependencies (%column_name.(code|label))
 	 * with the columns values
 	 * @param value
 	 * @return
@@ -391,7 +394,7 @@ public class Formula {
 	private String solveColumnsFormula(String value) {
 		
 		String command = value;
-		String pattern = "\\$\\w+?\\.(code|label)";
+		String pattern = "\\%\\w+?\\.(code|label)";
 		Pattern p = Pattern.compile(pattern);
 
 		Matcher m = p.matcher(command);
@@ -408,7 +411,7 @@ public class Formula {
 				return command;
 			}
 			
-			String colId = split[0].replace("$", "");
+			String colId = split[0].replace("%", "");
 			String field = split[1];  // required field
 			
 			// get the row value for the required column
@@ -533,7 +536,7 @@ public class Formula {
 			// apply keywords
 			match = match.replace(fieldName + ".code", parentValue.getCode());
 			match = match.replace(fieldName + ".label", parentValue.getLabel());
-			
+
 			// remove also useless part
 			match = match.replace(parentId + ",", "");
 			
@@ -561,7 +564,7 @@ public class Formula {
 		
 		String command = value;
 		
-		String operand = "(.+?)";
+		String operand = "(" + VARIABLE + ")";
 		String pattern = "\\(" + operand + "\\s*" + op + "\\s*" + operand + "\\)";
 		
 		Pattern r = Pattern.compile(pattern);
@@ -585,7 +588,7 @@ public class Formula {
 			
 			// set the correct value
 			String result = comparison ? BooleanValue.getTrueValue() : BooleanValue.getFalseValue();
-
+			
 			// replace match with the logical result
 			command = value.replace(match, result);
 		}
@@ -657,7 +660,8 @@ public class Formula {
 		result = result.replace("{app.name}", PropertiesReader.getAppName());
 		result = result.replace("{app.version}", PropertiesReader.getAppVersion());
 		result = result.replace("{app.dcCode}", PropertiesReader.getDataCollectionCode());
-
+		result = result.replace("{app.dcTable}", PropertiesReader.getDataCollectionTable());
+		
 		// concatenation keyword
 		return result;
 	}
@@ -679,7 +683,7 @@ public class Formula {
 		if (value == null)
 			return 0;
 		
-		Pattern p = Pattern.compile("\\$" + col.getId() + "\\.(code|label)");
+		Pattern p = Pattern.compile("\\%" + col.getId() + "\\.(code|label)");
 		Matcher m = p.matcher(value);
 		
 		int counter = 0;
@@ -722,7 +726,7 @@ public class Formula {
 				// add number of occurrences as dependencies
 				dependencies = dependencies + numOfDep;
 
-				// if we have dependencies (i.e. we found a $column...)
+				// if we have dependencies (i.e. we found a %column...)
 				// also evaluate the column to check if there are nested
 				// dependencies
 				if (numOfDep > 0) {

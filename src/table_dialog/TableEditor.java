@@ -51,6 +51,7 @@ public class TableEditor extends EditingSupport {
 		case PICKLIST:
 			
 			ComboBoxViewerCellEditor combo = new ComboBoxViewerCellEditor(viewer.getTable());
+			combo.setActivationStyle(ComboBoxViewerCellEditor.DROP_DOWN_ON_MOUSE_ACTIVATION);
 
 			// get the list of possible values for the current column
 			// filtering by the summarized information type (bse..)

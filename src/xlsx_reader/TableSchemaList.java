@@ -63,9 +63,15 @@ public class TableSchemaList {
 	 * @return
 	 * @throws IOException
 	 */
-	public static TableSchema getByName(String sheetName) throws IOException {
+	public static TableSchema getByName(String sheetName) {
 		
-		Collection<TableSchema> schemas = getAll();
+		Collection<TableSchema> schemas;
+		try {
+			schemas = getAll();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 
 		for (TableSchema schema : schemas) {
 			

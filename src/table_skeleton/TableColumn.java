@@ -1,10 +1,14 @@
 package table_skeleton;
 
+import java.util.Collection;
+
 import app_config.BooleanValue;
-import formula_solver.Formula;
-import formula_solver.FormulaSolver;
+import formula.Formula;
+import formula.FormulaSolver;
 import table_dialog.TableView;
+import table_relations.Relation;
 import xlsx_reader.TableHeaders.XlsxHeader;
+import xlsx_reader.TableSchema;
 import xml_catalog_reader.Selection;
 import xml_catalog_reader.SelectionList;
 import xml_catalog_reader.XmlContents;
@@ -346,8 +350,19 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * Should the column be visualized in the table?
 	 * @return
 	 */
-	public boolean isVisible() {
-		return BooleanValue.isTrue(visible);
+	public boolean isVisible(TableSchema schema, Collection<TableRow> parents) {
+		
+		// no parents => no formula to be solved
+		if (parents.isEmpty())
+			return BooleanValue.isTrue(visible); 
+		
+		TableRow row = new TableRow(schema);
+		
+		// add parents
+		for (TableRow parent : parents)
+			Relation.injectParent(parent, row);
+		
+		return isTrue(row, XlsxHeader.VISIBLE.getHeaderName());
 	}
 	
 	/**
@@ -355,8 +370,34 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public boolean isMandatory(TableRow row) {
+		
+		// if no data are provided, just check simple field
+		if (row == null)
+			return BooleanValue.isTrue(mandatory);
+		
 		return isTrue(row, XlsxHeader.MANDATORY.getHeaderName());
 	}
+	
+	/**
+	 * Check the mandatory fields without evaluating formulas
+	 * @return
+	 */
+	public boolean isMandatory() {
+		return this.isMandatory(null);
+	}
+	/**
+	 * Check if the mandatory field is a formula or not
+	 * @return
+	 */
+	public boolean isConditionallyMandatory() {
+		
+		boolean isTrue = BooleanValue.isTrue(mandatory);
+		boolean isFalse = BooleanValue.isFalse(mandatory);
+		
+		// if neither true nor false
+		return !isTrue && !isFalse;
+	}
+
 	public String getMandatoryFormula() {
 		return mandatory;
 	}

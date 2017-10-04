@@ -1,4 +1,4 @@
-package formula_solver;
+package formula;
 
 import java.util.ArrayList;
 import java.util.Collections;

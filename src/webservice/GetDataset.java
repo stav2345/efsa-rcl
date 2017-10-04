@@ -29,8 +29,18 @@ public class GetDataset extends SOAPRequest {
 		this.datasetId = datasetId;
 	}
 	
-	public void get() throws SOAPException {
-		makeRequest(URL);
+	/**
+	 * Get an handle to the downloaded dataset
+	 * @return
+	 * @throws SOAPException
+	 */
+	public File getDatasetFile() throws SOAPException {
+		Object response = makeRequest(URL);
+		
+		if (response == null)
+			return null;
+		
+		return (File) response;
 	}
 	
 	/**
@@ -61,11 +71,6 @@ public class GetDataset extends SOAPRequest {
 
 	@Override
 	public Object processResponse(SOAPMessage soapResponse) throws SOAPException {
-		
-		File file = writeZippedAttachment(soapResponse, "xml");
-		
-		//TODO process the dataset and add it to the reports
-
-		return null;
+		return writeZippedAttachment(soapResponse, "xml");
 	}
 }

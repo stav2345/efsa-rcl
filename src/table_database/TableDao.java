@@ -152,8 +152,9 @@ public class TableDao {
 			
 			if (colValue == null) {
 				System.err.println("Missing value for " + col.getId() 
-					+ " in table " + row.getSchema().getSheetName());
-				continue;
+					+ " in table " + row.getSchema().getSheetName() + ". Putting an empty value.");
+				
+				colValue = new TableColumnValue();
 			}
 
 			// save always the code
@@ -376,6 +377,7 @@ public class TableDao {
 
 					// get the description from the .xml using the code
 					if (code != null && !code.isEmpty()) {
+						
 						selection = new TableColumnValue(
 								XmlLoader.getByPicklistKey(column.getPicklistKey())
 									.getElementByCode(code));
@@ -417,7 +419,7 @@ public class TableDao {
 	public Collection<TableRow> getByParentId(String parentTable, int parentId) {
 		
 		Collection<TableRow> rows = new ArrayList<>();
-		
+
 		Relation r = schema.getRelationByParentTable(parentTable);
 
 		String query = "select * from " + tableName + " where " + r.getForeignKey() + " = ?";
@@ -429,7 +431,6 @@ public class TableDao {
 			stmt.setInt(1, parentId);
 			
 			try (ResultSet rs = stmt.executeQuery();) {
-				
 				
 				while (rs.next()) {
 

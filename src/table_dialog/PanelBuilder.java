@@ -2,14 +2,18 @@ package table_dialog;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -20,13 +24,13 @@ import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
 
 /**
- * {@link TableView} and {@link HelpViewer} packed together.
- * {@link RowCreatorViewer} can also be added by setting
- * {@link #addSelector} to true in the constructor.
+ * Class that allows creating a custom dialog by calling the
+ * methods {@link #addHelp(String)} {@link #addLabel(String)}
+ * {@link #addRowCreator(String)} and others.
  * @author avonva
  *
  */
-public class TableViewWithHelp {
+public class PanelBuilder {
 
 	/**
 	 * How a row should be created.
@@ -46,14 +50,17 @@ public class TableViewWithHelp {
 	private RowCreatorViewer catalogSelector;
 	private TableView table;
 	
+	private HashMap<String, Control> widgets;
+	
 	/**
 	 * Create an empty table
 	 * @param parent
 	 */
-	public TableViewWithHelp(Composite parent) {
+	public PanelBuilder(Composite parent) {
 		this.composite = new Composite(parent, SWT.NONE);
 		this.composite.setLayout(new GridLayout(1,false));
 		this.composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		this.widgets = new HashMap<>();
 	}
 	
 	/**
@@ -75,12 +82,33 @@ public class TableViewWithHelp {
 	}
 	
 	/**
+	 * Get a widget of the panel by its code
+	 * @param code
+	 * @return
+	 */
+	public Control getWidget(String code) {
+		
+		for (Control widget : composite.getChildren()) {
+			
+			Object widgetCode = widget.getData("code");
+			
+			if (widgetCode == null)
+				continue;
+			
+			if (widgetCode.equals(code))
+				return widget;
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Add a text box to the dialog
 	 * @param text
 	 * @param editable
 	 * @return
 	 */
-	public TableViewWithHelp addText(String text, boolean editable) {
+	public PanelBuilder addText(String text, boolean editable) {
 		Text textBox = new Text(composite, SWT.NONE);
 		textBox.setEditable(editable);
 		textBox.setText(text);
@@ -89,26 +117,87 @@ public class TableViewWithHelp {
 	
 	/**
 	 * Add a label to the dialog
+	 * @param code code to identify the label
+	 * @param text
+	 * @return
+	 */
+	public PanelBuilder addLabel(String code, String text) {
+		Label label = new Label(composite, SWT.NONE);
+		label.setText(text);
+		label.setData("code", code);
+		return this;
+	}
+	
+	/**
+	 * Add an hidden label (it will be shown by calling {@link #setLabelText(String, String)})
+	 * @param code
+	 * @return
+	 */
+	public PanelBuilder addLabel(String code) {
+		
+		GridData gd = new GridData();
+		gd.exclude = true;
+		
+		Label label = new Label(composite, SWT.NONE);
+		label.setData("code", code);
+		
+		label.setLayoutData(gd);
+		label.setVisible(false);
+		
+		return this;
+	}
+	
+	/**
+	 * Set the label text
+	 * @param code
+	 * @param text
+	 */
+	public void setLabelText(String code, String text) {
+		Label label = (Label) this.getWidget(code);
+		label.setText(text);
+		label.setVisible(true);
+		((GridData) label.getLayoutData()).exclude = false;
+		label.getParent().layout();
+	}
+	
+	/**
+	 * Add a button to the dialog
 	 * @param text
 	 * @param editable
 	 * @return
 	 */
-	public TableViewWithHelp addLabel(String text) {
-		Label label = new Label(composite, SWT.NONE);
-		label.setText(text);
+	public PanelBuilder addButton(String code, String text, SelectionListener listener) {
+		Button button = new Button(composite, SWT.PUSH);
+		button.setData("code", code);
+		button.setText(text);
+		button.addSelectionListener(listener);
 		return this;
+	}
+	
+	/**
+	 * Enable/disable a widget
+	 * @param code
+	 * @param enabled
+	 */
+	public void setEnabled(String code, boolean enabled) {
+		getWidget(code).setEnabled(enabled);
 	}
 	
 	/**
 	 * Add the help viewer to the parent
 	 * @param helpMessage
 	 */
-	public TableViewWithHelp addHelp(String helpMessage) {
+	public PanelBuilder addHelp(String helpMessage) {
 		this.helpViewer = new HelpViewer(composite, helpMessage);
 		return this;
 	}
 	
-	public TableViewWithHelp addRowCreator(String label) {
+	/**
+	 * Add a simple row creator button
+	 * @param label label showed at the left of the row creator
+	 * @return
+	 */
+	public PanelBuilder addRowCreator(String label) {
 		this.catalogSelector = new RowCreatorViewer(composite, RowCreationMode.STANDARD);
 		this.catalogSelector.setLabelText(label);
 		return this;
@@ -120,7 +209,7 @@ public class TableViewWithHelp {
 	 * All the values in the list will be picked up.
 	 * @param selectionListCode
 	 */
-	public TableViewWithHelp addRowCreator(String label, String selectionListCode) {
+	public PanelBuilder addRowCreator(String label, String selectionListCode) {
 		this.catalogSelector = new RowCreatorViewer(composite, RowCreationMode.SELECTOR);
 		this.catalogSelector.setLabelText(label);
 		this.catalogSelector.setList(selectionListCode);
@@ -135,7 +224,7 @@ public class TableViewWithHelp {
 	 * @param selectionListCode
 	 * @param selectionId
 	 */
-	public TableViewWithHelp addRowCreator(String label, String selectionListCode, String selectionId) {
+	public PanelBuilder addRowCreator(String label, String selectionListCode, String selectionId) {
 		this.catalogSelector = new RowCreatorViewer(composite, RowCreationMode.SELECTOR);
 		this.catalogSelector.setLabelText(label);
 		this.catalogSelector.setList(selectionListCode, selectionId);
@@ -143,13 +232,78 @@ public class TableViewWithHelp {
 	}
 	
 	/**
+	 * Enable/disable row creator
+	 * @param enabled
+	 */
+	public void setRowCreatorEnabled(boolean enabled) {
+		
+		if (catalogSelector == null)
+			return;
+		
+		this.catalogSelector.setEnabled(enabled);
+	}
+	
+	/**
 	 * Add the table to the parent
 	 */
-	public TableViewWithHelp addTable(String schemaSheetName, boolean editable) {
-		table = new TableView(composite, schemaSheetName, editable);
+	public PanelBuilder addTable(String schemaSheetName, boolean editable) {
+		Collection<TableRow> parents = new ArrayList<>();
+		return this.addTable(schemaSheetName, editable, parents);
+	}
+	
+	/**
+	 * Add the table to the parent
+	 */
+	public PanelBuilder addTable(String schemaSheetName, boolean editable, TableRow parent) {
+		
+		Collection<TableRow> parents = new ArrayList<>();
+		parents.add(parent);
+		return this.addTable(schemaSheetName, editable, parents);
+	}
+	
+	/**
+	 * Add the table to the parent
+	 */
+	public PanelBuilder addTable(String schemaSheetName, boolean editable, Collection<TableRow> parents) {
+		
+		this.table = new TableView(composite, schemaSheetName, editable);
+		
+		for (TableRow parent : parents)
+			table.addParentTable(parent);
+		
+		table.create();
+		
 		return this;
 	}
+	
+	/**
+	 * Change editability of the table
+	 * @param editable
+	 */
+	public void setTableEditable(boolean editable) {
+		
+		if (table == null)
+			return;
+		
+		table.setEditable(editable);
+	}
+	
+	/**
+	 * Check if the table is editable
+	 * @return
+	 */
+	public boolean isTableEditable() {
+		
+		if (table == null)
+			return false;
+		
+		return table.isEditable();
+	}
 
+	/**
+	 * Refresh a row of the table
+	 * @param row
+	 */
 	public void refresh(TableRow row) {
 		
 		if (table == null)
@@ -158,6 +312,9 @@ public class TableViewWithHelp {
 		this.table.refresh(row);
 	}
 	
+	/**
+	 * Refresh the entire table
+	 */
 	public void refresh() {
 		
 		if (table == null)

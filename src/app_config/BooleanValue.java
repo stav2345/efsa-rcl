@@ -25,6 +25,16 @@ public class BooleanValue {
 		return false;
 	}
 	
+	public static boolean isFalse(String value) {
+		
+		for (String string : no) {
+			if (string.equalsIgnoreCase(value))
+				return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Get a true value in string format
 	 * @return
