@@ -169,6 +169,22 @@ public abstract class TableDialog {
 			@Override
 			public void mouseDoubleClick(MouseEvent arg0) {}
 		});
+		
+		// avoid saving without applying changes
+		this.panel.setTableEditorListener(new EditorListener() {
+			
+			@Override
+			public void editStarted() {
+				if (saveButton != null)
+					saveButton.setEnabled(false);
+			}
+			
+			@Override
+			public void editEnded() {
+				if (saveButton != null)
+					saveButton.setEnabled(true);
+			}
+		});
 
 
 		// add a selection listener to the selector

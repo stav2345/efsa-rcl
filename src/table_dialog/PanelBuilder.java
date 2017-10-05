@@ -277,6 +277,17 @@ public class PanelBuilder {
 	}
 	
 	/**
+	 * Add a listener to the editor of the table
+	 * @param editorListener
+	 */
+	public void setTableEditorListener(EditorListener editorListener) {
+		if (this.table == null)
+			return;
+		
+		this.table.setEditorListener(editorListener);
+	}
+	
+	/**
 	 * Change editability of the table
 	 * @param editable
 	 */

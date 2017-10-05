@@ -19,6 +19,7 @@ import xml_catalog_reader.SelectionList;
 
 public class TableEditor extends EditingSupport {
 	
+	private EditorListener listener;
 	private TableColumn column;
 	private TableView viewer;
 
@@ -27,12 +28,24 @@ public class TableEditor extends EditingSupport {
 		this.column = column;
 		this.viewer = viewer;
 	}
+	
+	/**
+	 * Listener called when edit starts/ends
+	 * @param listener
+	 */
+	public void setListener(EditorListener listener) {
+		this.listener = listener;
+	}
 
 	@Override
 	protected boolean canEdit(Object arg0) {
 		return column.isEditable();
 	}
 	
+	/**
+	 * Create an empty selection object
+	 * @return
+	 */
 	private Selection getEmptySelection() {
 		Selection selection = new Selection();
 		selection.setCode("");
@@ -79,6 +92,9 @@ public class TableEditor extends EditingSupport {
 			break;
 		}
 		
+		if (listener != null)
+			listener.editStarted();
+		
 		return editor;
 	}
 
@@ -115,8 +131,14 @@ public class TableEditor extends EditingSupport {
 		// avoid refreshing if same value
 		Object oldValue = getValue(arg0);
 		
-		if (value == null || (oldValue != null && value.equals(oldValue)))
+		if (value == null || (oldValue != null && value.equals(oldValue))) {
+			
+			// edit is ended
+			if (listener != null)
+				listener.editEnded();
+			
 			return;
+		}
 		
 		TableRow row = (TableRow) arg0;
 
@@ -170,6 +192,10 @@ public class TableEditor extends EditingSupport {
 		row.update();
 
 		viewer.refresh(row);
+		
+		// edit is ended
+		if (listener != null)
+			listener.editEnded();
 	}
 	
 	/**

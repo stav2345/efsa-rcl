@@ -42,6 +42,7 @@ public class TableView {
 	private ArrayList<TableRow> tableElements;   // cache of the table elements to do sorting by column
 	private boolean editable;                    // table is editable or not?
 	private Listener inputChangedListener;       // called when table data changes
+	private EditorListener editorListener;       // called when editor starts/ends
 	private TableViewerColumn validator;         // data validator, only if needed
 
 	private Collection<TableRow> parents;        // parents of the table (tables from which this table was created)
@@ -312,6 +313,9 @@ public class TableView {
 			if (editable) {
 				TableColumn columnSchema = (TableColumn) column.getColumn().getData("schema");
 				editor = new TableEditor(this, columnSchema);
+				
+				if (editorListener != null)
+					editor.setListener(editorListener);
 			}
 			
 			// remove editor if editable is false
@@ -463,5 +467,16 @@ public class TableView {
 	 */
 	public void setInputChangedListener(Listener inputChangedListener) {
 		this.inputChangedListener = inputChangedListener;
+	}
+	
+	/**
+	 * Set listener called when edit starts/ends
+	 * @param editorListener
+	 */
+	public void setEditorListener(EditorListener editorListener) {
+		this.editorListener = editorListener;
+		
+		// refresh editor to add the listener
+		this.setEditable(this.editable);
 	}
 }
