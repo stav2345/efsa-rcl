@@ -39,7 +39,7 @@ public class GetDatasetList extends SOAPRequest {
 	 * Send the request and get the dataset list
 	 * @throws SOAPException
 	 */
-	public DatasetList getList() throws SOAPException {
+	public DatasetList getList() throws MySOAPException {
 		
 		DatasetList datasets = new DatasetList();
 		

@@ -39,6 +39,7 @@ import zip_manager.ZipManager;
 public abstract class SOAPRequest {
 
 	private String namespace;
+	private SOAPError error;  // error, if occurred
 
 	/**
 	 * Set the url where we make the request and the namespace of the request
@@ -53,29 +54,44 @@ public abstract class SOAPRequest {
 	 * Create the request and get the response. Process the response and return the results.
 	 * @param soapConnection
 	 * @return
-	 * @throws SOAPException
+	 * @throws MySOAPException
 	 */
-	public Object makeRequest(String url) throws SOAPException {
+	public Object makeRequest(String url) throws MySOAPException {
 
-		// Connect to the url
-		SOAPConnectionFactory connectionFactory = SOAPConnectionFactory.newInstance();
-		
-		// open the connection
-		SOAPConnection soapConnection = connectionFactory.createConnection();
-
-		// create the request message
-		SOAPMessage request = createRequest(soapConnection);
-
-		// get the response
-		SOAPMessage response = soapConnection.call(request, url);
-
-		// close the soap connection
-		soapConnection.close();
-		
-		// parse the response and get the result
-		return processResponse(response);
+		try {
+			// Connect to the url
+			SOAPConnectionFactory connectionFactory = SOAPConnectionFactory.newInstance();
+			
+			// open the connection
+			SOAPConnection soapConnection = connectionFactory.createConnection();
+	
+			// create the request message
+			SOAPMessage request = createRequest(soapConnection);
+	
+			// get the response
+			SOAPMessage response = soapConnection.call(request, url);
+	
+			// close the soap connection
+			soapConnection.close();
+			
+			// parse the response and get the result
+			return processResponse(response);
+		}
+		catch (SOAPException e) {
+			
+			// parse error codes
+			throw new MySOAPException(e);
+		}
 	}
-
+	
+	/**
+	 * Get the error type if it occurred
+	 * @return
+	 */
+	public SOAPError getSOAPError() {
+		return this.error;
+	}
+	
 	/**
 	 * Create the standard structure of a SOAPMessage, including the
 	 * authentication block

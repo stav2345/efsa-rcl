@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import app_config.BooleanValue;
 import formula.Formula;
+import formula.FormulaException;
 import formula.FormulaSolver;
 import table_dialog.TableView;
 import table_relations.Relation;
@@ -235,8 +236,9 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @param row
 	 * @param headerName
 	 * @return
+	 * @throws FormulaException 
 	 */
-	private String solveFormula(TableRow row, String headerName) {
+	private String solveFormula(TableRow row, String headerName) throws FormulaException {
 		
 		FormulaSolver solver = new FormulaSolver(row);
 		
@@ -253,7 +255,16 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	private boolean isTrue(TableRow row, String headerName) {
-		return BooleanValue.isTrue(solveFormula(row, headerName));
+		
+		String solvedFormula;
+		try {
+			solvedFormula = solveFormula(row, headerName);
+			return BooleanValue.isTrue(solvedFormula);
+		} catch (FormulaException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -282,7 +293,14 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public String getPicklistFilter(TableRow row) {
-		return solveFormula(row, XlsxHeader.PICKLIST_FILTER.getHeaderName());
+		
+		try {
+			return solveFormula(row, XlsxHeader.PICKLIST_FILTER.getHeaderName());
+		} catch (FormulaException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 	
 	public String getCodeFormula() {

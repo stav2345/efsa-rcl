@@ -167,7 +167,7 @@ public class TableEditor extends EditingSupport {
 		row.updateFormulas();
 
 		// save the row in the db
-		row.save();
+		row.update();
 
 		viewer.refresh(row);
 	}

@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import duplicates_detector.Checkable;
 import formula.Formula;
+import formula.FormulaException;
 import formula.FormulaSolver;
 import table_database.TableDao;
 import table_list.TableMetaData;
@@ -312,11 +313,21 @@ public class TableRow implements Checkable {
 			TableColumnValue sel = new TableColumnValue();
 
 			FormulaSolver solver = new FormulaSolver(this);
-			Formula code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
-			Formula label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
-
-			sel.setCode(code.getSolvedFormula());
-			sel.setLabel(label.getSolvedFormula());
+			Formula code = null;
+			try {
+				code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
+				sel.setCode(code.getSolvedFormula());
+			} catch (FormulaException e) {
+				e.printStackTrace();
+			}
+			
+			Formula label = null;
+			try {
+				label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
+				sel.setLabel(label.getSolvedFormula());
+			} catch (FormulaException e) {
+				e.printStackTrace();
+			}
 
 			this.put(col.getId(), sel);
 		}
@@ -369,14 +380,34 @@ public class TableRow implements Checkable {
 		
 		// note that this automatically updates the row
 		// while solving formulas
-		solver.solveAll(XlsxHeader.CODE_FORMULA.getHeaderName());
-		solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
+		try {
+			solver.solveAll(XlsxHeader.CODE_FORMULA.getHeaderName());
+		} catch (FormulaException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
+		} catch (FormulaException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Save the current row into the database
+	 * (this is an insert operation! Multiple calls
+	 * create multiple rows)
+	 */
+	public void save() {
+		TableDao dao = new TableDao(this.schema);
+		int id = dao.add(this);
+		this.setId(id);
 	}
 	
 	/**
 	 * Update the row in the database
 	 */
-	public void save() {
+	public void update() {
 		TableDao dao = new TableDao(this.schema);
 		dao.update(this);
 	}
@@ -409,7 +440,16 @@ public class TableRow implements Checkable {
 	}
 	
 	public TableColumnValue getTableColumnValue(String code, String picklistKey) {
-		return new TableColumnValue(XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code));
+		
+		Selection sel = XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code);
+		
+		if (sel == null) {
+			System.err.println("Cannot pick the value " + code + " from list " + picklistKey 
+					+ ". Either the list or the element do not exist. Empty element returned instead.");
+			return new TableColumnValue();
+		}
+		
+		return new TableColumnValue(sel);
 	}
 	
 	/**

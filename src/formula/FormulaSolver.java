@@ -30,8 +30,9 @@ public class FormulaSolver {
 	 * Solve a single formula of a specific column of the row using the row values. The formula
 	 * that is used it the one contained in the chosen {@code fieldHeader}
 	 * header of the column properties (as, Id, defaultValue, defaultCode...)
+	 * @throws FormulaException 
 	 */
-	public Formula solve(TableColumn column, String fieldHeader) {
+	public Formula solve(TableColumn column, String fieldHeader) throws FormulaException {
 
 		// get all the formulas
 		FormulaParser parser = new FormulaParser(row);
@@ -50,8 +51,9 @@ public class FormulaSolver {
 	 * values are correct.
 	 * @param fieldHeader
 	 * @return
+	 * @throws FormulaException 
 	 */
-	public ArrayList<Formula> solveAll(String fieldHeader) {
+	public ArrayList<Formula> solveAll(String fieldHeader) throws FormulaException {
 		
 		ArrayList<Formula> solvedFormulas = new ArrayList<>();
 		

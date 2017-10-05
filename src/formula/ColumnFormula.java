@@ -1,17 +1,89 @@
 package formula;
 
-public class ColumnFormula {
+import table_skeleton.TableColumn;
+import table_skeleton.TableColumnValue;
+import table_skeleton.TableRow;
 
+/**
+ * Class to manage columns formulas (%columnId.code/label)
+ * @author avonva
+ *
+ */
+public class ColumnFormula implements IFormula {
+
+	private String formula;
 	private String columnId;
-	private ColumnValueType type;
+	private String fieldType;
 	
-	public enum ColumnValueType {
-		CODE,
-		LABEL
-	};
+	public ColumnFormula(String formula) throws FormulaException {
+		this.formula = formula;
+		compile();
+	}
 	
-	public ColumnFormula(String columnId, ColumnValueType type) {
-		this.columnId = columnId;
-		this.type = type;
+	public String getColumnId() {
+		return columnId;
+	}
+	public String getFieldType() {
+		return fieldType;
+	}
+	public String getUnsolvedFormula() {
+		return formula;
+	}
+	
+	/**
+	 * Analyze the formula and extract information
+	 * @throws FormulaException 
+	 */
+	public void compile() throws FormulaException {
+		
+		// split based on the dot
+		String[] split = formula.split("\\.");
+		
+		// get column id and required field type
+		if (split.length != 2) {
+			throw new FormulaException("Wrong column formula, found " + formula);
+		}
+		
+		// get the column id of the formula
+		this.columnId = split[0].replace("%", "");
+		
+		// get the field type
+		this.fieldType = split[1];  // required field
+	}
+	
+	@Override
+	public String solve() throws FormulaException {
+		throw new FormulaException("Not supported");
+	}
+
+	public String solve(TableRow row) throws FormulaException {
+		
+		TableColumn colSchema = row.getSchema().getById(columnId);
+		TableColumnValue colValue = row.get(columnId);
+		
+		if (colSchema == null) {
+			throw new FormulaException("No column found in the row schema for " + columnId);
+		}
+		
+		// if no value is present in the row, then 
+		// the formula of the referenced column is
+		// put, in order to solve it later with another
+		// pass
+		boolean emptyValue = colValue == null;
+		
+		String solvedFormula = null;
+		
+		switch (fieldType) {
+		case "code":
+			solvedFormula = emptyValue ? colSchema.getCodeFormula() : colValue.getCode();
+			break;
+		case "label":
+			solvedFormula = emptyValue ? colSchema.getLabelFormula() : colValue.getLabel();
+			break;
+		default:
+			throw new FormulaException("Field type " + fieldType + " not recognized.");
+		}
+		
+		return solvedFormula;
 	}
 }

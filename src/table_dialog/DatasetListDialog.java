@@ -21,15 +21,19 @@ public class DatasetListDialog {
 	private Shell dialog;
 	private String title;
 	private String okBtnText;
-	private DatasetList list;
 	private Dataset selectedDataset;
 	
-	public DatasetListDialog(Shell parent, String title, String okBtnText, DatasetList list) {
+	private TableViewer datasetList;
+	
+	public DatasetListDialog(Shell parent, String title, String okBtnText) {
 		this.parent = parent;
 		this.title = title;
 		this.okBtnText = okBtnText;
-		this.list = list;
 		create();
+	}
+	
+	public void setList(DatasetList list) {
+		datasetList.setInput(list);
 	}
 	
 	private void create() {
@@ -41,7 +45,7 @@ public class DatasetListDialog {
 		dialog.setLayout(new GridLayout(1, false));
 		dialog.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		TableViewer datasetList = new TableViewer(dialog, SWT.BORDER | SWT.SINGLE
+		this.datasetList = new TableViewer(dialog, SWT.BORDER | SWT.SINGLE
 				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
 		datasetList.getTable().setHeaderVisible(true);
 		datasetList.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -49,7 +53,7 @@ public class DatasetListDialog {
 		
 		// Add the column to the parent table
 		TableViewerColumn idCol = new TableViewerColumn(datasetList, SWT.NONE);
-		idCol.getColumn().setText("Id");
+		idCol.getColumn().setText("Dataset id");
 		idCol.setLabelProvider(new DatasetLabelProvider("id"));
 		idCol.getColumn().setWidth(100);
 		
@@ -59,15 +63,14 @@ public class DatasetListDialog {
 		senderIdCol.getColumn().setWidth(100);
 		
 		TableViewerColumn statusCol = new TableViewerColumn(datasetList, SWT.NONE);
-		statusCol.getColumn().setText("DCF Status");
+		statusCol.getColumn().setText("DCF status");
 		statusCol.setLabelProvider(new DatasetLabelProvider("status"));
 		statusCol.getColumn().setWidth(100);
-
-		datasetList.setInput(list);
 
 		// ok button to select a dataset
 		Button okBtn = new Button(dialog, SWT.PUSH);
 		okBtn.setText(okBtnText);
+		okBtn.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
 		
 		okBtn.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -84,15 +87,22 @@ public class DatasetListDialog {
 				dialog.close();
 			}
 		});
+	}
+	
+	public void open() {
 		
 		dialog.pack();
 		dialog.open();
-		
+
 		// Event loop
 		while ( !dialog.isDisposed() ) {
 			if ( !dialog.getDisplay().readAndDispatch() )
 				dialog.getDisplay().sleep();
 		}
+	}
+	
+	public Shell getParent() {
+		return parent;
 	}
 	
 	public Shell getDialog() {

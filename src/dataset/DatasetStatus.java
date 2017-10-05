@@ -17,6 +17,7 @@ public enum DatasetStatus {
 	REJECTED("REJECTED"),
 	DELETED("DELETED"),
 	SUBMITTED("SUBMITTED"),
+	SUBMISSION_SENT("SUBMISSION_SENT"),
 	ACCEPTED_DWH("ACCEPTED DWH"),
 	UPDATED_BY_DATA_RECEIVER("Uploaded by data receiver"),
 	OTHER("OTHER");  // error state
