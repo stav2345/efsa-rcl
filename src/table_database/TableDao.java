@@ -269,7 +269,7 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public boolean removeAll() {
+	public boolean deleteAll() {
 		
 		boolean ok = true;
 		
@@ -300,7 +300,7 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public boolean removeByParentId(String parentTable, int parentId) {
+	public boolean deleteByParentId(String parentTable, int parentId) {
 
 		boolean ok = true;
 		
@@ -411,18 +411,23 @@ public class TableDao {
 		return row;
 	}
 	
+	public Collection<TableRow> getByParentId(String parentTable, int parentId) {
+		return getByParentId(parentTable, parentId, "asc");
+	}
+	
 	/**
 	 * Get all the rows that has as parent the {@code parentId} in the parent table {@code parentTable}
 	 * @param row
 	 * @return
 	 */
-	public Collection<TableRow> getByParentId(String parentTable, int parentId) {
+	public Collection<TableRow> getByParentId(String parentTable, int parentId, String order) {
 		
 		Collection<TableRow> rows = new ArrayList<>();
 
 		Relation r = schema.getRelationByParentTable(parentTable);
 
-		String query = "select * from " + tableName + " where " + r.getForeignKey() + " = ?";
+		String query = "select * from " + tableName + " where " + r.getForeignKey() 
+			+ " = ? order by " + schema.getTableIdField() + " " + order;
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -438,7 +443,6 @@ public class TableDao {
 					if (row != null)
 						rows.add(row);
 				}
-
 			}
 			catch (SQLException e) {
 				e.printStackTrace();
@@ -460,7 +464,7 @@ public class TableDao {
 		
 		Collection<TableRow> rows = new ArrayList<>();
 
-		String query = "select * from " + tableName;
+		String query = "select * from " + tableName + " order by " + schema.getTableIdField() + " asc";
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -518,6 +522,41 @@ public class TableDao {
 	}
 
 	/**
+	 * Delete all the records by a database field
+	 * @param fieldName
+	 * @param value
+	 * @return
+	 */
+	public boolean deleteByStringField(String fieldName, String value) {
+
+		boolean ok = true;
+		
+		String query = "delete from " + tableName + " where " + fieldName + " = ?";
+		
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(query);) {
+			
+			stmt.setString(1, value);
+			stmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			ok = false;
+		}
+		
+		if (ok) {
+			System.out.println("Rows with " + fieldName + " = " 
+					+ value + " successfully deleted from " + tableName);
+		}
+		else {
+			System.out.println("Rows with " + fieldName + " = " 
+					+ value + " cannot be deleted from " + tableName);
+		}
+		
+		return ok;
+	}
+	
+	/**
 	 * Get the row by its id
 	 * @param id
 	 * @return
@@ -547,5 +586,39 @@ public class TableDao {
 		}
 		
 		return row;
+	}
+
+	/**
+	 * Get the all the rows that matches the fieldName with value
+	 * @param id
+	 * @return
+	 */
+	public Collection<TableRow> getByStringField(String fieldName, String value) {
+		
+		Collection<TableRow> rows = new ArrayList<>();
+
+		String query = "select * from " + tableName + " where " + fieldName 
+				+ " = ? order by " + schema.getTableIdField() + " asc";
+		
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(query);) {
+			
+			stmt.setString(1, value);
+			
+			try (ResultSet rs = stmt.executeQuery();) {
+				while (rs.next()) {
+					TableRow row = getByResultSet(rs);
+					rows.add(row);
+				}
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return rows;
 	}
 }

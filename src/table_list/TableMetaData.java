@@ -88,7 +88,7 @@ public class TableMetaData {
 	 */
 	public void openHelp() {
 		
-		File file = new File(htmlFileName);
+		File file = new File(AppPaths.HELP_FOLDER + htmlFileName);
 		HtmlViewer viewer = new HtmlViewer();
 		viewer.open(file);
 	}

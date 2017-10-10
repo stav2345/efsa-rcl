@@ -48,10 +48,16 @@ public class DatasetLabelProvider extends ColumnLabelProvider {
 			text = dataset.getId();
 			break;
 		case "senderId":
-			text = dataset.getSenderId();
+			text = dataset.getDecomposedSenderId();
 			break;
 		case "status":
 			text = dataset.getStatus().getStatus();
+			break;
+		case "revision":
+			text = dataset.getVersion();
+			if (text == null) {
+				text = "None";
+			}
 			break;
 		default:
 			text = "";

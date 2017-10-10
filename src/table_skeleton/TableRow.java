@@ -8,7 +8,6 @@ import formula.Formula;
 import formula.FormulaException;
 import formula.FormulaSolver;
 import table_database.TableDao;
-import table_list.TableMetaData;
 import xlsx_reader.TableHeaders.XlsxHeader;
 import xlsx_reader.TableSchema;
 import xml_catalog_reader.Selection;
@@ -65,7 +64,7 @@ public class TableRow implements Checkable {
 	 * @param row
 	 */
 	public TableRow(TableRow row) {
-		this.values = row.values;
+		this.values = new HashMap<>(row.values);
 		this.schema = row.getSchema();
 	}
 	
@@ -121,7 +120,7 @@ public class TableRow implements Checkable {
 	 * Get the version of the table represented by this row
 	 * @return
 	 */
-	public TableColumnValue getVersion() {
+	/*public TableColumnValue getVersion() {
 		
 		TableMetaData metaData = TableMetaData.getTableByName(schema.getSheetName());
 		
@@ -139,12 +138,12 @@ public class TableRow implements Checkable {
 		}
 		
 		return value;
-	}
+	}*/
 	
 	/**
 	 * Create a new version of the row
 	 */
-	public void createNewVersion() {
+	/*public void createNewVersion() {
 		
 		TableColumnValue version = getVersion();
 		
@@ -163,7 +162,7 @@ public class TableRow implements Checkable {
 		
 		// update the object in the row
 		this.put(schema.getVersionField(), version);
-	}
+	}*/
 	
 	public TableRow getParent(TableSchema parentSchema) {
 		
@@ -396,12 +395,16 @@ public class TableRow implements Checkable {
 	/**
 	 * Save the current row into the database
 	 * (this is an insert operation! Multiple calls
-	 * create multiple rows)
+	 * create multiple rows). Return the new id
+	 * of the database
 	 */
-	public void save() {
+	public int save() {
+		
 		TableDao dao = new TableDao(this.schema);
 		int id = dao.add(this);
 		this.setId(id);
+		
+		return id;
 	}
 	
 	/**
@@ -525,6 +528,8 @@ public class TableRow implements Checkable {
 	public String toString() {
 		
 		StringBuilder print = new StringBuilder();
+		
+		print.append("ID: " + getId() + "\n");
 		
 		for (String key : this.values.keySet()) {
 			

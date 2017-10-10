@@ -13,6 +13,7 @@ public class ComparatorFormula implements IFormula {
 
 	public static final String EQUAL = "==";
 	public static final String DISEQUAL = "!=";
+	public static final String OR = "OR";
 	
 	private String formula;
 	private String operator;  // as ==, !=
@@ -60,8 +61,11 @@ public class ComparatorFormula implements IFormula {
 		case DISEQUAL:
 			comparison = !leftOperand.equalsIgnoreCase(rightOperand);
 			break;
+		case OR:
+			comparison = BooleanValue.isTrue(leftOperand) || BooleanValue.isTrue(rightOperand);
+			break;
 		default:
-			throw new FormulaException("Operator " + operator + " not supported yet!");
+			throw new FormulaException("Operator " + operator + " not supported!");
 		}
 
 		// get a string value for the boolean

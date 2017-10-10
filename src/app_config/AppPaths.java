@@ -19,6 +19,9 @@ public class AppPaths {
 	public static final String TABLES_SHEET = "Tables";
 	public static final String MESSAGE_CONFIG_SHEET = "MessageConfig";
 	
+	// column of the op type field in the message config sheet
+	public static final String MESSAGE_CONFIG_OP_TYPE = "opType";
+	
 	// the catalogue of months
 	public static final String MONTHS_LIST = "monthsList";
 }

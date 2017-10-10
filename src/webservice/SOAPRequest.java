@@ -211,7 +211,7 @@ public abstract class SOAPRequest {
 	 * @return
 	 * @throws SOAPException
 	 */
-	public AttachmentPart getFirstAttachmentPart(SOAPMessage message) throws SOAPException {
+	public AttachmentPart getFirstAttachmentPart(SOAPMessage message) throws MySOAPException {
 
 		// get the attachment
 		Iterator<?> iter = message.getAttachments();
@@ -222,8 +222,12 @@ public abstract class SOAPRequest {
 				message.writeTo(System.err);
 			} catch (IOException e) {
 				e.printStackTrace();
+			} catch (SOAPException e) {
+				e.printStackTrace();
+				throw new MySOAPException(e);
 			}
-			throw new SOAPException();
+			
+			return null;
 		}
 
 		// get the response attachment
@@ -357,13 +361,11 @@ public abstract class SOAPRequest {
 	public Document getFirstXmlAttachment(SOAPMessage message) 
 			throws SOAPException, ParserConfigurationException, SAXException, IOException {
 		
-		AttachmentPart part = getFirstAttachmentPart(message);
-		
-		if (part == null)
-			return null;
-		
 		// get the stream
-		InputStream stream = part.getRawContent();
+		InputStream stream = getFirstRawAttachment(message);
+		
+		if (stream == null)
+			return null;
 		
 		// parse the stream and get the document
 		Document xml = getDocument(stream);
@@ -372,6 +374,28 @@ public abstract class SOAPRequest {
 		stream.close();
 		
 		return xml;
+	}
+	
+	/*
+	 * get the attachment raw format
+	 */
+	public InputStream getFirstRawAttachment(SOAPMessage message) throws MySOAPException {
+		
+		AttachmentPart part = getFirstAttachmentPart(message);
+		
+		if (part == null)
+			return null;
+		
+		// get the stream
+		InputStream stream;
+		try {
+			stream = part.getRawContent();
+		} catch (SOAPException e) {
+			e.printStackTrace();
+			throw new MySOAPException(e);
+		}
+		
+		return stream;
 	}
 	
 	/**

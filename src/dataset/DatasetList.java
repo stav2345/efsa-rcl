@@ -51,6 +51,31 @@ public class DatasetList extends ArrayList<Dataset> {
 		return filteredList;
 	}
 	
+	
+	/**
+	 * Filter the datasets by their decomposed sender id (regex)
+	 * @param regex
+	 * @return
+	 */
+	public DatasetList filterByDecomposedSenderId(String regex) {
+		
+		DatasetList filteredList = new DatasetList();
+		
+		for (Dataset dataset : this) {
+			
+			String senderId = dataset.getDecomposedSenderId();
+			
+			// avoid null senderId
+			if (senderId == null)
+				continue;
+			
+			if (senderId.matches(regex))
+				filteredList.add(dataset);
+		}
+		
+		return filteredList;
+	}
+	
 	/**
 	 * Filter the datasets by their status
 	 * @param statusFilter
@@ -69,23 +94,56 @@ public class DatasetList extends ArrayList<Dataset> {
 	}
 	
 	/**
-	 * Check if all the dataset in the list are editable or not
+	 * Get the last version of the dataset with the specified
+	 * senderId in the list
+	 * @param senderId
 	 * @return
 	 */
-	public boolean isEditableAll() {
+	public Dataset getLastVersion(String senderId) {
 		
-		for (Dataset d: this) {
+		// get only related datasets
+		DatasetList datasets = this.filterByDecomposedSenderId(senderId);
+		
+		if (datasets.isEmpty())
+			return null;
+		
+		Dataset last = datasets.get(0);
+		
+		for (Dataset d: datasets) {
 			
-			DatasetStatus status = d.getStatus();
-			
-			if (status == null)
-				return false;
-			
-			if (!status.isEditable())
-				return false;
+			// if the new has a greater version
+			// then save it as last
+			if (d.compareTo(last) > 0)
+				last = d;
 		}
 		
-		return true;
+		return last;
+	}
+	
+	/**
+	 * Filter all the old versions of datasets
+	 * @return
+	 */
+	public DatasetList filterOldVersions() {
+		
+		DatasetList lasts = new DatasetList();
+		for (Dataset d: this) {
+			
+			String senderId = d.getDecomposedSenderId();
+			
+			if (senderId == null)
+				continue;
+			
+			// get last version of the dataset
+			Dataset last = this.getLastVersion(senderId);
+			
+			// if not already added, put it in the list of lasts
+			if (!lasts.contains(last)) {
+				lasts.add(last);
+			}
+		}
+		
+		return lasts;
 	}
 	
 	/**
@@ -99,18 +157,15 @@ public class DatasetList extends ArrayList<Dataset> {
 		statusFilter.add(DatasetStatus.ACCEPTED_DWH);
 		statusFilter.add(DatasetStatus.VALID);
 		statusFilter.add(DatasetStatus.VALID_WITH_WARNINGS);
+		statusFilter.add(DatasetStatus.SUBMITTED);
 		
 		// filter also by the sender id, which should 
 		// be in the format country year(2) month(2) with
 		// an optional version number
 		// examples: IT1704 FR1411.1 SP1512.01 GR1109.14
-		final String country = "[a-zA-Z][a-zA-Z]";
-		final String year = "\\d\\d";
-		final String month = "\\d\\d";
-		final String version = "(\\.\\d+)?";
 		
-		final String validSenderIdPattern = country + year + month + version;
-		
-		return filterByStatus(statusFilter).filterBySenderId(validSenderIdPattern);
+		return filterByStatus(statusFilter)
+				.filterBySenderId(Dataset.VALID_SENDER_ID_PATTERN)
+				.filterOldVersions();
 	}
 }

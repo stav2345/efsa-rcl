@@ -10,6 +10,11 @@ public class TableVersion {
 	 */
 	public static String createNewVersion(String versionCode) {
 		
+		// if starting from no version, add the first version
+		if (versionCode == null) {
+			return "01";
+		}
+		
 		String newVersionCode = null;
 		
 		try {
@@ -33,5 +38,15 @@ public class TableVersion {
 		}
 		
 		return newVersionCode;
+	}
+	
+	/**
+	 * Merge the string passed in name with the version by a dot
+	 * @param name
+	 * @param version
+	 * @return
+	 */
+	public static String mergeNameAndVersion(String name, String version) {
+		return name + "." + version;
 	}
 }

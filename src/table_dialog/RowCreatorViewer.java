@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 
-import table_dialog.PanelBuilder.RowCreationMode;
+import table_dialog.DialogBuilder.RowCreationMode;
 import xml_catalog_reader.Selection;
 
 /**
@@ -134,6 +134,7 @@ public class RowCreatorViewer {
 		
 		// button to confirm selection
 		this.selectBtn = new Button(composite, SWT.PUSH);
+		this.selectBtn.setText("New row");
 		
 		// add plus icon to the button
 		Image image = new Image(Display.getCurrent(), 

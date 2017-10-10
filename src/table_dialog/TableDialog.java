@@ -20,14 +20,14 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 
+import global_utils.Warnings;
 import table_database.TableDao;
 import table_dialog.RowCreatorViewer.CatalogChangedListener;
-import table_dialog.PanelBuilder.RowCreationMode;
+import table_dialog.DialogBuilder.RowCreationMode;
 import table_list.TableMetaData;
 import table_relations.Relation;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
-import warn_user.Warnings;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 import xml_catalog_reader.Selection;
@@ -80,7 +80,7 @@ public abstract class TableDialog {
 	
 	private Shell parent;
 	private Shell dialog;
-	private PanelBuilder panel;
+	private DialogBuilder panel;
 	private Button saveButton;
 	
 	private TableRow parentFilter;              // if set, only the rows children of this parent are shown in the table
@@ -138,7 +138,7 @@ public abstract class TableDialog {
 		this.dialog.setLayout(new GridLayout(1,false));
 		this.dialog.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		this.panel = new PanelBuilder(dialog);
+		this.panel = new DialogBuilder(dialog);
 		
 		// add all the required widgets to the panel
 		addWidgets(this.panel);
@@ -442,7 +442,7 @@ public abstract class TableDialog {
 	 * Get the panel builder
 	 * @return
 	 */
-	public PanelBuilder getPanelBuilder() {
+	public DialogBuilder getPanelBuilder() {
 		return this.panel;
 	}
 	
@@ -613,7 +613,7 @@ public abstract class TableDialog {
 	 * methods to add widgets.
 	 * @param viewer
 	 */
-	public abstract void addWidgets(PanelBuilder viewer);
+	public abstract void addWidgets(DialogBuilder viewer);
 	
 	/**
 	 * Get the sheet which includes the schema for the table

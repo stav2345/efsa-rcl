@@ -22,7 +22,7 @@ public class Ack {
 		return log;
 	}
 	
-	public boolean isCorrect() {
+	public boolean isReady() {
 		return state == FileState.READY;
 	}
 	

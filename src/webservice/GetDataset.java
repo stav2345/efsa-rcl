@@ -34,7 +34,7 @@ public class GetDataset extends SOAPRequest {
 	 * @return
 	 * @throws SOAPException
 	 */
-	public File getDatasetFile() throws SOAPException {
+	public File getDatasetFile() throws MySOAPException {
 		Object response = makeRequest(URL);
 		
 		if (response == null)

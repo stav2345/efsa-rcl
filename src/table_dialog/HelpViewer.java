@@ -6,6 +6,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -24,7 +25,7 @@ public class HelpViewer {
 	private Composite parent;
 	private String title;
 	private Label info;
-	private Label helpBtn;
+	private Button helpBtn;
 	
 	/**
 	 * Panel that displays an help label with an help icon. The
@@ -74,7 +75,7 @@ public class HelpViewer {
 		this.info.setFont (font);
 		
 		// help icon
-		helpBtn = new Label(composite, SWT.PUSH);
+		helpBtn = new Button(composite, SWT.PUSH);
 		
 		Image image = new Image(Display.getCurrent(), 
 				this.getClass().getClassLoader().getResourceAsStream("help.png"));

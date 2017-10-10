@@ -11,6 +11,7 @@ public enum OperationType {
 	REPLACE("Replace"),
 	REJECT("Reject"),
 	SUBMIT("Submit"),
+	DEBUG_TEST("Debug TEST (Only for debugging purposes)"),
 	NOT_SUPPORTED("NotSupported");
 	
 	private String code;
@@ -27,6 +28,15 @@ public enum OperationType {
 		return code;
 	}
 
+	/**
+	 * Check if the operation needs an empty dataset
+	 * to be sent to the dcf
+	 * @return
+	 */
+	public boolean needEmptyDataset() {
+		return this == REJECT || this == SUBMIT;
+	}
+	
 	/**
 	 * Get the enumerator that matches the {@code text}
 	 * @param text

@@ -2,19 +2,23 @@ package table_dialog;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Stack;
 
+import org.eclipse.jface.viewers.CellEditor.LayoutData;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Text;
@@ -30,7 +34,7 @@ import xlsx_reader.TableSchema;
  * @author avonva
  *
  */
-public class PanelBuilder {
+public class DialogBuilder {
 
 	/**
 	 * How a row should be created.
@@ -50,17 +54,14 @@ public class PanelBuilder {
 	private RowCreatorViewer catalogSelector;
 	private TableView table;
 	
-	private HashMap<String, Control> widgets;
-	
 	/**
 	 * Create an empty table
 	 * @param parent
 	 */
-	public PanelBuilder(Composite parent) {
+	public DialogBuilder(Composite parent) {
 		this.composite = new Composite(parent, SWT.NONE);
 		this.composite.setLayout(new GridLayout(1,false));
 		this.composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		this.widgets = new HashMap<>();
 	}
 	
 	/**
@@ -88,18 +89,33 @@ public class PanelBuilder {
 	 */
 	public Control getWidget(String code) {
 		
-		for (Control widget : composite.getChildren()) {
+		Stack<Control> stack = new Stack<>();
+		
+		stack.add(composite);
+		
+		Control found = null;
+		
+		while (!stack.isEmpty()) {
+			
+			Control widget = stack.pop();
 			
 			Object widgetCode = widget.getData("code");
 			
-			if (widgetCode == null)
-				continue;
+			if (widgetCode != null && widgetCode.equals(code)) {
+				found = widget;
+				break;
+			}
 			
-			if (widgetCode.equals(code))
-				return widget;
+			// add all the children
+			if (widget instanceof Composite) {
+				
+				for (Control c : ((Composite) widget).getChildren()) {
+					stack.add(c);
+				}
+			}
 		}
 		
-		return null;
+		return found;
 	}
 	
 	/**
@@ -108,7 +124,7 @@ public class PanelBuilder {
 	 * @param editable
 	 * @return
 	 */
-	public PanelBuilder addText(String text, boolean editable) {
+	public DialogBuilder addText(String text, boolean editable) {
 		Text textBox = new Text(composite, SWT.NONE);
 		textBox.setEditable(editable);
 		textBox.setText(text);
@@ -121,7 +137,7 @@ public class PanelBuilder {
 	 * @param text
 	 * @return
 	 */
-	public PanelBuilder addLabel(String code, String text) {
+	public DialogBuilder addLabel(String code, String text) {
 		Label label = new Label(composite, SWT.NONE);
 		label.setText(text);
 		label.setData("code", code);
@@ -133,12 +149,27 @@ public class PanelBuilder {
 	 * @param code
 	 * @return
 	 */
-	public PanelBuilder addLabel(String code) {
+	public DialogBuilder addLabel(String code) {
+		return addLabelToComposite(code, null);
+	}
+	
+	/**
+	 * Add an hidden label (it will be shown by calling {@link #setLabelText(String, String)})
+	 * @param code
+	 * @return
+	 */
+	public DialogBuilder addLabelToComposite(String code, String compositeCode) {
 		
 		GridData gd = new GridData();
 		gd.exclude = true;
 		
-		Label label = new Label(composite, SWT.NONE);
+		Composite parent;
+		if (compositeCode != null)
+			parent = (Composite) getWidget(compositeCode);
+		else
+			parent = composite;
+		
+		Label label = new Label(parent, SWT.NONE);
 		label.setData("code", code);
 		
 		label.setLayoutData(gd);
@@ -160,18 +191,93 @@ public class PanelBuilder {
 		label.getParent().layout();
 	}
 	
+	
+	public DialogBuilder addComposite(String code, Layout layout, LayoutData data) {
+		return addCompositeToComposite(code, null, layout, data);
+	}
+	
+	public DialogBuilder addCompositeToComposite(String code, String compositeCode, Layout layout, LayoutData data) {
+		
+		Composite parent;
+		if (compositeCode != null)
+			parent = (Composite) getWidget(compositeCode);
+		else
+			parent = composite;
+		
+		Composite subComposite = new Composite(parent, SWT.NONE);
+		subComposite.setLayout(layout);
+		subComposite.setData("code", code);
+		if (data != null)
+			subComposite.setLayoutData(data);
+		return this;
+	}
+	
+	public DialogBuilder addGroup(String code, String groupTitle, Layout layout, LayoutData data) {
+		return addGroupToComposite(code, null, groupTitle, layout, data);
+	}
+	
+	public DialogBuilder addGroupToComposite(String code, String compositeCode, 
+			String groupTitle, Layout layout, LayoutData data) {
+		
+		Composite parent;
+		if (compositeCode != null)
+			parent = (Composite) getWidget(compositeCode);
+		else
+			parent = composite;
+		
+		Group subComposite = new Group(parent, SWT.NONE);
+		subComposite.setLayout(layout);
+		subComposite.setData("code", code);
+		subComposite.setText(groupTitle);
+		
+		if (data != null)
+			subComposite.setLayoutData(data);
+
+		return this;
+	}
+	
 	/**
 	 * Add a button to the dialog
 	 * @param text
 	 * @param editable
 	 * @return
 	 */
-	public PanelBuilder addButton(String code, String text, SelectionListener listener) {
-		Button button = new Button(composite, SWT.PUSH);
+	public DialogBuilder addButton(String code, String text, SelectionListener listener) {
+		return addButtonToComposite(code, null, text, listener);
+	}
+	
+	/**
+	 * Add a button to the dialog
+	 * @param text
+	 * @param editable
+	 * @return
+	 */
+	public DialogBuilder addButtonToComposite(String code, String compositeCode, String text, SelectionListener listener) {
+		
+		Composite parent;
+		if (compositeCode != null)
+			parent = (Composite) getWidget(compositeCode);
+		else
+			parent = composite;
+
+		Button button = new Button(parent, SWT.PUSH);
 		button.setData("code", code);
 		button.setText(text);
-		button.addSelectionListener(listener);
+		
+		if (listener != null)
+			button.addSelectionListener(listener);
+		
 		return this;
+	}
+	
+	/**
+	 * Add an image to a button
+	 * @param code
+	 * @param image
+	 */
+	public void addButtonImage(String code, Image image) {
+		Button button = (Button) getWidget(code);
+		button.setImage(image);
 	}
 	
 	/**
@@ -187,7 +293,7 @@ public class PanelBuilder {
 	 * Add the help viewer to the parent
 	 * @param helpMessage
 	 */
-	public PanelBuilder addHelp(String helpMessage) {
+	public DialogBuilder addHelp(String helpMessage) {
 		this.helpViewer = new HelpViewer(composite, helpMessage);
 		return this;
 	}
@@ -197,7 +303,7 @@ public class PanelBuilder {
 	 * @param label label showed at the left of the row creator
 	 * @return
 	 */
-	public PanelBuilder addRowCreator(String label) {
+	public DialogBuilder addRowCreator(String label) {
 		this.catalogSelector = new RowCreatorViewer(composite, RowCreationMode.STANDARD);
 		this.catalogSelector.setLabelText(label);
 		return this;
@@ -209,10 +315,34 @@ public class PanelBuilder {
 	 * All the values in the list will be picked up.
 	 * @param selectionListCode
 	 */
-	public PanelBuilder addRowCreator(String label, String selectionListCode) {
+	public DialogBuilder addRowCreator(String label, String selectionListCode) {
 		this.catalogSelector = new RowCreatorViewer(composite, RowCreationMode.SELECTOR);
 		this.catalogSelector.setLabelText(label);
 		this.catalogSelector.setList(selectionListCode);
+		return addRowCreatorToComposite(null, label, selectionListCode);
+	}
+	
+	
+	/**
+	 * Add a row creator with selector.
+	 * {@code selectionListCode} identifies an xml list for the combo box. 
+	 * All the values in the list will be picked up.
+	 * @param selectionListCode
+	 */
+	public DialogBuilder addRowCreatorToComposite(String compositeCode, 
+			String label, String selectionListCode) {
+		
+		Composite parent;
+		if (compositeCode != null)
+			parent = (Composite) getWidget(compositeCode);
+		else
+			parent = composite;
+		
+		this.catalogSelector = new RowCreatorViewer(parent, RowCreationMode.SELECTOR);
+		this.catalogSelector.setLabelText(label);
+		
+		if (selectionListCode != null)
+			this.catalogSelector.setList(selectionListCode);
 		return this;
 	}
 	
@@ -224,7 +354,7 @@ public class PanelBuilder {
 	 * @param selectionListCode
 	 * @param selectionId
 	 */
-	public PanelBuilder addRowCreator(String label, String selectionListCode, String selectionId) {
+	public DialogBuilder addRowCreator(String label, String selectionListCode, String selectionId) {
 		this.catalogSelector = new RowCreatorViewer(composite, RowCreationMode.SELECTOR);
 		this.catalogSelector.setLabelText(label);
 		this.catalogSelector.setList(selectionListCode, selectionId);
@@ -246,7 +376,7 @@ public class PanelBuilder {
 	/**
 	 * Add the table to the parent
 	 */
-	public PanelBuilder addTable(String schemaSheetName, boolean editable) {
+	public DialogBuilder addTable(String schemaSheetName, boolean editable) {
 		Collection<TableRow> parents = new ArrayList<>();
 		return this.addTable(schemaSheetName, editable, parents);
 	}
@@ -254,7 +384,7 @@ public class PanelBuilder {
 	/**
 	 * Add the table to the parent
 	 */
-	public PanelBuilder addTable(String schemaSheetName, boolean editable, TableRow parent) {
+	public DialogBuilder addTable(String schemaSheetName, boolean editable, TableRow parent) {
 		
 		Collection<TableRow> parents = new ArrayList<>();
 		parents.add(parent);
@@ -264,7 +394,7 @@ public class PanelBuilder {
 	/**
 	 * Add the table to the parent
 	 */
-	public PanelBuilder addTable(String schemaSheetName, boolean editable, Collection<TableRow> parents) {
+	public DialogBuilder addTable(String schemaSheetName, boolean editable, Collection<TableRow> parents) {
 		
 		this.table = new TableView(composite, schemaSheetName, editable);
 		

@@ -30,7 +30,7 @@ import xlsx_reader.TableSchemaList;
  * @author avonva
  *
  */
-public abstract class DatasetXmlCreator {
+public abstract class MessageCreator {
 	
 	/*private Document xsdModel;
 	
@@ -55,7 +55,7 @@ public abstract class DatasetXmlCreator {
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 */
-	public DatasetXmlCreator(File file) throws ParserConfigurationException, SAXException, IOException {
+	public MessageCreator(File file) throws ParserConfigurationException, SAXException, IOException {
 		
 		// get the gde2 .xsd
 		XmlReader reader = new XmlReader(AppPaths.MESSAGE_GDE2_XSD);
@@ -76,11 +76,11 @@ public abstract class DatasetXmlCreator {
 	}
 	
 	/**
-	 * Create an empty report
+	 * Create an empty report (i.e. no dataset, just header/operation)
 	 * @return
 	 * @throws IOException
 	 */
-	public File createEmptyMessage() throws IOException {
+	public File exportEmpty() throws IOException {
 		return export(null);
 	}
 	
@@ -181,25 +181,31 @@ public abstract class DatasetXmlCreator {
 				continue;
 			}
 			
-			// TODO this is an exception since the opType is defined dynamically
-			String nodeValue = null;
+			// get the schema of the column
+			TableColumn column = config.getSchema().getById(elementName);
 			
-			if (elementName.equals("opType")) {
-				nodeValue = this.opType.getCode();
-			}
-			else {
-				// get the configuration element
-				// using the xml node as match
-				TableColumnValue value = config.get(elementName);
-				
-				if (value == null || value.isEmpty()) {
-					System.err.println("No value found for " + elementName 
-							+ ". Make sure that it is a not mandatory field for opType " + opType);
-					continue;
-				}
-				nodeValue = value.getLabel();
+			if (column == null) {
+				System.out.println("No column found in the message config schema for xsd field " + elementName);
+				continue;
 			}
 			
+			if (!column.isPutInOutput(config)) {
+				System.out.println("Skipping " + elementName + " since it should not be put in output");
+				continue;
+			}
+
+			// get the configuration element
+			// using the xml node as match
+			TableColumnValue value = config.get(elementName);
+
+			if (value == null || value.isEmpty()) {
+				System.err.println("No value found for " + elementName 
+						+ ". Make sure that it is a not mandatory field for opType " + opType);
+				continue;
+			}
+			
+			String nodeValue = value.getLabel();
+
 			// append the value of the configuration to the xml node
 			sb.append(getXmlNode(elementName, nodeValue));
 		}
@@ -347,6 +353,9 @@ public abstract class DatasetXmlCreator {
 		TableRow row = new TableRow(schema);
 		row.initialize();
 
+		// add the op type to the row
+		row.put(AppPaths.MESSAGE_CONFIG_OP_TYPE, opType.getCode());
+		
 		Collection<TableRow> parents = getConfigMessageParents();
 		
 		if (parents != null) {

@@ -1,6 +1,7 @@
 package webservice;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPBody;
@@ -30,6 +31,8 @@ public class GetAck extends SOAPRequest {
 	
 	private String messageId;
 	
+	private SOAPMessage response;
+	
 	/**
 	 * Get an ack for the chosen message
 	 * @param messageId
@@ -44,7 +47,7 @@ public class GetAck extends SOAPRequest {
 	 * @return
 	 * @throws SOAPException
 	 */
-	public Ack getAck() throws SOAPException {
+	public Ack getAck() throws MySOAPException {
 		
 		Object response = makeRequest(URL);
 		
@@ -54,6 +57,40 @@ public class GetAck extends SOAPRequest {
 		return (Ack) response;
 	}
 
+	/**
+	 * Get the attachment of the ack response
+	 * @return
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
+	 * @throws SOAPException 
+	 */
+	public Document getAttachment() throws SOAPException, 
+		ParserConfigurationException, SAXException, IOException {
+		
+		if (response == null) {
+			System.err.println("Cannot get attachment. Make request first!");
+			return null;
+		}
+		
+		return getFirstXmlAttachment(response);
+	}
+	
+	/**
+	 * Get raw attachment of the response
+	 * @return
+	 * @throws SOAPException
+	 */
+	public InputStream getRawAttachment() throws MySOAPException {
+		
+		if (response == null) {
+			System.err.println("Cannot get attachment. Make request first!");
+			return null;
+		}
+		
+		return getFirstRawAttachment(response);
+	}
+	
 	@Override
 	public SOAPMessage createRequest(SOAPConnection con) throws SOAPException {
 		
@@ -138,6 +175,8 @@ public class GetAck extends SOAPRequest {
 	 * @throws SOAPException
 	 */
 	private AckLog extractAcklog(SOAPMessage soapResponse) throws SOAPException {
+		
+		this.response = soapResponse;
 		
 		Document attachment;
 		try {

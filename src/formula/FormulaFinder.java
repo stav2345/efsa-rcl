@@ -10,7 +10,7 @@ public class FormulaFinder {
 	private static final String INTEGER = "[0-9]+";
 	private static final String LETTER = "[a-zA-Z]";
 	private static final String STRING = "(" + LETTER + ")+";
-	private static final String VARIABLE = "(" + NUMBER + "|" + LETTER + ")+";
+	private static final String VARIABLE = "((" + NUMBER + ")|(" + LETTER + "))+";
 	
 	public static final String RELATION_REGEX = "RELATION\\{.+?,.+?\\}";
 	
@@ -162,7 +162,7 @@ public class FormulaFinder {
 		
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(text);
-		
+
 		while (m.find()) {
 			String formula = m.group();
 			ComparatorFormula compFormula = new ComparatorFormula(formula, operator);
@@ -192,6 +192,7 @@ public class FormulaFinder {
 			.append(toRegex(KeywordFormula.APP_DC_TABLE_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.NULL_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.CONCAT_KEYWORD)).append("|")
+			.append(toRegex(KeywordFormula.TODAY_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.LAST_MONTH_CODE_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.LAST_MONTH_LABEL_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.LAST_MONTH_YEAR_CODE_KEYWORD)).append("|")

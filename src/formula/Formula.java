@@ -98,12 +98,19 @@ public class Formula {
 		
 		print(value, "RELATIONS");
 		
-		// solve logical comparisons
+		// solve logical == / !=
 		value = solveLogicalOperators(value);
 		
-		print(value, "LOGIC");
+		print(value, "LOGIC OP");
+		
+		// solve logical comparisons
+		value = solveLogicalComparators(value);
+		
+		print(value, "LOGIC COMP");
 		
 		value = solveFunctionsFormula(value);
+		
+		print(value, "FUNCTIONS");
 
 		this.solvedFormula = value.trim();
 		
@@ -112,7 +119,7 @@ public class Formula {
 	
 	private void print(String value, String header) {
 		
-		//if ((column.equals("reportSenderId")) && fieldHeader.equals("labelFormula"))
+		//if ((column.equals("senderDatasetId")) && fieldHeader.equals("putInOutput"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
 		//System.out.println("TIME for " + header + " => " 
 		//		+ (System.currentTimeMillis() - debugTime)/1000.00 + " seconds");
@@ -190,6 +197,27 @@ public class Formula {
 		// compute disequal
 		comparisonFormulas.addAll(FormulaFinder
 				.findComparatorFormulas(value, ComparatorFormula.DISEQUAL));
+		
+		// compute or
+		comparisonFormulas.addAll(FormulaFinder
+				.findComparatorFormulas(value, ComparatorFormula.OR));
+
+		return replaceFormulasWithSolution(comparisonFormulas, value, false);
+	}
+	
+	/**
+	 * Solve or/and
+	 * @param value
+	 * @return
+	 * @throws FormulaException
+	 */
+	private String solveLogicalComparators(String value) throws FormulaException {
+		
+		FormulaList comparisonFormulas = new FormulaList();
+		
+		// compute or
+		comparisonFormulas.addAll(FormulaFinder
+				.findComparatorFormulas(value, ComparatorFormula.OR));
 
 		return replaceFormulasWithSolution(comparisonFormulas, value, false);
 	}

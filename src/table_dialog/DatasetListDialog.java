@@ -9,11 +9,13 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import dataset.Dataset;
 import dataset.DatasetList;
-import warn_user.Warnings;
+import dataset.DatasetStatus;
+import global_utils.Warnings;
 
 public class DatasetListDialog {
 
@@ -65,7 +67,12 @@ public class DatasetListDialog {
 		TableViewerColumn statusCol = new TableViewerColumn(datasetList, SWT.NONE);
 		statusCol.getColumn().setText("DCF status");
 		statusCol.setLabelProvider(new DatasetLabelProvider("status"));
-		statusCol.getColumn().setWidth(100);
+		statusCol.getColumn().setWidth(130);
+		
+		TableViewerColumn revisionCol = new TableViewerColumn(datasetList, SWT.NONE);
+		revisionCol.getColumn().setText("Current revision");
+		revisionCol.setLabelProvider(new DatasetLabelProvider("revision"));
+		revisionCol.getColumn().setWidth(100);
 
 		// ok button to select a dataset
 		Button okBtn = new Button(dialog, SWT.PUSH);
@@ -115,5 +122,36 @@ public class DatasetListDialog {
 	 */
 	public Dataset getSelectedDataset() {
 		return selectedDataset;
+	}
+	
+	public static void main(String[] args) {
+		
+		DatasetList list = new DatasetList();
+		
+		String[] senderIds = new String[]{
+				"IT1704", "IT1704.02", 
+				"FR1204", "FR1204.99",
+				"SP1707"
+				};
+		
+		for (int i = 0; i < senderIds.length; ++i) {
+			Dataset d1 = new Dataset();
+			d1.setId("");
+			d1.setStatus(DatasetStatus.VALID);
+			d1.setSenderId(senderIds[i]);
+			list.add(d1);
+		}
+		
+		Display display = new Display();
+		Shell shell = new Shell(display);
+		
+		DatasetListDialog dialog = new DatasetListDialog(shell, "", "OK");
+		dialog.setList(list.getDownloadableDatasets());
+		dialog.open();
+		
+		// get all the versions
+		Dataset chosen = dialog.getSelectedDataset();
+		DatasetList versions = list.filterByDecomposedSenderId(chosen.getDecomposedSenderId());
+		System.out.println(versions);
 	}
 }

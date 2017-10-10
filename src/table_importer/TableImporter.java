@@ -30,7 +30,7 @@ public class TableImporter {
 		// remove all the rows from the parent we want to override
 		TableDao writeDao = new TableDao(childSchema);
 		int parentToWriteId = parentToWrite.getId();
-		writeDao.removeByParentId(parentTable, parentToWriteId);
+		writeDao.deleteByParentId(parentTable, parentToWriteId);
 		
 		// for each copied row, insert it into the
 		// parentToWrite table

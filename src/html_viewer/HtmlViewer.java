@@ -1,7 +1,7 @@
 package html_viewer;
 
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 
 import org.eclipse.swt.program.Program;
 
@@ -24,20 +24,29 @@ public class HtmlViewer {
 		this.open(html);
 	}*/
 	
+	/**
+	 * Open an html file in the browser
+	 * @param helpFileName
+	 */
 	public void open(String helpFileName) {
+		File file = new File(helpFileName);
+		this.open(file);
+	}
+	
+	/**
+	 * Open an html file in the browser
+	 * @param file
+	 */
+	public void open(File file) {
 		
-		URL url = getClass().getClassLoader().getResource(helpFileName);
+		URI uri = file.toURI();
 		
-		if (url == null) {
-			System.err.println("File not found " + helpFileName);
+		if (uri == null) {
+			System.err.println("File not found " + file.getName());
 			return;
 		}
 		
-		Program.launch(url.toString());
-	}
-	
-	public void open(File file) {
-		open(file.getName());
+		Program.launch(uri.toString());
 	}
 
 	/**
