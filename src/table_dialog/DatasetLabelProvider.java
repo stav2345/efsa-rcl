@@ -5,6 +5,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
 import dataset.Dataset;
+import table_skeleton.TableVersion;
 
 /**
  * Label provider of the {@link Dataset}
@@ -55,7 +56,7 @@ public class DatasetLabelProvider extends ColumnLabelProvider {
 			break;
 		case "revision":
 			text = dataset.getVersion();
-			if (text == null) {
+			if (TableVersion.isFirstVersion(text)) {
 				text = "None";
 			}
 			break;

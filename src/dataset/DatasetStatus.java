@@ -68,8 +68,8 @@ public enum DatasetStatus {
 	 * @return
 	 */
 	public boolean canBeSent() {
-		return this == DRAFT || this == DatasetStatus.UPLOAD_FAILED 
-				|| this == DatasetStatus.REJECTED;
+		return this == DRAFT || this == UPLOAD_FAILED 
+				|| this == REJECTED;
 	}
 	
 	/**
@@ -94,9 +94,19 @@ public enum DatasetStatus {
 	 * @return
 	 */
 	public boolean canBeRefreshed() {
-		return this == VALID || this == DatasetStatus.VALID_WITH_WARNINGS || this == REJECTION_SENT
-				|| this == DatasetStatus.REJECTED_EDITABLE || this == DatasetStatus.UPLOADED
-				|| this == DatasetStatus.SUBMISSION_SENT || this == DatasetStatus.SUBMITTED;
+		return this == VALID || this == VALID_WITH_WARNINGS || this == REJECTION_SENT
+				|| this == REJECTED_EDITABLE || this == UPLOADED
+				|| this == SUBMISSION_SENT || this == SUBMITTED;
+	}
+	
+	/**
+	 * Check if the status of the dataset can be refreshed or not
+	 * @return
+	 */
+	public boolean canDisplayAck() {
+		return this == UPLOAD_FAILED || this == DRAFT 
+				|| this == REJECTED || this == VALID 
+				|| this == VALID_WITH_WARNINGS || this == REJECTED_EDITABLE;
 	}
 	
 	/**

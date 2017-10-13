@@ -26,8 +26,8 @@ public class DatabaseStructureCreator extends XlsxReader {
 	private ColumnType currentColumnType;
 	private String currentColumnId;
 	private List<String> foreignKeys;
-	private boolean isCompositeCode;
-	private boolean isCompositeLabel;
+	//private boolean isCompositeCode;
+	//private boolean isCompositeLabel;
 	
 	/**
 	 * Initialize the creator.
@@ -36,8 +36,8 @@ public class DatabaseStructureCreator extends XlsxReader {
 	 */
 	public DatabaseStructureCreator(String filename) throws IOException {
 		super(filename);
-		this.isCompositeCode = false;
-		this.isCompositeLabel = false;
+		//this.isCompositeCode = false;
+		//this.isCompositeLabel = false;
 		this.foreignKeys = new ArrayList<>();
 	}
 
@@ -61,7 +61,17 @@ public class DatabaseStructureCreator extends XlsxReader {
 			
 			addTableStatement(sheet.getSheetName());
 		}
+		
+		// create also the dataset comparison table
+		query.append("create table APP.DATASET_COMPARISON (\n")
+			.append("ROW_ID varchar(100) not null,\n")
+			.append("VERSION varchar(50) not null,\n")
+			.append("XML_RECORD varchar(30000) not null,\n")
+			.append("AM_TYPE varchar(100),\n")
+			.append("primary key(ROW_ID, VERSION));\n");
+		
 		System.out.println(query.toString());
+		
 		return query.toString();
 	}
 
@@ -180,8 +190,8 @@ public class DatabaseStructureCreator extends XlsxReader {
 	public void startRow(Row row) {
 		
 		// reset values
-		this.isCompositeCode = false;
-		this.isCompositeLabel = false;
+		//this.isCompositeCode = false;
+		//this.isCompositeLabel = false;
 	}
 
 	@Override

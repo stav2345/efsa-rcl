@@ -9,12 +9,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import dataset.Dataset;
 import dataset.DatasetList;
-import dataset.DatasetStatus;
 import global_utils.Warnings;
 
 public class DatasetListDialog {
@@ -34,7 +32,7 @@ public class DatasetListDialog {
 		create();
 	}
 	
-	public void setList(DatasetList list) {
+	public void setList(DatasetList<Dataset> list) {
 		datasetList.setInput(list);
 	}
 	
@@ -122,36 +120,5 @@ public class DatasetListDialog {
 	 */
 	public Dataset getSelectedDataset() {
 		return selectedDataset;
-	}
-	
-	public static void main(String[] args) {
-		
-		DatasetList list = new DatasetList();
-		
-		String[] senderIds = new String[]{
-				"IT1704", "IT1704.02", 
-				"FR1204", "FR1204.99",
-				"SP1707"
-				};
-		
-		for (int i = 0; i < senderIds.length; ++i) {
-			Dataset d1 = new Dataset();
-			d1.setId("");
-			d1.setStatus(DatasetStatus.VALID);
-			d1.setSenderId(senderIds[i]);
-			list.add(d1);
-		}
-		
-		Display display = new Display();
-		Shell shell = new Shell(display);
-		
-		DatasetListDialog dialog = new DatasetListDialog(shell, "", "OK");
-		dialog.setList(list.getDownloadableDatasets());
-		dialog.open();
-		
-		// get all the versions
-		Dataset chosen = dialog.getSelectedDataset();
-		DatasetList versions = list.filterByDecomposedSenderId(chosen.getDecomposedSenderId());
-		System.out.println(versions);
 	}
 }

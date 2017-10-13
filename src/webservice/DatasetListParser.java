@@ -22,9 +22,9 @@ public class DatasetListParser {
 	 * @param body
 	 * @return
 	 */
-	public DatasetList parseDatasets(SOAPBody body) {
+	public DatasetList<Dataset> parseDatasets(SOAPBody body) {
 		
-		DatasetList datasets = new DatasetList();
+		DatasetList<Dataset> datasets = new DatasetList<>();
 		
 		NodeList datas = body.getElementsByTagName("dataset");
 

@@ -2,7 +2,9 @@ package dataset;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
+import report.VersionComparator;
 import webservice.GetDatasetList;
 
 /**
@@ -10,7 +12,7 @@ import webservice.GetDatasetList;
  * @author avonva
  *
  */
-public class DatasetList extends ArrayList<Dataset> {
+public class DatasetList<T extends IDataset> extends ArrayList<T> {
 
 	/**
 	 * 
@@ -32,11 +34,11 @@ public class DatasetList extends ArrayList<Dataset> {
 	 * @param regex
 	 * @return
 	 */
-	public DatasetList filterBySenderId(String regex) {
+	public DatasetList<T> filterBySenderId(String regex) {
 		
-		DatasetList filteredList = new DatasetList();
+		DatasetList<T> filteredList = new DatasetList<T>();
 		
-		for (Dataset dataset : this) {
+		for (T dataset : this) {
 			
 			String senderId = dataset.getSenderId();
 			
@@ -57,11 +59,11 @@ public class DatasetList extends ArrayList<Dataset> {
 	 * @param regex
 	 * @return
 	 */
-	public DatasetList filterByDecomposedSenderId(String regex) {
+	public DatasetList<T> filterByDecomposedSenderId(String regex) {
 		
-		DatasetList filteredList = new DatasetList();
+		DatasetList<T> filteredList = new DatasetList<>();
 		
-		for (Dataset dataset : this) {
+		for (T dataset : this) {
 			
 			String senderId = dataset.getDecomposedSenderId();
 			
@@ -77,20 +79,81 @@ public class DatasetList extends ArrayList<Dataset> {
 	}
 	
 	/**
+	 * Filter by inclusion
+	 * @param statusFilter
+	 * @return
+	 */
+	public DatasetList<T> filterByStatus(Collection<DatasetStatus> statusFilter) {
+		return filterByStatus(statusFilter, false);
+	}
+	
+	/**
 	 * Filter the datasets by their status
 	 * @param statusFilter
 	 * @return
 	 */
-	public DatasetList filterByStatus(Collection<DatasetStatus> statusFilter) {
+	public DatasetList<T> filterByStatus(Collection<DatasetStatus> statusFilter, boolean exclude) {
 		
-		DatasetList filteredList = new DatasetList();
-		for (Dataset d: this) {
-			if (statusFilter.contains(d.getStatus())) {
+		DatasetList<T> filteredList = new DatasetList<>();
+		for (T d: this) {
+			
+			boolean contained = statusFilter.contains(d.getStatus());
+			
+			// if contained and we filter by inclusion
+			// of if not contained and we filter by exclusion add it
+			boolean addIt = (contained && !exclude) || (!contained && exclude);
+			
+			if (addIt) {
 				filteredList.add(d);
 			}
 		}
 		
 		return filteredList;
+	}
+	
+	public DatasetList<T> filterByStatus(DatasetStatus statusFilter, boolean exclude) {
+		
+		Collection<DatasetStatus> status = new ArrayList<>();
+		status.add(statusFilter);
+		
+		return filterByStatus(status, exclude);
+	}
+	
+	public DatasetList<T> filterByStatus(DatasetStatus statusFilter) {		
+		return filterByStatus(statusFilter, false);
+	}
+	
+	/**
+	 * Get the last version in status {@link DatasetStatus#ACCEPTED_DWH}
+	 * @return
+	 */
+	public T getLastAcceptedVersion(String senderId) {
+		
+		// get only accepted datasets
+		DatasetList<T> datasets = this.filterByStatus(DatasetStatus.ACCEPTED_DWH);
+		
+		// get the last
+		return datasets.getLastVersion(senderId);
+	}
+	
+	/**
+	 * Get the last version of a dataset with status
+	 * which is not {@link DatasetStatus#DELETED}
+	 * or {@link DatasetStatus#REJECTED}
+	 * @param senderId
+	 * @return
+	 */
+	public T getLastExistingVersion(String senderId) {
+		
+		Collection<DatasetStatus> statusFilter = new ArrayList<>();
+		statusFilter.add(DatasetStatus.DELETED);
+		statusFilter.add(DatasetStatus.REJECTED);
+		
+		// get only datasets that exist in DCF
+		DatasetList<T> datasets = this.filterByStatus(statusFilter, true);
+		
+		// get the last
+		return datasets.getLastVersion(senderId);
 	}
 	
 	/**
@@ -99,21 +162,24 @@ public class DatasetList extends ArrayList<Dataset> {
 	 * @param senderId
 	 * @return
 	 */
-	public Dataset getLastVersion(String senderId) {
+	public T getLastVersion(String senderId) {
 		
 		// get only related datasets
-		DatasetList datasets = this.filterByDecomposedSenderId(senderId);
+		DatasetList<T> datasets = this.filterByDecomposedSenderId(senderId);
 		
 		if (datasets.isEmpty())
 			return null;
 		
-		Dataset last = datasets.get(0);
+		T last = datasets.get(0);
 		
-		for (Dataset d: datasets) {
+		for (T d: datasets) {
 			
+			VersionComparator comparator = new VersionComparator();
+			int compare = comparator.compare(d, last);
+
 			// if the new has a greater version
 			// then save it as last
-			if (d.compareTo(last) > 0)
+			if (compare < 0)
 				last = d;
 		}
 		
@@ -121,13 +187,20 @@ public class DatasetList extends ArrayList<Dataset> {
 	}
 	
 	/**
+	 * Sort the collection by sender id and version
+	 */
+	public void sort() {
+		Collections.sort(this, new VersionComparator());
+	}
+	
+	/**
 	 * Filter all the old versions of datasets
 	 * @return
 	 */
-	public DatasetList filterOldVersions() {
+	public DatasetList<T> filterOldVersions() {
 		
-		DatasetList lasts = new DatasetList();
-		for (Dataset d: this) {
+		DatasetList<T> lasts = new DatasetList<>();
+		for (T d: this) {
 			
 			String senderId = d.getDecomposedSenderId();
 			
@@ -135,8 +208,8 @@ public class DatasetList extends ArrayList<Dataset> {
 				continue;
 			
 			// get last version of the dataset
-			Dataset last = this.getLastVersion(senderId);
-			
+			T last = this.getLastVersion(senderId);
+
 			// if not already added, put it in the list of lasts
 			if (!lasts.contains(last)) {
 				lasts.add(last);
@@ -150,7 +223,7 @@ public class DatasetList extends ArrayList<Dataset> {
 	 * Get the list of dataset that can be downloaded from the tool
 	 * @return
 	 */
-	public DatasetList getDownloadableDatasets() {
+	public DatasetList<T> getDownloadableDatasets(String validSenderIdPattern) {
 		
 		Collection<DatasetStatus> statusFilter = new ArrayList<>();
 		statusFilter.add(DatasetStatus.REJECTED_EDITABLE);
@@ -165,7 +238,7 @@ public class DatasetList extends ArrayList<Dataset> {
 		// examples: IT1704 FR1411.1 SP1512.01 GR1109.14
 		
 		return filterByStatus(statusFilter)
-				.filterBySenderId(Dataset.VALID_SENDER_ID_PATTERN)
+				.filterBySenderId(validSenderIdPattern)
 				.filterOldVersions();
 	}
 }

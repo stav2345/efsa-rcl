@@ -117,53 +117,11 @@ public class TableRow implements Checkable {
 	}
 	
 	/**
-	 * Get the version of the table represented by this row
+	 * Get the parent of this table row
+	 * @param parentSchema schema of the parent (also identifies the type of
+	 * parent required)
 	 * @return
 	 */
-	/*public TableColumnValue getVersion() {
-		
-		TableMetaData metaData = TableMetaData.getTableByName(schema.getSheetName());
-		
-		if(!metaData.isKeepVersion()) {
-			System.err.println("TableRow: Cannot get version for table that has keepVersion set to false");
-			return null;
-		}
-		
-		String versionKey = schema.getVersionField();
-		
-		TableColumnValue value = this.get(versionKey);
-		
-		if (value == null) {
-			System.err.println("TableRow: found keepVersion set to true, but no " + versionKey + " field found");
-		}
-		
-		return value;
-	}*/
-	
-	/**
-	 * Create a new version of the row
-	 */
-	/*public void createNewVersion() {
-		
-		TableColumnValue version = getVersion();
-		
-		if (version == null)
-			return;
-		
-		// get the current version
-		String versionCode = version.getCode();
-		
-		// increase the version
-		String newVersionCode = TableVersion.createNewVersion(versionCode);
-		
-		// update the value
-		version.setCode(newVersionCode);
-		version.setLabel(newVersionCode);
-		
-		// update the object in the row
-		this.put(schema.getVersionField(), version);
-	}*/
-	
 	public TableRow getParent(TableSchema parentSchema) {
 		
 		// open the child dao
@@ -423,7 +381,10 @@ public class TableRow implements Checkable {
 		dao.delete(this.getId());
 	}
 
-	
+	/**
+	 * Get the schema of the row
+	 * @return
+	 */
 	public TableSchema getSchema() {
 		return schema;
 	}
@@ -432,7 +393,7 @@ public class TableRow implements Checkable {
 	 * Get the status of the row
 	 * @return
 	 */
-	public RowStatus getStatus() {
+	public RowStatus getRowStatus() {
 		
 		RowStatus status = RowStatus.OK;
 		
@@ -522,6 +483,56 @@ public class TableRow implements Checkable {
 		// if we have arrived here, all the natural
 		// keys are equal, therefore we have the same row
 		return true;
+	}
+	
+	/**
+	 * Convert the row into an xml
+	 * @return
+	 */
+	public String toXml(boolean addRoot) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for (TableColumn column : schema) {
+
+			// skip non output columns
+			if (!column.isPutInOutput(this))
+				continue;
+
+			String node = getXmlNode(column.getXmlTag(), this.get(column.getId()).getCode());
+
+			// write the node
+			sb.append(node);
+		}
+		
+		// if add root return the wrapped version
+		if (addRoot) {
+			return getXmlNode("result", sb.toString());
+		}
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * Create a single xml node with the text content
+	 * @param nodeName
+	 * @param textContent
+	 * @return
+	 */
+	private String getXmlNode(String nodeName, String textContent) {
+		
+		StringBuilder node = new StringBuilder();
+		
+		// create the node
+		node.append("<")
+			.append(nodeName)
+			.append(">")
+			.append(textContent)
+			.append("</")
+			.append(nodeName)
+			.append(">");
+		
+		return node.toString();
 	}
 	
 	@Override

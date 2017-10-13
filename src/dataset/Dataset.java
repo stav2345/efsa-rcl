@@ -1,14 +1,14 @@
 package dataset;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.xml.soap.SOAPException;
 import javax.xml.stream.XMLStreamException;
 
 import table_skeleton.TableRow;
+import table_skeleton.TableVersion;
 import webservice.GetDataset;
 import webservice.GetDatasetList;
 import webservice.MySOAPException;
@@ -20,7 +20,9 @@ import webservice.MySOAPException;
  *
  */
 
-public class Dataset implements Comparable<Dataset> {
+public class Dataset implements IDataset {
+	
+	private File datasetFile; // cache
 	
 	private Header header;
 	private Operation operation;
@@ -29,13 +31,6 @@ public class Dataset implements Comparable<Dataset> {
 	private String id;
 	private String senderId;
 	private DatasetStatus status;
-
-	private static final String COUNTRY = "[a-zA-Z][a-zA-Z]";
-	private static final String YEAR = "\\d\\d";
-	private static final String MONTH = "\\d\\d";
-	private static final String VERSION = "(\\.((0\\d)|(\\d\\d)))?";  // either .01, .02 or .10, .50 (always two digits)
-	
-	public static final String VALID_SENDER_ID_PATTERN = COUNTRY + YEAR + MONTH + VERSION;
 	
 	public Dataset() {
 		this.rows = new ArrayList<>();
@@ -62,12 +57,7 @@ public class Dataset implements Comparable<Dataset> {
 	 * @return
 	 */
 	public String getVersion() {
-		
-		String[] split = splitSenderId();
-		if (split == null)
-			return null;
-		
-		return split[1];
+		return TableVersion.extractVersionFrom(senderId);
 	}
 	
 	private String[] splitSenderId() {
@@ -79,9 +69,6 @@ public class Dataset implements Comparable<Dataset> {
 		if (senderId == null)
 			return null;
 		
-		if (!senderId.matches(VALID_SENDER_ID_PATTERN))
-			return null;
-		
 		String[] split = senderId.split("\\.");
 		
 		if (split.length != 2)
@@ -90,36 +77,47 @@ public class Dataset implements Comparable<Dataset> {
 		return split;
 	}
 	
-	/**
-	 * Given an empty dataset with just the id, senderId and status
-	 * (e.g. a dataset downloaded with {@link GetDatasetList})
-	 * populate it with the header/operation and the rows by
-	 * sending the {@link GetDataset} request to the DCF
-	 * @return
-	 * @throws SOAPException 
-	 */
-	public Dataset populate() throws MySOAPException {
+	public File download() throws MySOAPException {
+		
+		// use cache if possible
+		if (this.datasetFile != null && this.datasetFile.exists()) {
+			return datasetFile;
+		}
 		
 		GetDataset req = new GetDataset(id);
 		File file = req.getDatasetFile();
 		
 		if (file == null)
 			return null;
-
-		try {
-			
-			DatasetParser parser = new DatasetParser(file);
-			Dataset populatedDataset = parser.parse();
-			populatedDataset.setId(id);
-			populatedDataset.setSenderId(senderId);
-			populatedDataset.setStatus(status);
-			return populatedDataset;
-			
-		} catch (FileNotFoundException | XMLStreamException e) {
-			e.printStackTrace();
-		}
 		
-		return this;
+		this.datasetFile = file;
+		
+		return file;
+	}
+	
+	/**
+	 * Populate the dataset with the header and operation information (from DCF)
+	 * @return
+	 * @throws XMLStreamException
+	 * @throws MySOAPException
+	 * @throws IOException
+	 */
+	public Dataset populateMetadata() throws XMLStreamException, MySOAPException, IOException {
+		
+		File file = download();
+		
+		if (file == null)
+			return null;
+		
+		DatasetMetaDataParser parser = new DatasetMetaDataParser(file);
+		
+		Dataset dataset = parser.parse();
+		dataset.setStatus(this.status);
+		dataset.setSenderId(this.senderId);
+		
+		parser.close();
+		
+		return dataset;
 	}
 	
 	public void addRow(TableRow row) {
@@ -224,34 +222,5 @@ public class Dataset implements Comparable<Dataset> {
 		}
 		
 		return super.equals(arg0);
-	}
-
-	@Override
-	public int compareTo(Dataset arg0) {
-		
-		String senderId = arg0.getDecomposedSenderId();
-		String version = arg0.getVersion();
-		
-		String mySenderId = this.getDecomposedSenderId();
-		String myVersion = this.getVersion();
-		
-		if (senderId == null || mySenderId == null)
-			return 0;
-		
-		if (!senderId.equalsIgnoreCase(mySenderId))
-			return mySenderId.compareTo(senderId);
-		
-		if (version == null && myVersion == null)
-			return 0;
-		
-		// if the other don't have version i am last
-		if (version == null && myVersion != null)
-			return 1;
-		
-		// if i don't have version i am previous
-		if (version != null && myVersion == null)
-			return -1;
-		
-		return myVersion.compareTo(version);
 	}
 }

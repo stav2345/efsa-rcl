@@ -15,19 +15,17 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import amend_manager.DatasetComparison;
 import dataset.Header.HeaderNode;
 import dataset.Operation.OperationNode;
-import table_skeleton.TableRow;
 import xml_catalog_reader.XmlContents;
 
 /**
- * Parser for the .xml dataset and return it into the {@link Dataset} object
+ * Parser for the .xml dataset meta data (header and operation)
+ * and return it into a {@link Dataset} object
  * @author avonva
  *
  */
-@Deprecated
-public class DatasetParser implements Closeable {
+public class DatasetMetaDataParser implements Closeable {
 
 	private enum CurrentBlock {
 		HEADER,
@@ -45,9 +43,6 @@ public class DatasetParser implements Closeable {
 	private HeaderBuilder headerBuilder;
 	private OperationBuilder opBuilder;
 	
-	private DatasetComparison datasetComp;
-	private TableRow datasetRow;
-	
 	private Dataset dataset;
 	private InputStream input;               // input xml
 	private XMLEventReader eventReader;      // xml parser
@@ -59,7 +54,7 @@ public class DatasetParser implements Closeable {
 	 * @throws FileNotFoundException
 	 * @throws XMLStreamException
 	 */
-	public DatasetParser(File file) throws FileNotFoundException, XMLStreamException {
+	public DatasetMetaDataParser(File file) throws FileNotFoundException, XMLStreamException {
 		this(new FileInputStream(file));
 	}
 	
@@ -68,11 +63,10 @@ public class DatasetParser implements Closeable {
 	 * @param input input stream which contains the .xml file to parse
 	 * @throws XMLStreamException
 	 */
-	public DatasetParser(InputStream input) throws XMLStreamException {
+	public DatasetMetaDataParser(InputStream input) throws XMLStreamException {
 		
 		this.input = input;
 		this.dataset = new Dataset();
-		this.datasetComp = new DatasetComparison();
 		
 		// initialize xml parser
 		XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -114,6 +108,10 @@ public class DatasetParser implements Closeable {
 				end(event);
 				break;
 			}
+			
+			// when header and operation are obtained stop the program
+			if (dataset.getHeader() != null && dataset.getOperation() != null)
+				break;
 		}
 		
 		return this.dataset;
@@ -150,7 +148,6 @@ public class DatasetParser implements Closeable {
 			this.currentBlock = CurrentBlock.DATASET;
 			break;
 		case "result":
-			this.datasetRow = new TableRow();
 			this.currentBlock = CurrentBlock.RESULT;
 			break;
 		default:
@@ -215,19 +212,6 @@ public class DatasetParser implements Closeable {
 			break;
 			
 		case RESULT:
-			
-			datasetRow.put(currentNode, contents);
-			
-			// save also the xml node
-			StringBuilder xmlNode = new StringBuilder("<")
-					.append(currentNode)
-					.append(">")
-					.append(contents)
-					.append("</")
-					.append(currentNode)
-					.append(">");
-			
-			this.datasetComp.addXmlNode(xmlNode.toString());
 			break;
 			
 		default:
@@ -255,8 +239,6 @@ public class DatasetParser implements Closeable {
 			this.dataset.setOperation(opBuilder.build());
 			break;
 		case "result":
-			this.dataset.addRow(datasetRow);
-			this.datasetComp.buildXml();
 			break;
 		default:
 			break;

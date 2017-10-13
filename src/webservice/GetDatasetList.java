@@ -7,6 +7,7 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
 import app_config.PropertiesReader;
+import dataset.Dataset;
 import dataset.DatasetList;
 
 /**
@@ -39,15 +40,16 @@ public class GetDatasetList extends SOAPRequest {
 	 * Send the request and get the dataset list
 	 * @throws SOAPException
 	 */
-	public DatasetList getList() throws MySOAPException {
+	@SuppressWarnings("unchecked")
+	public DatasetList<Dataset> getList() throws MySOAPException {
 		
-		DatasetList datasets = new DatasetList();
+		DatasetList<Dataset> datasets = new DatasetList<>();
 		
 		Object response = makeRequest(URL);  // get the datasets
 		
 		// get the list from the response if possible
 		if (response != null) {
-			datasets = (DatasetList) response;
+			datasets = (DatasetList<Dataset>) response;
 		}
 		
 		return datasets;

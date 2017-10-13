@@ -1,0 +1,108 @@
+package amend_manager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
+import table_database.Database;
+
+public class DatasetComparisonDao {
+
+	/**
+	 * add an element to the table
+	 * @param comp
+	 */
+	public void add(DatasetComparison comp) {
+		
+		String query = "insert into APP.DATASET_COMPARISON (ROW_ID, VERSION, XML_RECORD, AM_TYPE) values (?,?,?,?)";
+
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(query, 
+						Statement.RETURN_GENERATED_KEYS);) {
+			
+			stmt.setString(1, comp.getRowId());
+			stmt.setString(2, comp.getVersion());
+			stmt.setString(3, comp.getXmlRecord());
+			
+			if (comp.getAmType() == null)
+				stmt.setNull(4, Types.VARCHAR);
+			else 
+				stmt.setString(4, comp.getAmType().getCode());
+			
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public DatasetComparison getByResultSet(ResultSet rs) throws SQLException {
+		
+		String rowId = rs.getString("ROW_ID");
+		String version = rs.getString("VERSION");
+		String xmlRecord = rs.getString("XML_RECORD");
+		AmendType amType = AmendType.fromCode(rs.getString("AM_TYPE"));
+		
+		return new DatasetComparison(rowId, version, xmlRecord, amType);
+	}
+
+	public List<DatasetComparison> getAll() {
+		
+		List<DatasetComparison> comparisons = new ArrayList<>();
+		
+		String query = "select * from APP.DATASET_COMPARISON";
+		
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(query);) {
+
+			try (ResultSet rs = stmt.executeQuery();) {
+				while (rs.next()) {
+					comparisons.add(getByResultSet(rs));
+				}
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return comparisons;
+	}
+	
+	/**
+	 * Clear the table
+	 */
+	public void deleteAll() {
+		
+		String query = "delete from APP.DATASET_COMPARISON";
+
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(query);) {
+
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Execute a query
+	 * @param query
+	 */
+	public void executeQuery(String query) {
+
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(query);) {
+
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+}

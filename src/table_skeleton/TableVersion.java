@@ -2,6 +2,32 @@ package table_skeleton;
 
 public class TableVersion {
 
+	public static String extractVersionFrom(String field) {
+		
+		String[] split = field.split("\\.");
+		if (split.length < 2)
+			return "00";
+		
+		return split[1];
+	}
+	
+	public static String getFirstVersion() {
+		return "00";
+	}
+	
+	public static boolean isFirstVersion(String version) {
+		return version == null || version.isEmpty() 
+				|| version.equals("00") || version.equals("0");
+	}
+	
+	public static int getNumVersion(String version) {
+		
+		if (version == null || version.isEmpty())
+			return 0;
+		
+		return Integer.valueOf(version);
+	}
+	
 	/**
 	 * Create a new version formatted as:
 	 * 01, 02, 03, ..., 10, 11, ..., 99
@@ -11,7 +37,7 @@ public class TableVersion {
 	public static String createNewVersion(String versionCode) {
 		
 		// if starting from no version, add the first version
-		if (versionCode == null) {
+		if (versionCode == null || versionCode.isEmpty()) {
 			return "01";
 		}
 		

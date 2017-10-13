@@ -1,4 +1,4 @@
-package dataset;
+package amend_manager;
 
 import java.io.Closeable;
 import java.io.File;
@@ -15,40 +15,28 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import amend_manager.DatasetComparison;
-import dataset.Header.HeaderNode;
-import dataset.Operation.OperationNode;
-import table_skeleton.TableRow;
-import xml_catalog_reader.XmlContents;
+import dataset.Dataset;
+import table_skeleton.TableVersion;
 
 /**
  * Parser for the .xml dataset and return it into the {@link Dataset} object
  * @author avonva
  *
  */
-@Deprecated
-public class DatasetParser implements Closeable {
+public class DatasetComparisonParser implements Closeable {
 
-	private enum CurrentBlock {
-		HEADER,
-		OPERATION,
-		PAYLOAD,
-		RESULT,
-		RESULT_NODE,
-		MESSAGE,
-		DATASET
-	}
+	private String rowIdField;
+	private String versionField;
 	
-	private CurrentBlock currentBlock;
+	private boolean isResultBlock;
+	private boolean isVersionNode;
+	private boolean endRecord;
+	
 	private String currentNode;
-
-	private HeaderBuilder headerBuilder;
-	private OperationBuilder opBuilder;
 	
 	private DatasetComparison datasetComp;
-	private TableRow datasetRow;
-	
-	private Dataset dataset;
+	private String datasetVersion;
+
 	private InputStream input;               // input xml
 	private XMLEventReader eventReader;      // xml parser
 	
@@ -59,8 +47,9 @@ public class DatasetParser implements Closeable {
 	 * @throws FileNotFoundException
 	 * @throws XMLStreamException
 	 */
-	public DatasetParser(File file) throws FileNotFoundException, XMLStreamException {
-		this(new FileInputStream(file));
+	public DatasetComparisonParser(File file, 
+			String rowIdField, String versionField) throws FileNotFoundException, XMLStreamException {
+		this(new FileInputStream(file), rowIdField, versionField);
 	}
 	
 	/**
@@ -68,30 +57,33 @@ public class DatasetParser implements Closeable {
 	 * @param input input stream which contains the .xml file to parse
 	 * @throws XMLStreamException
 	 */
-	public DatasetParser(InputStream input) throws XMLStreamException {
+	public DatasetComparisonParser(InputStream input, 
+			String rowIdField, String versionField) throws XMLStreamException {
 		
 		this.input = input;
-		this.dataset = new Dataset();
-		this.datasetComp = new DatasetComparison();
+		this.rowIdField = rowIdField;
+		this.versionField = versionField;
+		
+		this.isResultBlock = false;
+		this.endRecord = false;
 		
 		// initialize xml parser
 		XMLInputFactory factory = XMLInputFactory.newInstance();
 		factory.setProperty(XMLInputFactory.IS_COALESCING, true);
 		this.eventReader = factory.createXMLEventReader(input);
-		
-		this.currentBlock = CurrentBlock.MESSAGE;
 	}
 
-
 	/**
-	 * Parse the .xml document and get the contents in a java object
-	 * {@link XmlContents}
+	 * Get the next parsed object, otherwise null
 	 * @throws XMLStreamException
 	 */
-	public Dataset parse() throws XMLStreamException {
+	public DatasetComparison next() throws XMLStreamException {
+		
+		this.datasetComp = null;
+		this.endRecord = false;
 		
 		// for each node of the xml
-		while (eventReader.hasNext()) {
+		while (eventReader.hasNext() && !endRecord) {
 
 			// read the node
 			XMLEvent event = eventReader.nextEvent();
@@ -116,7 +108,7 @@ public class DatasetParser implements Closeable {
 			}
 		}
 		
-		return this.dataset;
+		return this.datasetComp;
 	}
 	
 	/**
@@ -130,33 +122,17 @@ public class DatasetParser implements Closeable {
 		String qName = startElement.getName().getLocalPart();
 
 		this.currentNode = null;
+
 		
-		switch(qName) {
-		case "header":
-			this.headerBuilder = new HeaderBuilder();
-			this.currentBlock = CurrentBlock.HEADER;
-			break;
-		case "operation":
-			this.opBuilder = new OperationBuilder();
-			this.currentBlock = CurrentBlock.OPERATION;
-			break;
-		case "payload":
-			this.currentBlock = CurrentBlock.PAYLOAD;
-			break;
-		case "message":
-			this.currentBlock = CurrentBlock.MESSAGE;
-			break;
-		case "dataset":
-			this.currentBlock = CurrentBlock.DATASET;
-			break;
-		case "result":
-			this.datasetRow = new TableRow();
-			this.currentBlock = CurrentBlock.RESULT;
-			break;
-		default:
-			this.currentNode = qName;
-			break;
+		if (qName.equals("result")) {
+			this.datasetComp = new DatasetComparison();
+			this.isResultBlock = true;
 		}
+		else if (qName.equals(versionField)) {
+			this.isVersionNode = true;
+		}
+		else
+			this.currentNode = qName;
 	}
 	
 	/**
@@ -169,54 +145,10 @@ public class DatasetParser implements Closeable {
 		String contents = event.asCharacters().getData();
 		
 		// cannot parse null content or empty contents
-		if (contents == null || currentNode == null || contents.trim().isEmpty())
+		if (contents == null || contents.trim().isEmpty())
 			return;
-
-		switch(currentBlock) {
 		
-		case HEADER:
-			HeaderNode headerNode = HeaderNode.fromString(currentNode);
-			switch(headerNode) {
-			case TYPE:
-				headerBuilder.setType(contents); break;
-			case VERSION:
-				headerBuilder.setVersion(contents); break;
-			case SENDER_MSG_ID:
-				headerBuilder.setSenderMessageId(contents); break;
-			case SENDER_ORG_CODE:
-				headerBuilder.setSenderOrgCode(contents); break;
-			case RECEIVER_ORG_CODE:
-				headerBuilder.setReceiverOrgCode(contents); break;
-			default: break;
-			}
-			
-			break;
-			
-		case OPERATION:
-
-			OperationNode opNode = OperationNode.fromString(currentNode);
-			switch(opNode) {
-			case OP_TYPE:
-				opBuilder.setOpType(contents); break;
-			case SENDER_DATASET_ID:
-				opBuilder.setSenderDatasetId(contents); break;
-			case DATASET_ID:
-				opBuilder.setDatasetId(contents); break;
-			case DC_CODE:
-				opBuilder.setDcCode(contents); break;
-			case DC_TABLE:
-				opBuilder.setDcTable(contents); break;
-			case ORG_CODE:
-				opBuilder.setOrgCode(contents); break;
-			case OP_COM:
-				opBuilder.setOpCom(contents); break;
-			default: break;
-			}
-			break;
-			
-		case RESULT:
-			
-			datasetRow.put(currentNode, contents);
+		if (isResultBlock && currentNode != null) {
 			
 			// save also the xml node
 			StringBuilder xmlNode = new StringBuilder("<")
@@ -226,14 +158,21 @@ public class DatasetParser implements Closeable {
 					.append("</")
 					.append(currentNode)
 					.append(">");
-			
-			this.datasetComp.addXmlNode(xmlNode.toString());
-			break;
-			
-		default:
-			break;
-		}
 
+			this.datasetComp.addXmlNode(xmlNode.toString());
+			
+			// if we have the id save it
+			if (currentNode.equals(rowIdField)) {
+				this.datasetComp.setRowId(contents);
+			}
+		}
+		
+		// if dataset version not retrieved yet, search for it
+		if (datasetVersion == null && isVersionNode) {
+			// extract the version from the field
+			datasetVersion = TableVersion.extractVersionFrom(contents);
+			isVersionNode = false;
+		}
 	}
 	
 	/**
@@ -247,16 +186,11 @@ public class DatasetParser implements Closeable {
 		String qName = endElement.getName().getLocalPart();
 
 		switch(qName) {
-		
-		case "header":
-			this.dataset.setHeader(headerBuilder.build());
-			break;
-		case "operation":
-			this.dataset.setOperation(opBuilder.build());
-			break;
 		case "result":
-			this.dataset.addRow(datasetRow);
 			this.datasetComp.buildXml();
+			this.datasetComp.setVersion(datasetVersion);
+			this.isResultBlock = false;
+			this.endRecord = true;
 			break;
 		default:
 			break;
@@ -282,4 +216,20 @@ public class DatasetParser implements Closeable {
 		if (input != null)
 			input.close();
 	}
+	
+	/*public static void main(String[] args) throws IOException, XMLStreamException {
+		
+		String filename = "C:\\Users\\avonva\\Desktop\\TseBseReportInterface\\TseBseReportCreator\\temp\\attachment_1507813685581.xml";
+		File file = new File(filename);
+		
+		DatasetComparisonParser parser = new DatasetComparisonParser(file, "senderDatasetId", "resId");
+		
+		DatasetComparison comp;
+		while ((comp = parser.next()) != null) {
+			//parser.next();
+			//System.out.println(comp.getXmlRecord());
+		}
+		
+		parser.close();
+	}*/
 }
