@@ -4,6 +4,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import dataset.DatasetStatus;
 import webservice.GetAck;
 
 /**
@@ -69,14 +70,14 @@ public class AckLog {
 	 * Get the status of the dataset
 	 * @return
 	 */
-	public AckDatasetStatus getDatasetStatus() {
+	public DatasetStatus getDatasetStatus() {
 		
 		String code = getFirstNodeText("datasetStatus");
 		
 		if (code == null || code.isEmpty())
 			return null;
 		
-		return AckDatasetStatus.fromString(code);
+		return DatasetStatus.fromString(code);
 	}
 	
 	/**

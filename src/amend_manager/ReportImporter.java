@@ -16,7 +16,7 @@ import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
 import webservice.MySOAPException;
 
-public abstract class ReportDownloader {
+public abstract class ReportImporter {
 
 	private DatasetList<Dataset> datasetVersions;
 	private String senderDatasetId;
@@ -31,7 +31,7 @@ public abstract class ReportDownloader {
 	 * @param versionField name of the field which contains the dataset version
 	 * using the format value.version, as FR1704.01 (senderDatasetId.version)
 	 */
-	public ReportDownloader(DatasetList<Dataset> datasetVersions, 
+	public ReportImporter(DatasetList<Dataset> datasetVersions, 
 			String rowIdField, String versionField) {
 		
 		this.datasetVersions = datasetVersions;

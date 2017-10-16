@@ -56,6 +56,32 @@ public interface EFSAReport extends IDataset {
 	public void send(File file, OperationType opType) throws SOAPException, SendMessageException;
 
 	/**
+	 * Submit the report to the DCF
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws MySOAPException
+	 * @throws ReportException
+	 */
+	public void submit() throws IOException, 
+		ParserConfigurationException, SAXException, SendMessageException, 
+		MySOAPException, ReportException;
+	
+	/**
+	 * Reject the report in the DCF
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws MySOAPException
+	 * @throws ReportException
+	 */
+	public void reject() throws IOException, 
+		ParserConfigurationException, SAXException, SendMessageException, 
+		MySOAPException, ReportException;
+	
+	/**
 	 * Get an acknowledgment of the report (DCF call)
 	 * @return
 	 * @throws MySOAPException
@@ -102,6 +128,19 @@ public interface EFSAReport extends IDataset {
 	public String getDatasetId();
 	
 	/**
+	 * Set the dataset id of the dataset related to the report
+	 * @param id
+	 */
+	public void setDatasetId(String id);
+	
+	/**
+	 * Get the default configuration used to export the report
+	 * @param opType
+	 * @return
+	 */
+	public MessageConfigBuilder getDefaultExportConfiguration(OperationType opType);
+	
+	/**
 	 * Get the current version of the report
 	 * @return
 	 */
@@ -133,15 +172,33 @@ public interface EFSAReport extends IDataset {
 	public boolean deleteAllVersions();
 	
 	/**
-	 * Get the sender dataset id related to the report
-	 * this information should be always present
+	 * Get the current local status of the report
+	 * @return
+	 */
+	public DatasetStatus getStatus();
+	
+	/**
+	 * Update the dataset status
+	 * @param status
+	 */
+	public void setStatus(String status);
+	
+	/**
+	 * Update the dataset status
+	 * @param status
+	 */
+	public void setStatus(DatasetStatus status);
+	
+	/**
+	 * Get the sender dataset id related to the report.
+	 * This information should be always present in the report.
 	 * @return
 	 */
 	public String getSenderId();
 	
 	/**
-	 * Get the current local status of the report
+	 * Check if the report is correct or not
 	 * @return
 	 */
-	public DatasetStatus getStatus();
+	public boolean isValid();
 }

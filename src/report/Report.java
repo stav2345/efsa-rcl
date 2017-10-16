@@ -9,7 +9,6 @@ import javax.xml.soap.SOAPException;
 import org.xml.sax.SAXException;
 
 import acknowledge.Ack;
-import acknowledge.AckDatasetStatus;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
 import app_config.DebugConfig;
@@ -30,9 +29,10 @@ import webservice.GetDatasetList;
 import webservice.MySOAPException;
 import webservice.SendMessage;
 import xlsx_reader.TableSchema;
+import xlsx_reader.TableSchemaList;
 
 public abstract class Report extends TableRow implements EFSAReport, IDataset {
-	
+
 	public Report(TableRow row) {
 		super(row);
 	}
@@ -48,6 +48,33 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	@Override
 	public boolean isBaselineVersion() {
 		return TableVersion.isFirstVersion(this.getVersion());
+	}
+	
+	/**
+	 * Check if the a report with the chosen senderDatasetId 
+	 * is already present in the database
+	 * @param senderDatasetId
+	 * @return
+	 */
+	public static boolean isLocallyPresent(String senderDatasetId) {
+		
+		if (senderDatasetId == null)
+			return false;
+		
+		// check if the report is already in the db
+		TableDao dao = new TableDao(TableSchemaList.getByName(AppPaths.REPORT_SHEET));
+		
+		for (TableRow row : dao.getAll()) {
+
+			String otherSenderDatasetId = row.getCode(AppPaths.REPORT_SENDER_ID);
+			
+			// if same sender dataset id then return true
+			if (otherSenderDatasetId != null 
+					&& otherSenderDatasetId.equals(senderDatasetId))
+				return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -140,7 +167,8 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			break;
 		default:
 			opType = OperationType.NOT_SUPPORTED;
-			break;
+			throw new ReportException("No send operation for status " 
+					+ status + " is supported");
 		}
 		
 		ReportSendOperation operation = new ReportSendOperation(dataset, opType);
@@ -164,7 +192,9 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		String senderDatasetId = this.getSenderId();
 		
 		// add also the version to match correctly the dataset sender id
-		if (senderDatasetId != null && !this.getVersion().isEmpty()) {
+		// but if we have the baseline use just the sender id
+		if (senderDatasetId != null && !this.getVersion().isEmpty() 
+				&& !TableVersion.isFirstVersion(this.getVersion())) {
 			senderDatasetId = TableVersion.mergeNameAndVersion(senderDatasetId, 
 					this.getVersion());
 		}
@@ -174,6 +204,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		}
 		
 		DatasetList<Dataset> datasets = request.getList();
+
 		return datasets.filterBySenderId(senderDatasetId);
 	}
 	
@@ -188,6 +219,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	public Dataset getDataset() throws MySOAPException, ReportException {
 
 		DatasetList<Dataset> datasets = getDatasets();
+
 		if(datasets.isEmpty())
 			return null;
 		
@@ -269,7 +301,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			this.setDatasetId(datasetId);
 			
 			// save status
-			AckDatasetStatus status = ack.getLog().getDatasetStatus();
+			DatasetStatus status = ack.getLog().getDatasetStatus();
 			this.setStatus(status);
 			
 			// permanently save data
@@ -336,37 +368,6 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	}
 	
 	/**
-	 * Mapping between dataset status and ack dataset status
-	 * @param status
-	 */
-	public void setStatus(AckDatasetStatus status) {
-		
-		DatasetStatus dataStatus = DatasetStatus.OTHER;
-		switch(status) {
-		case ACCEPTED_DWH:
-			dataStatus = DatasetStatus.ACCEPTED_DWH; break;
-		case DELETED:
-			dataStatus = DatasetStatus.DELETED; break;
-		case PROCESSING:
-			dataStatus = DatasetStatus.PROCESSING; break;
-		case REJECTED:
-			dataStatus = DatasetStatus.REJECTED; break;
-		case REJECTED_EDITABLE:
-			dataStatus = DatasetStatus.REJECTED_EDITABLE; break;
-		case SUBMITTED:
-			dataStatus = DatasetStatus.SUBMITTED; break;
-		case VALID:
-			dataStatus = DatasetStatus.VALID; break;
-		case VALID_WITH_WARNINGS:
-			dataStatus = DatasetStatus.VALID_WITH_WARNINGS; break;
-		case OTHER:
-			dataStatus = DatasetStatus.OTHER; break;
-		}
-		
-		this.put(AppPaths.REPORT_STATUS, dataStatus.getStatus());
-	}
-	
-	/**
 	 * Force the report to be editable
 	 */
 	public void makeEditable() {
@@ -386,11 +387,18 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * @return
 	 */
 	public boolean deleteAllVersions() {
-		
-		TableDao dao = new TableDao(this.getSchema());
-		
-		return dao.deleteByStringField(AppPaths.REPORT_SENDER_ID, 
-				this.getSenderId());
+		return deleteAllVersions(this.getSenderId());
+	}
+	
+	/**
+	 * Delete all the versions of the report from the db
+	 * @param senderId
+	 * @return
+	 */
+	public static boolean deleteAllVersions(String senderId) {
+		// delete the old versions of the report (the one with the same senderId)
+		TableDao dao = new TableDao(TableSchemaList.getByName(AppPaths.REPORT_SHEET));
+		return dao.deleteByStringField(AppPaths.REPORT_SENDER_ID, senderId);
 	}
 	
 	/**

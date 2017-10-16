@@ -7,27 +7,29 @@ package dataset;
  */
 public enum DatasetStatus {
 	
-	DRAFT("DRAFT"),  // local status, if message was never sent
-	UPLOAD_FAILED("UPLOAD_FAILED"),  // local status, used if send message fails
-	VALID("VALID"),
-	UPLOADED("UPLOADED"),  // dataset sent but no response received yet 
-	PROCESSING("PROCESSING"),
-	VALID_WITH_WARNINGS("VALID_WITH_WARNINGS"),
-	REJECTED_EDITABLE("REJECTED EDITABLE"),
-	REJECTED("REJECTED"),
-	REJECTION_SENT("REJECTION_SENT"),
-	DELETED("DELETED"),
-	SUBMITTED("SUBMITTED"),
-	SUBMISSION_SENT("SUBMISSION_SENT"),
-	ACCEPTED_DWH("ACCEPTED DWH"),
-	UPDATED_BY_DATA_RECEIVER("Uploaded by data receiver"),
-	OTHER("OTHER");  // error state
+	DRAFT("DRAFT", "Draft"),  // local status, if message was never sent
+	UPLOAD_FAILED("UPLOAD_FAILED", "Upload failed"),  // local status, used if send message fails
+	VALID("VALID", "Valid"),
+	UPLOADED("UPLOADED", "Uploaded"),  // dataset sent but no response received yet 
+	PROCESSING("PROCESSING", "Processing"),
+	VALID_WITH_WARNINGS("VALID_WITH_WARNINGS", "Valid with warnings"),
+	REJECTED_EDITABLE("REJECTED EDITABLE", "Rejected editable"),
+	REJECTED("REJECTED", "Rejected"),
+	REJECTION_SENT("REJECTION_SENT", "Rejection sent"),
+	DELETED("DELETED", "Deleted"),
+	SUBMITTED("SUBMITTED", "Submitted"),
+	SUBMISSION_SENT("SUBMISSION_SENT", "Submission sent"),
+	ACCEPTED_DWH("ACCEPTED DWH", "Accepted DWH"),
+	UPDATED_BY_DATA_RECEIVER("UPLOADED_BY_DATA_RECEIVER", "Uploaded by data receiver"),
+	OTHER("OTHER", "Other");  // error state
 	
 	private String status;
+	private String label;
 	private String step;
 	
-	private DatasetStatus(String status) {
+	private DatasetStatus(String status, String label) {
 		this.status = status;
+		this.label = label;
 	}
 	
 	/**
@@ -44,6 +46,14 @@ public enum DatasetStatus {
 	 */
 	public String getStatus() {
 		return status;
+	}
+	
+	/**
+	 * Get the status label
+	 * @return
+	 */
+	public String getLabel() {
+		return label;
 	}
 	
 	/**
@@ -134,6 +144,19 @@ public enum DatasetStatus {
 				|| this == REJECTION_SENT;
 	}
 
+	/**
+	 * Check if the current dataset exists or not in the DCF
+	 */
+	public boolean exists() {
+		return this == VALID 
+				|| this == VALID_WITH_WARNINGS
+				|| this == REJECTED_EDITABLE
+				|| this == SUBMITTED
+				|| this == ACCEPTED_DWH
+				|| this == UPDATED_BY_DATA_RECEIVER
+				|| this == SUBMISSION_SENT
+				|| this == REJECTION_SENT;
+	}
 
 	/**
 	 * Get the enumerator that matches the {@code text}
@@ -142,12 +165,22 @@ public enum DatasetStatus {
 	 */
 	public static DatasetStatus fromString(String text) {
 		
+		String myStatus = text.toLowerCase().replaceAll(" ", "").replaceAll("_", "");
+		
 		for (DatasetStatus b : DatasetStatus.values()) {
-			if (b.status.equalsIgnoreCase(text)) {
+			
+			String otherStatus = b.status.toLowerCase().replaceAll(" ", "").replaceAll("_", "");
+			
+			if (otherStatus.equalsIgnoreCase(myStatus)) {
 				return b;
 			}
 		}
 		
 		return OTHER;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getLabel();
 	}
 }

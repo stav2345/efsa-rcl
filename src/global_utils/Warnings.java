@@ -4,6 +4,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import webservice.SOAPError;
+
 public class Warnings {
 
 	/**
@@ -29,5 +31,30 @@ public class Warnings {
 		mb.setText(title);
 		mb.setMessage(message);
 		return mb.open();
+	}
+	
+	public static String[] getSOAPWarning(SOAPError error) {
+		
+		String title = null;
+		String message = null;
+		switch(error) {
+		case NO_CONNECTION:
+			title = "Connection error";
+			message = "ERR600: It was not possible to connect to the DCF, please check your internet connection.";
+			break;
+		case UNAUTHORIZED:
+		case FORBIDDEN:
+			title = "Wrong credentials";
+			message = "ERR100: Your credentials are incorrect. Please check them in the Settings.";
+			break;
+		}
+		
+		return new String[] {title, message};
+	}
+	
+	
+	public static void showSOAPWarning(Shell shell, SOAPError error) {
+		String[] warning = Warnings.getSOAPWarning(error);
+		Warnings.warnUser(shell, warning[0], warning[1]);
 	}
 }

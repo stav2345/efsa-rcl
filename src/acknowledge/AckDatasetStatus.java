@@ -5,6 +5,7 @@ package acknowledge;
  * @author avonva
  *
  */
+@Deprecated
 public enum AckDatasetStatus {
 	
 	VALID("VALID"),

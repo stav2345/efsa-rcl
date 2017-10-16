@@ -182,7 +182,7 @@ public abstract class TableDialog {
 			@Override
 			public void editEnded() {
 				if (saveButton != null)
-					saveButton.setEnabled(true);
+					saveButton.setEnabled(panel.areMandatoryFilled());
 			}
 		});
 

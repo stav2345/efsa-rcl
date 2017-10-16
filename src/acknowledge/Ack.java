@@ -18,6 +18,7 @@ public class Ack {
 	public FileState getState() {
 		return state;
 	}
+	
 	public AckLog getLog() {
 		return log;
 	}

@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import app_config.AppPaths;
 import table_relations.Relation;
 import table_skeleton.TableColumn;
 import table_skeleton.TableColumnValue;
 import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
+import xml_catalog_reader.XmlContents;
 import xml_catalog_reader.XmlLoader;
 
 /**
@@ -377,10 +379,30 @@ public class TableDao {
 
 					// get the description from the .xml using the code
 					if (code != null && !code.isEmpty()) {
+
+						XmlContents contents = XmlLoader.getByPicklistKey(column.getPicklistKey());
 						
-						selection = new TableColumnValue(
-								XmlLoader.getByPicklistKey(column.getPicklistKey())
-									.getElementByCode(code));
+						if (contents == null) {
+
+							System.err.println("IMPORTANT: Check that the picklist " 
+									+ column.getPicklistKey() + " is in your " + AppPaths.XML_FOLDER
+									+ " folder. Note that also the root node of the xml should have "
+									+ "the name " + column.getPicklistKey() + ". Putting an empty value.");
+							
+							selection = new TableColumnValue();
+						}
+						else if (contents.getElementByCode(code) == null) {
+							
+							System.err.println("IMPORTANT: The element " 
+									+ code + " is missing in the picklist " + column.getPicklistKey() 
+									+ " in the " + AppPaths.XML_FOLDER
+									+ " folder. Putting an empty value.");
+							
+							selection = new TableColumnValue();
+						}
+						else {
+							selection = new TableColumnValue(contents.getElementByCode(code));
+						}
 					}
 					else
 						selection = new TableColumnValue();

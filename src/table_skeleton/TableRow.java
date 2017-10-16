@@ -494,9 +494,11 @@ public class TableRow implements Checkable {
 		StringBuilder sb = new StringBuilder();
 		
 		for (TableColumn column : schema) {
+			
+			String rowValue = this.getCode(column.getId());
 
-			// skip non output columns
-			if (!column.isPutInOutput(this))
+			// skip non output columns and non mandatory fields which are empty
+			if (!column.isPutInOutput(this) || (!column.isMandatory(this) && rowValue.isEmpty()))
 				continue;
 
 			String node = getXmlNode(column.getXmlTag(), this.get(column.getId()).getCode());

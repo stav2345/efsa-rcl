@@ -3,9 +3,7 @@ package table_list;
 public enum TablesHeader {
 	
 	TABLE_NAME("tableName"),
-	HTML_FILENAME("htmlFileName"),
-	GENERATE_RECORD("generateRecord"),
-	KEEP_VERSION("keepVersion");
+	HTML_FILENAME("htmlFileName");
 	
 	private String headerName;
 	

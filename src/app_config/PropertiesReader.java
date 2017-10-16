@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
+import report.Report;
+
 /**
  * Class to read an xml used to store the properties
  * @author avonva
@@ -15,7 +17,7 @@ public class PropertiesReader {
 	private static final String APP_NAME_PROPERTY = "Application.Name";
 	private static final String APP_VERSION_PROPERTY = "Application.Version";
 	private static final String APP_ICON_PROPERTY = "Application.Icon";
-	private static final String APP_DC_CODE_PROPERTY = "Application.DataCollectionCode";
+	private static final String APP_DC_PATTERN_PROPERTY = "Application.DataCollectionPattern";
 	private static final String APP_DC_TABLE_PROPERTY = "Application.DataCollectionTable";
 	private static final String APP_TEST_REPORT_PROPERTY = "Application.TestReportCode";
 	private static final String APP_STARTUP_HELP_PROPERTY = "Application.StartupHelpFile";
@@ -73,7 +75,41 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getDataCollectionCode() {
-		return getValue(APP_DC_CODE_PROPERTY, "not found");
+		
+		GlobalManager manager = GlobalManager.getInstance();
+		
+		String value = getValue(APP_DC_PATTERN_PROPERTY, "not found");
+		
+		boolean isTest = manager.isDcTest();
+		
+		// if we need to test set the test code
+		if (isTest) {
+			value = resolveDCPattern(value, getTestReportCode());
+		}
+		else {
+			// get the opened report and set its year in the data
+			// collection pattern
+			Report openedReport = manager.getOpenedReport();
+
+			if (openedReport != null) {
+				value = resolveDCPattern(value, openedReport.getCode(AppPaths.REPORT_YEAR));
+			}
+		}
+
+		return value;
+	}
+	
+	/**
+	 * Get the data collection of test
+	 * @return
+	 */
+	public static String getTestDataCollectionCode() {
+		return resolveDCPattern(getValue(APP_DC_PATTERN_PROPERTY, "not found"), 
+				getTestReportCode());
+	}
+	
+	private static String resolveDCPattern(String dataCollectionPattern, String value) {
+		return dataCollectionPattern.replace("yyyy", value);
 	}
 	
 	/**
