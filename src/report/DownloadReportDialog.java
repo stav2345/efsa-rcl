@@ -1,5 +1,9 @@
 package report;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+
 import javax.xml.soap.SOAPException;
 
 import org.eclipse.swt.SWT;
@@ -33,7 +37,9 @@ public class DownloadReportDialog extends DatasetListDialog {
 		
 		parent.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 		
-		this.setList(getDownloadableDatasets(validSenderIdPattern));
+		this.allDatasets = getDownloadableDatasets(validSenderIdPattern);
+		
+		this.setList(allDatasets);
 		
 		parent.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		
@@ -49,16 +55,40 @@ public class DownloadReportDialog extends DatasetListDialog {
 	 */
 	private DatasetList<Dataset> getDownloadableDatasets(String validSenderIdPattern) {
 		
-		GetDatasetList req = new GetDatasetList(PropertiesReader.getDataCollectionCode());
-		try {
+		DatasetList<Dataset> allDatasets = new DatasetList<>();
+		
+		Collection<String> dcCodes = new ArrayList<>();
+		dcCodes.add(PropertiesReader.getTestDataCollectionCode()); // add test
+		
+		Calendar today = Calendar.getInstance();
+		int currentYear = today.get(Calendar.YEAR);
+		int startingYear = PropertiesReader.getDataCollectionStartingYear();
+		
+		// if other years are needed
+		if (currentYear >= startingYear) {
 			
-			this.allDatasets = req.getList();
-			return allDatasets.getDownloadableDatasets(validSenderIdPattern);
-			
-		} catch (SOAPException e) {
-			e.printStackTrace();
-			return null;
+			// add also the other years
+			for (int i = currentYear; i <= startingYear; --i) {
+				dcCodes.add(PropertiesReader.getDataCollectionCode(String.valueOf(i)));
+			}
 		}
+
+		// for each data collection get the datasets
+		for (String dcCode : dcCodes) {
+			
+			GetDatasetList req = new GetDatasetList(dcCode);
+			
+			try {
+				
+				DatasetList<Dataset> datasets = req.getList();
+				allDatasets.addAll(datasets.getDownloadableDatasets(validSenderIdPattern));
+				
+			} catch (SOAPException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return allDatasets;
 	}
 	
 	/**

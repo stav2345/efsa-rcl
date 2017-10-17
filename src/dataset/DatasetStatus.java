@@ -147,7 +147,7 @@ public enum DatasetStatus {
 	/**
 	 * Check if the current dataset exists or not in the DCF
 	 */
-	public boolean exists() {
+	public boolean existsInDCF() {
 		return this == VALID 
 				|| this == VALID_WITH_WARNINGS
 				|| this == REJECTED_EDITABLE

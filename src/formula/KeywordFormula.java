@@ -120,6 +120,8 @@ public class KeywordFormula implements IFormula {
 		case LAST_MONTH_CODE_KEYWORD:
 		case LAST_MONTH_LABEL_KEYWORD:
 
+			calendar.add(Calendar.MONTH, -1);  // go to last month
+			
 			// get last month term
 			// months start from 0 so to show the correct number
 			// we add 1

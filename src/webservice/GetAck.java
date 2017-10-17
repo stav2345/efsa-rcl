@@ -193,6 +193,7 @@ public class GetAck extends SOAPRequest {
 		
 		// get the ack from the attachment
 		AckLog log = new AckLog(attachment);
+		log.setRawLog(getFirstRawAttachment(soapResponse));
 		
 		return log;
 	}

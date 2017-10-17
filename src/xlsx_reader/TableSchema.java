@@ -27,6 +27,7 @@ public class TableSchema extends ArrayList<TableColumn> {
 	public void setSheetName(String sheetName) {
 		this.sheetName = sheetName;
 		this.tableIdField = sheetName + "Id";
+
 		try {
 			this.relations = getParentTables();
 		} catch (IOException e) {

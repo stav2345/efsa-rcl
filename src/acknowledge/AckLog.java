@@ -1,5 +1,7 @@
 package acknowledge;
 
+import java.io.InputStream;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -14,10 +16,19 @@ import webservice.GetAck;
  */
 public class AckLog {
 
+	private InputStream rawLog;
 	private Document log;
 	
 	public AckLog(Document log) {
 		this.log = log;
+	}
+	
+	public void setRawLog(InputStream rawLog) {
+		this.rawLog = rawLog;
+	}
+	
+	public InputStream getRawLog() {
+		return rawLog;
 	}
 	
 	/**
@@ -54,8 +65,22 @@ public class AckLog {
 	 * is {@link OkCode#KO}.
 	 * @return
 	 */
-	public String getOpComment() {
+	public String getOpResLog() {
 		return getFirstNodeText("opResLog");
+	}
+	
+	/**
+	 * Get the type of error if present
+	 * @return
+	 */
+	public OpResError getOpResError() {
+		
+		String error = getOpResLog();
+		
+		if (error == null)
+			return OpResError.NONE;
+		
+		return OpResError.fromString(error);
 	}
 	
 	/**

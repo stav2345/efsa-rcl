@@ -158,8 +158,17 @@ public class Relation {
 	 */
 	public static void injectParent(TableRow parent, TableRow row) {
 		
-		String prefForeignKey = row.getSchema()
-				.getRelationByParentTable(parent.getSchema().getSheetName()).getForeignKey();
+		String parentTable = parent.getSchema().getSheetName();
+		
+		Relation relation = row.getSchema().getRelationByParentTable(parentTable);
+		
+		if (relation == null) {
+			System.err.println("No relation found for " + parentTable 
+					+ " 1=>N " + row.getSchema().getSheetName());
+			return;
+		}
+		
+		String prefForeignKey = relation.getForeignKey();
 
 		row.put(prefForeignKey, parent.get(prefForeignKey));
 	}

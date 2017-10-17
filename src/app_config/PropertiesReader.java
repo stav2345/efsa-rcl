@@ -20,6 +20,7 @@ public class PropertiesReader {
 	private static final String APP_DC_PATTERN_PROPERTY = "Application.DataCollectionPattern";
 	private static final String APP_DC_TABLE_PROPERTY = "Application.DataCollectionTable";
 	private static final String APP_TEST_REPORT_PROPERTY = "Application.TestReportCode";
+	private static final String APP_DC_STARTING_YEAR = "Application.DataCollectionStartingYear";
 	private static final String APP_STARTUP_HELP_PROPERTY = "Application.StartupHelpFile";
 	
 	// cache properties, they do not change across time. We avoid
@@ -70,33 +71,61 @@ public class PropertiesReader {
 	
 	
 	/**
-	 * Get the data collection code for which the 
-	 * application was created
+	 * Check if the current data collection is the test one
+	 * @return
+	 */
+	public static boolean isTestDataCollection(String reportYear) {
+		return getDataCollectionCode(reportYear)
+				.equals(getTestDataCollectionCode());
+	}
+	
+	/**
+	 * Get the data collection code using the opened report year
+	 * to identify it
 	 * @return
 	 */
 	public static String getDataCollectionCode() {
 		
-		GlobalManager manager = GlobalManager.getInstance();
+		Report report = GlobalManager.getInstance().getOpenedReport();
 		
-		String value = getValue(APP_DC_PATTERN_PROPERTY, "not found");
+		// 
+		if (report == null) {
+			System.err.println("No report is opened! Returning " 
+					+ getTestDataCollectionCode());
+			return getTestDataCollectionCode();
+		}
 		
-		boolean isTest = manager.isDcTest();
+		return getDataCollectionCode(report.getYear());
+	}
+	
+	/**
+	 * Get the data collection code for which the 
+	 * application was created
+	 * @return
+	 */
+	public static String getDataCollectionCode(String reportYear) {
+
+		String dcPattern = getValue(APP_DC_PATTERN_PROPERTY, "not found");		
+
+		int reportYearInt = Integer.valueOf(reportYear);
+		int startingYear = getDataCollectionStartingYear();
 		
-		// if we need to test set the test code
-		if (isTest) {
-			value = resolveDCPattern(value, getTestReportCode());
+		String dcCode = null;
+		
+		// if the report year is not an available year
+		// then use the test data collection
+		if (reportYearInt < startingYear) {
+			System.out.println("The report year is < than the starting year of the data collection. Using " 
+					+ getTestDataCollectionCode() + " instead.");
+			dcCode = resolveDCPattern(dcPattern, getTestReportCode());
 		}
 		else {
-			// get the opened report and set its year in the data
-			// collection pattern
-			Report openedReport = manager.getOpenedReport();
-
-			if (openedReport != null) {
-				value = resolveDCPattern(value, openedReport.getCode(AppPaths.REPORT_YEAR));
-			}
+			// otherwise use the report year to identify the
+			// data collection
+			dcCode = resolveDCPattern(dcPattern, reportYear);
 		}
 
-		return value;
+		return dcCode;
 	}
 	
 	/**
@@ -108,8 +137,8 @@ public class PropertiesReader {
 				getTestReportCode());
 	}
 	
-	private static String resolveDCPattern(String dataCollectionPattern, String value) {
-		return dataCollectionPattern.replace("yyyy", value);
+	private static String resolveDCPattern(String dataCollectionPattern, Object value) {
+		return dataCollectionPattern.replace("yyyy", value.toString());
 	}
 	
 	/**
@@ -143,6 +172,19 @@ public class PropertiesReader {
 	 */
 	public static String getAppIcon() {
 		return getValue(APP_ICON_PROPERTY, "not found");
+	}
+	
+	public static int getDataCollectionStartingYear() {
+		
+		String year = getValue(APP_DC_STARTING_YEAR, "not found");
+		
+		try {
+			return Integer.valueOf(year);
+		}
+		catch(NumberFormatException e) {
+			e.printStackTrace();
+			return -1;
+		}
 	}
 	
 	

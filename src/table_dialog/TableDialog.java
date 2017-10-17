@@ -22,10 +22,9 @@ import org.eclipse.swt.widgets.Shell;
 
 import global_utils.Warnings;
 import table_database.TableDao;
-import table_dialog.RowCreatorViewer.CatalogChangedListener;
 import table_dialog.DialogBuilder.RowCreationMode;
+import table_dialog.RowCreatorViewer.CatalogChangedListener;
 import table_list.TableMetaData;
-import table_relations.Relation;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
@@ -84,7 +83,6 @@ public abstract class TableDialog {
 	private Button saveButton;
 	
 	private TableRow parentFilter;              // if set, only the rows children of this parent are shown in the table
-	private Collection<TableRow> parentTables;  // list of parents of the table in 1-n relations
 	private TableSchema schema;                 // schema of the table that is shown
 	
 	private String title;
@@ -108,9 +106,6 @@ public abstract class TableDialog {
 		this.title = title;
 		this.createPopUp = createPopUp;
 		this.addSaveBtn = addSaveBtn;
-		
-		// list of parent tables
-		this.parentTables = new ArrayList<>();
 		
 		this.schema = TableSchemaList.getByName(getSchemaSheetName());
 		this.schema.sort();
@@ -292,15 +287,9 @@ public abstract class TableDialog {
 	 * @param parentTable
 	 */
 	public void setParentFilter(TableRow parentFilter) {
-
-		// remove the old parent filter
-		parentTables.remove(this.parentFilter);
 		
 		if (parentFilter == null)
 			return;
-		
-		// add the new filter as parent table
-		parentTables.add(parentFilter);
 		
 		// save the new filter
 		this.parentFilter = parentFilter;
@@ -309,30 +298,6 @@ public abstract class TableDialog {
 		
 		Collection<TableRow> rows = getRows();
 		this.panel.setInput(rows);
-	}
-	
-	/**
-	 * Add a parent table to the current table
-	 * @param parentTable
-	 */
-	public void addParentTable(TableRow parentTable) {
-		
-		if (parentTable == null)
-			return;
-		
-		this.parentTables.add(parentTable);
-	}
-	
-	/**
-	 * Remove a parent table from the current table
-	 * @param parentTable
-	 */
-	public void removeParentTable(TableRow parentTable) {
-		
-		if (parentTable == null)
-			return;
-		
-		this.parentTables.remove(parentTable);
 	}
 	
 	/**
@@ -508,14 +473,9 @@ public abstract class TableDialog {
 		// put the first cell in the row
 		TableRow row = createNewRow(getSchema(), selectedItem);
 		
-		// inject all the parent tables ids into the row
-		for (TableRow parent : parentTables) {
-			Relation.injectParent(parent, row);
-		}
-		
 		// initialize the row fields with default values
 		row.initialize();
-
+		
 		// insert the row and get the row id
 		TableDao dao = new TableDao(getSchema());
 		int id = dao.add(row);

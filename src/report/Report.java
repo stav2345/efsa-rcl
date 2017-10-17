@@ -187,7 +187,8 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	public DatasetList<Dataset> getDatasets() throws MySOAPException, ReportException {
 		
 		// check if the Report is in the DCF
-		GetDatasetList request = new GetDatasetList(PropertiesReader.getDataCollectionCode());
+		GetDatasetList request = new GetDatasetList(PropertiesReader
+				.getDataCollectionCode(this.getYear()));
 
 		String senderDatasetId = this.getSenderId();
 		
@@ -292,7 +293,14 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		
 		// get state
 		Ack ack = req.getAck();
+		
+		return ack;
+	}
 
+	public DatasetStatus updateStatusWithAck() throws MySOAPException {
+		
+		Ack ack = this.getAck();
+		
 		// if we have something in the ack
 		if (ack.isReady()) {
 
@@ -307,11 +315,11 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			// permanently save data
 			this.update();
 			
-			System.out.println("Ack successful for message id " + messageId + ". Retrieved datasetId=" 
+			System.out.println("Ack successful for message id " + this.getMessageId() + ". Retrieved datasetId=" 
 					+ datasetId + " with status=" + this.getStatus());
 		}
 		
-		return ack;
+		return this.getStatus();
 	}
 
 	public String getMessageId() {
@@ -365,6 +373,77 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	
 	public void setStatus(DatasetStatus status) {
 		this.put(AppPaths.REPORT_STATUS, status.getStatus());
+	}
+	
+	public String getYear() {
+		return this.getCode(AppPaths.REPORT_YEAR);
+	}
+	
+	public void setYear(String year) {
+		this.put(AppPaths.REPORT_YEAR, 
+				getTableColumnValue(year, AppPaths.YEARS_LIST));
+	}
+	
+	public String getMonth() {
+		return this.getCode(AppPaths.REPORT_MONTH);
+	}
+	
+	public void setMonth(String month) {
+		this.put(AppPaths.REPORT_MONTH, 
+				getTableColumnValue(month, AppPaths.MONTHS_LIST));
+	}
+	
+	@Override
+	public DatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException {
+		
+		// get the dataset related to the report from the
+		// GetDatasetList request
+		Dataset dataset = this.getDataset();
+		
+		System.out.println(dataset);
+		// if not dataset is retrieved
+		if (dataset == null) {
+			return this.getStatus();
+		}
+		
+		// if equal, ok
+		if (dataset.getStatus() == this.getStatus())
+			return this.getStatus();
+		
+		// if the report is submitted
+		if (this.getStatus() == DatasetStatus.SUBMITTED) {
+			
+			// and dataset is accepted dwh or rejected editable
+			switch(dataset.getStatus()) {
+			case ACCEPTED_DWH:
+			case REJECTED_EDITABLE:
+				// update local report status with the dcf status
+				this.setStatus(dataset.getStatus());
+				break;
+			default:
+				break;
+			}
+		}
+		else {
+			
+			// if not in status submitted
+			
+			switch(dataset.getStatus()) {
+			// if deleted/rejected then make the report editable
+			case DELETED:
+			case REJECTED:
+				
+				// put the report in draft (status automatically changed)
+				this.makeEditable();
+				break;
+				
+			// otherwise inconsistent status
+			default:
+				break;
+			}
+		}
+		
+		return this.getStatus();
 	}
 	
 	/**

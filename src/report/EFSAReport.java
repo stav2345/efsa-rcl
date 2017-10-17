@@ -89,6 +89,13 @@ public interface EFSAReport extends IDataset {
 	public Ack getAck() throws MySOAPException;
 	
 	/**
+	 * Update the status of the report with the one contained in the ack
+	 * @return
+	 * @throws MySOAPException
+	 */
+	public DatasetStatus updateStatusWithAck() throws MySOAPException;
+	
+	/**
 	 * Get all the datasets related to this report
 	 * @return
 	 * @throws MySOAPException
@@ -113,7 +120,7 @@ public interface EFSAReport extends IDataset {
 	 * Create a new version of the report
 	 * @return
 	 */
-	public EFSAReport createNewVersion();
+	public EFSAReport amend();
 	
 	/**
 	 * Get the message id related to the report if present
@@ -188,6 +195,13 @@ public interface EFSAReport extends IDataset {
 	 * @param status
 	 */
 	public void setStatus(DatasetStatus status);
+	
+	/**
+	 * Align the report status with the one in the DCF
+	 * if possible
+	 * @return the new status
+	 */
+	public DatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException;
 	
 	/**
 	 * Get the sender dataset id related to the report.
