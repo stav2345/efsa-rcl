@@ -11,6 +11,7 @@ import table_database.TableDao;
 import xlsx_reader.TableHeaders.XlsxHeader;
 import xlsx_reader.TableSchema;
 import xml_catalog_reader.Selection;
+import xml_catalog_reader.XmlContents;
 import xml_catalog_reader.XmlLoader;
 
 /**
@@ -235,21 +236,40 @@ public class TableRow implements Checkable {
 	
 	/**
 	 * Put a string into the data, only for raw columns not picklists
-	 * use {@link #put(String, Selection)} for picklists
+	 * If it is a picklist please provide instead of the label the code
+	 * and the label will be automatically retrieved
 	 * @param key
-	 * @param label
+	 * @param value
 	 */
-	public void put(String key, String label) {
+	public void put(String key, String value) {
+		
+		TableColumnValue row;
 		
 		if (schema != null && schema.getById(key) != null && schema.getById(key).isPicklist()) {
-			System.err.println("Wrong use of ReportRow.put(String,String), "
-					+ "use Report.put(String,Selection) instead for picklist columns");
-			return;
+			
+			String picklist = schema.getById(key).getPicklistKey();
+			XmlContents contents = XmlLoader.getByPicklistKey(picklist);
+			
+			if (contents == null) {
+				System.err.println("Cannot retrieve the label of " + value + " for the picklist " + picklist);
+				return;
+			}
+			
+			Selection selection = contents.getElementByCode(value);
+			
+			if (selection == null) {
+				System.err.println("Cannot find the selection " + value + " in the picklist " + picklist);
+				return;
+			}
+			
+			row = new TableColumnValue(selection);
 		}
-		
-		TableColumnValue row = new TableColumnValue();
-		row.setCode(label);
-		row.setLabel(label);
+		else {
+			row = new TableColumnValue();
+			row.setCode(value);
+			row.setLabel(value);
+		}
+
 		this.put(key, row);
 	}
 	
@@ -299,7 +319,7 @@ public class TableRow implements Checkable {
 	public void update(Formula f, String fieldHeader) {
 		
 		// skip editable columns
-		if (f.getColumn().isEditable())
+		if (f.getColumn().isEditable(this))
 			return;
 		
 		XlsxHeader h = XlsxHeader.fromString(fieldHeader);
@@ -428,7 +448,7 @@ public class TableRow implements Checkable {
 				
 				TableColumnValue value = this.get(column.getId());
 				
-				if (value.isEmpty())
+				if (value == null || value.isEmpty())
 					return false;
 			}
 		}
@@ -535,6 +555,39 @@ public class TableRow implements Checkable {
 			.append(">");
 		
 		return node.toString();
+	}
+	
+	/**
+	 * get a row with only the visible fields in it
+	 * (it is lighter for visualization purposes)
+	 * @return
+	 */
+	public TableRow getVisibleFields() {
+		
+		// copy all the values of the row
+		TableRow row = new TableRow(this);
+		
+		for (TableColumn col: schema) {
+			
+			// remove invisible fields (not fk and id)
+			if (!col.isVisible(row) && !col.isForeignKey()) {
+				row.values.remove(col.getId());
+			}
+		}
+		
+		return row;
+	}
+	
+	/**
+	 * Update the values using another row object
+	 * (only the values contained in the row are updated,
+	 * the other ones are untouched)
+	 * @param row
+	 */
+	public void copyValues(TableRow row) {
+		for (String key : row.values.keySet()) {
+			this.put(key, row.get(key));
+		}
 	}
 	
 	@Override

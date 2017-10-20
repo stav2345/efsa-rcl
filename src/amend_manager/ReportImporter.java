@@ -12,16 +12,21 @@ import javax.xml.stream.XMLStreamException;
 
 import dataset.Dataset;
 import dataset.DatasetList;
+import progress.ProgressListener;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
 import webservice.MySOAPException;
 
 public abstract class ReportImporter {
 
+	private ProgressListener progressListener;
+	
 	private DatasetList<Dataset> datasetVersions;
 	private String senderDatasetId;
 	private String rowIdField;
 	private String versionField;
+	
+	private int processedDatasets;
 	
 	/**
 	 * Download and import a dataset using all its versions to
@@ -34,6 +39,8 @@ public abstract class ReportImporter {
 	public ReportImporter(DatasetList<Dataset> datasetVersions, 
 			String rowIdField, String versionField) {
 		
+		this.processedDatasets = 1;
+		
 		this.datasetVersions = datasetVersions;
 		this.rowIdField = rowIdField;
 		this.versionField =  versionField;
@@ -45,6 +52,23 @@ public abstract class ReportImporter {
 		else {
 			throw new IllegalArgumentException("Cannot download an empty dataset list");
 		}
+	}
+	
+	/**
+	 * Listen to the process progresses
+	 * @param progressListener
+	 */
+	public void setProgressListener(ProgressListener progressListener) {
+		this.progressListener = progressListener;
+	}
+	
+	/**
+	 * Set the progress (call the listener if set)
+	 * @param progress
+	 */
+	private void setProgress(double progress) {
+		if (this.progressListener != null)
+			this.progressListener.progressChanged(progress);
 	}
 	
 	/**
@@ -73,10 +97,15 @@ public abstract class ReportImporter {
 		// in order, import the datasets processing the amendments if needed
 		for (Dataset dataset : datasetVersions) {
 			
+			setProgress(processedDatasets / datasetVersions.size() * 25);
+			
 			System.out.println("Importing the single version " + dataset);
 			
 			// import the single dataset into db
 			importSingleVersion(dataset);
+			
+			setProgress(processedDatasets / datasetVersions.size() * 100);
+			processedDatasets++;
 			
 			// get the dataset version
 			int currentVersion = TableVersion.getNumVersion(dataset.getVersion());
@@ -114,6 +143,9 @@ public abstract class ReportImporter {
 		// at the end clear the database table
 		clearTable();
 		
+		if (this.progressListener != null)
+			this.progressListener.progressCompleted();
+		
 		System.out.println("Report downloader ended");
 	}
 	
@@ -129,6 +161,8 @@ public abstract class ReportImporter {
 		
 		// download the dataset file
 		File file = dataset.download();
+		
+		setProgress(processedDatasets / datasetVersions.size() * 75);
 		
 		// import the file
 		importDatasetFile(file);

@@ -2,7 +2,6 @@ package xlsx_reader;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -10,22 +9,23 @@ import app_config.AppPaths;
 import table_list.TableListParser;
 import table_relations.RelationParser;
 
-public class TableSchemaList {
+public class TableSchemaList extends ArrayList<TableSchema> {
+
+	private static final long serialVersionUID = 1L;
 	
-	
-	private static Collection<TableSchema> schemasCache;
+	private static TableSchemaList schemasCache;
 
 	/**
 	 * Get all the table schemas which were defined by the user
 	 * @return
 	 * @throws IOException
 	 */
-	public static Collection<TableSchema> getAll() throws IOException {
+	public static TableSchemaList getAll() throws IOException {
 		
 		// if first time
 		if (schemasCache == null) {
 			
-			schemasCache = new ArrayList<>();
+			schemasCache = new TableSchemaList();
 			
 			SchemaReader parser = new SchemaReader(AppPaths.TABLES_SCHEMA_FILE);
 			
@@ -65,7 +65,7 @@ public class TableSchemaList {
 	 */
 	public static TableSchema getByName(String sheetName) {
 		
-		Collection<TableSchema> schemas;
+		TableSchemaList schemas;
 		try {
 			schemas = getAll();
 		} catch (IOException e) {

@@ -1,7 +1,6 @@
 package table_dialog;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -27,6 +26,7 @@ import table_dialog.RowCreatorViewer.CatalogChangedListener;
 import table_list.TableMetaData;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 import xml_catalog_reader.Selection;
@@ -175,7 +175,12 @@ public abstract class TableDialog {
 			}
 			
 			@Override
-			public void editEnded() {
+			public void editEnded(TableRow row, boolean changed) {
+				
+				if (changed) {
+					panel.getTable().refresh(row);
+				}
+				
 				if (saveButton != null)
 					saveButton.setEnabled(panel.areMandatoryFilled());
 			}
@@ -296,7 +301,7 @@ public abstract class TableDialog {
 		
 		this.panel.clearTable();
 		
-		Collection<TableRow> rows = getRows();
+		TableRowList rows = getRows();
 		this.panel.setInput(rows);
 	}
 	
@@ -476,21 +481,17 @@ public abstract class TableDialog {
 		// initialize the row fields with default values
 		row.initialize();
 		
-		// insert the row and get the row id
-		TableDao dao = new TableDao(getSchema());
-		int id = dao.add(row);
-
-		// set the id for the new row
-		row.setId(id);
-
-		// refresh row id
+		// insert the row and save also the row id
+		row.save();
+		
+		// initialize the formulas with row id
 		row.initialize();
 		
 		// update the formulas
 		row.updateFormulas();
 
 		// update the row with the formulas solved
-		dao.update(row);
+		row.update();
 
 		// add the row to the table
 		add(row);
@@ -520,9 +521,9 @@ public abstract class TableDialog {
 	 * the filtered rows are returned.
 	 * @return
 	 */
-	public Collection<TableRow> getRows() {
+	public TableRowList getRows() {
 		
-		Collection<TableRow> rows = new ArrayList<>();
+		TableRowList rows = new TableRowList(schema);
 
 		// load parents rows
 		TableDao dao = new TableDao(schema);
@@ -533,6 +534,7 @@ public abstract class TableDialog {
 
 		// otherwise filter by id
 		rows = dao.getByParentId(parentFilter.getSchema().getSheetName(), parentFilter.getId());
+
 		return rows;
 	}
 	

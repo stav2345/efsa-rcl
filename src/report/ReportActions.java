@@ -13,7 +13,6 @@ import org.xml.sax.SAXException;
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import global_utils.Warnings;
-import message.MessageConfigBuilder;
 import message.SendMessageException;
 import webservice.MySOAPException;
 
@@ -155,7 +154,7 @@ public class ReportActions {
 			Warnings.warnUser(shell, title, message, style);
 		}
 	}
-	
+
 	/**
 	 * Export the report and send it to the dcf.
 	 * @param report
@@ -167,7 +166,7 @@ public class ReportActions {
 	 * @throws ParserConfigurationException 
 	 * @throws SendMessageException 
 	 */
-	public void send(Listener listener) throws MySOAPException, ReportException {
+	public void send(Listener listener) {
 		
 		int val = Warnings.warnUser(shell, "Warning", 
 				"CONF904: Once the dataset is sent, the report will not be editable until "
@@ -196,21 +195,21 @@ public class ReportActions {
 			if (val2 == SWT.NO)
 				return;
 		}
-
-		// get if we need to do an insert or a replace
-		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-		ReportSendOperation opType = report.getSendOperation();
-		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-
-		boolean goOn = showExportWarning(shell, opType);
-		if (!goOn)
-			return;
 		
 		String title = "Success";
 		String message = "Report successfully sent to the dcf.";
 		int icon = SWT.ICON_INFORMATION;
 		
 		try {
+			
+			// get if we need to do an insert or a replace
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
+			ReportSendOperation opType = report.getSendOperation();
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+
+			boolean goOn = showExportWarning(shell, opType);
+			if (!goOn)
+				return;
 			
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 			
@@ -219,14 +218,14 @@ public class ReportActions {
 			if (opType.getDataset() != null)
 				report.setDatasetId(opType.getDataset().getId());
 
-			MessageConfigBuilder config = report.getDefaultExportConfiguration(opType.getOpType());
-			report.exportAndSend(config);
+			report.exportAndSend(opType.getOpType());
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 			
 			title = "Error";
-			message = "ERR402: Errors occurred during the export of the report.";
+			message = "ERR402: Errors occurred during the export of the report. Please contact zoonoses_support@efsa.europa.eu and attach this error message: " 
+					+ e.getMessage();
 			icon = SWT.ICON_ERROR;
 			
 		} catch (MySOAPException e) {
@@ -242,14 +241,45 @@ public class ReportActions {
 			
 			title = "Error";
 			message = "ERR403: Errors occurred during the creation of the report. Please check if the " 
-					+ AppPaths.MESSAGE_GDE2_XSD + " file is correct. Received error: " + e.getMessage();
+					+ AppPaths.MESSAGE_GDE2_XSD 
+					+ " file is correct. Please contact urgently zoonoses_support@efsa.europa.eu and attach this error message: " 
+					+ e.getMessage();
 			icon = SWT.ICON_ERROR;
 			
 		} catch (SendMessageException e) {
 			e.printStackTrace();
 			
+			switch(e.getResponse().getErrorType()) {
+			case NON_DP_USER:
+				
+				title = "Error";
+				message = "ERR103: The data provider profile in DCF is incomplete: please contact zoonoses_support@efsa.europa.eu.";
+				icon = SWT.ICON_ERROR;
+
+				break;
+				
+			case USER_WITHOUT_ORG:
+				
+				title = "Error";
+				message = "ERR102: The user is not correctly profiled in DCF: please contact zoonoses_support@efsa.europa.eu.";
+				icon = SWT.ICON_ERROR;
+				
+				break;
+				
+			default:
+				
+				title = "Error";
+				message = "ERR404: An unexpected error occurred. Please contact urgently zoonoses_support@efsa.europa.eu and attach this error message: " 
+						+ e.getErrorMessage();
+				icon = SWT.ICON_ERROR;
+				break;
+			}
+			
+		} catch (ReportException e) {
+			e.printStackTrace();
+			
 			title = "Error";
-			message = "ERR404: Send message failed. Received error: " + e.getMessage();
+			message = "ERR700: Something went wrong, please check if the report senderDatasetId is set. Please contact zoonoses_support@efsa.europa.eu.";
 			icon = SWT.ICON_ERROR;
 		}
 
@@ -263,7 +293,7 @@ public class ReportActions {
 		// warn the user
 		Warnings.warnUser(shell, title, message, icon);
 	}
-
+	
 	/**
 	 * Warning based on the required operation and on the status of the dataset
 	 * @param shell

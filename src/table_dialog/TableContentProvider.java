@@ -1,11 +1,9 @@
 package table_dialog;
 
-import java.util.Collection;
-
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 
 /**
  * Content provider of the {@link TableView}
@@ -20,9 +18,8 @@ public class TableContentProvider implements IStructuredContentProvider {
 	@Override
 	public void inputChanged(Viewer arg0, Object oldInput, Object newInput) {}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object[] getElements(Object arg0) {
-		return ((Collection<TableRow>) arg0).toArray();
+		return ((TableRowList) arg0).filterInvisibleFields().toArray();
 	}
 }

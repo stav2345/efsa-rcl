@@ -19,7 +19,7 @@ public class VersionComparator implements Comparator<IDataset> {
 			return 0;
 
 		if (!senderId.equalsIgnoreCase(mySenderId))
-			return mySenderId.compareTo(senderId);
+			return senderId.compareTo(mySenderId);
 		
 		if (version.isEmpty() && myVersion.isEmpty())
 			return 0;

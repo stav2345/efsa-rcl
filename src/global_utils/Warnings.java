@@ -27,10 +27,7 @@ public class Warnings {
 	 * @param message
 	 */
 	public static int warnUser(Shell shell, String title, String message) {
-		MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
-		mb.setText(title);
-		mb.setMessage(message);
-		return mb.open();
+		return warnUser(shell, title, message, SWT.ICON_ERROR);
 	}
 	
 	public static String[] getSOAPWarning(SOAPError error) {

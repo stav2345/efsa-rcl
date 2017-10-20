@@ -6,8 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 
 import app_config.AppPaths;
@@ -15,6 +13,7 @@ import table_relations.Relation;
 import table_skeleton.TableColumn;
 import table_skeleton.TableColumnValue;
 import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 import xlsx_reader.TableSchema;
 import xml_catalog_reader.XmlContents;
 import xml_catalog_reader.XmlLoader;
@@ -433,7 +432,7 @@ public class TableDao {
 		return row;
 	}
 	
-	public Collection<TableRow> getByParentId(String parentTable, int parentId) {
+	public TableRowList getByParentId(String parentTable, int parentId) {
 		return getByParentId(parentTable, parentId, "asc");
 	}
 	
@@ -442,9 +441,9 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public Collection<TableRow> getByParentId(String parentTable, int parentId, String order) {
+	public TableRowList getByParentId(String parentTable, int parentId, String order) {
 		
-		Collection<TableRow> rows = new ArrayList<>();
+		TableRowList rows = new TableRowList(schema);
 
 		Relation r = schema.getRelationByParentTable(parentTable);
 
@@ -482,9 +481,9 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public Collection<TableRow> getAll() {
+	public TableRowList getAll() {
 		
-		Collection<TableRow> rows = new ArrayList<>();
+		TableRowList rows = new TableRowList(schema);
 
 		String query = "select * from " + tableName + " order by " + schema.getTableIdField() + " asc";
 		
@@ -538,6 +537,31 @@ public class TableDao {
 		}
 		else {
 			System.out.println("Row " + rowId + " cannot be deleted from " + tableName);
+		}
+		
+		return ok;
+	}
+	
+	public boolean delete(TableRowList list) {
+
+		boolean ok = true;
+		
+		String query = "delete from " + tableName + " where " + schema.getTableIdField() + " = ?";
+		
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(query);) {
+			
+			for (TableRow row : list) {
+				stmt.setInt(1, row.getId());
+
+				stmt.addBatch();
+			}
+			
+			stmt.executeBatch();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			ok = false;
 		}
 		
 		return ok;
@@ -615,9 +639,9 @@ public class TableDao {
 	 * @param id
 	 * @return
 	 */
-	public Collection<TableRow> getByStringField(String fieldName, String value) {
+	public TableRowList getByStringField(String fieldName, String value) {
 		
-		Collection<TableRow> rows = new ArrayList<>();
+		TableRowList rows = new TableRowList(schema);
 
 		String query = "select * from " + tableName + " where " + fieldName 
 				+ " = ? order by " + schema.getTableIdField() + " asc";

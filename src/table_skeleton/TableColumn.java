@@ -219,8 +219,27 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * Can the user edit the value?
 	 * @return
 	 */
-	public boolean isEditable() {
-		return BooleanValue.isTrue(editable);
+	public boolean isEditable(TableSchema schema, Collection<TableRow> parents) {
+
+		// no parents => no formula to be solved
+		if (parents.isEmpty())
+			return BooleanValue.isTrue(editable);
+		
+		TableRow row = new TableRow(schema);
+		
+		// add parents
+		for (TableRow parent : parents)
+			Relation.injectParent(parent, row);
+		
+		return isTrue(row, XlsxHeader.EDITABLE.getHeaderName());
+	}
+	
+	/**
+	 * Can the user edit the value?
+	 * @return
+	 */
+	public boolean isEditable(TableRow row) {
+		return isTrue(row, XlsxHeader.EDITABLE.getHeaderName());
 	}
 	
 	/**
@@ -361,7 +380,15 @@ public class TableColumn implements Comparable<TableColumn> {
 		// related to that filter
 		SelectionList list = contents.getListById(getPicklistFilter(row));
 		
+		
 		return list;
+	}
+	/**
+	 * Should the column be visualized in the table?
+	 * @return
+	 */
+	public boolean isVisible(TableRow row) {
+		return isTrue(row, XlsxHeader.VISIBLE.getHeaderName());
 	}
 	
 	/**
@@ -392,6 +419,14 @@ public class TableColumn implements Comparable<TableColumn> {
 		// if no data are provided, just check simple field
 		if (row == null)
 			return BooleanValue.isTrue(mandatory);
+		
+		// non visible fields are not mandatory,
+		// in the sense that they are automatically
+		// computed, therefore they are for sure
+		// inserted
+		if (!this.isVisible(row)) {
+			return false;
+		}
 		
 		return isTrue(row, XlsxHeader.MANDATORY.getHeaderName());
 	}

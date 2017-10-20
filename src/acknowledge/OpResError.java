@@ -16,7 +16,7 @@ public enum OpResError {
 		String normError = error.toLowerCase();
 		
 		for (OpResError err : OpResError.values()) {
-			if (err.errorSubstring.toLowerCase().equals(normError)) {
+			if (err.errorSubstring.toLowerCase().contains(normError)) {
 				return err;
 			}
 		}

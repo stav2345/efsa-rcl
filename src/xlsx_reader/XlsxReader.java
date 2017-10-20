@@ -70,6 +70,14 @@ public abstract class XlsxReader implements Closeable {
 	}
 	
 	/**
+	 * Read the first sheet
+	 */
+	public void readFirstSheet() throws IOException {
+		String firstSheetName = workbook.getSheetName(0);
+		this.read(firstSheetName);
+	}
+	
+	/**
 	 * Read the excel workbook
 	 * @throws IOException
 	 */

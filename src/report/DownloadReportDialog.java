@@ -39,6 +39,9 @@ public class DownloadReportDialog extends DatasetListDialog {
 		
 		this.allDatasets = getDownloadableDatasets(validSenderIdPattern);
 		
+		// sort the datasets
+		this.allDatasets.sort();
+		
 		this.setList(allDatasets);
 		
 		parent.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -47,7 +50,8 @@ public class DownloadReportDialog extends DatasetListDialog {
 	}
 
 	/**
-	 * Get a list of all the dcf datasets which are downloadable
+	 * Get a list of all the dcf datasets which are downloadable.
+	 * All the data collections starting from the starting year are considered.
 	 * @param validSenderIdPattern pattern that the sender id field of a
 	 * dataset must follow to be considered downloadable (used to filter
 	 * the datasets)
@@ -58,7 +62,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 		DatasetList<Dataset> allDatasets = new DatasetList<>();
 		
 		Collection<String> dcCodes = new ArrayList<>();
-		dcCodes.add(PropertiesReader.getTestDataCollectionCode()); // add test
+		dcCodes.add(PropertiesReader.getTestDataCollectionCode()); // add test dc
 		
 		Calendar today = Calendar.getInstance();
 		int currentYear = today.get(Calendar.YEAR);
@@ -68,7 +72,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 		if (currentYear >= startingYear) {
 			
 			// add also the other years
-			for (int i = currentYear; i <= startingYear; --i) {
+			for (int i = currentYear; i >= startingYear; --i) {	
 				dcCodes.add(PropertiesReader.getDataCollectionCode(String.valueOf(i)));
 			}
 		}

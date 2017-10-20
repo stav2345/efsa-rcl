@@ -1,11 +1,14 @@
 package table_database;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import app_config.AppPaths;
+import xlsx_reader.TableSchema;
+import xlsx_reader.TableSchemaList;
 
 /**
  * Start the database if present, otherwise create it.
@@ -49,6 +52,34 @@ public class Database {
 			
 			DatabaseCreator creator = new DatabaseCreator(AppPaths.TABLES_SCHEMA_FILE);
 			creator.create(AppPaths.DB_FOLDER);
+		}
+	}
+	
+	/**
+	 * Compress the database to avoid fragmentation
+	 * @throws IOException 
+	 */
+	public void compress() throws IOException {
+		
+		String query = "CALL SYSCS_UTIL.SYSCS_COMPRESS_TABLE(?, ?, ?)";
+		
+		try (Connection con = Database.getConnection();
+				CallableStatement cs = con.prepareCall(query);) {
+			
+			TableSchemaList tables = TableSchemaList.getAll();
+			
+			for (TableSchema table : tables) {
+				
+				cs.setString(1, "APP");
+				cs.setString(2, table.getSheetName().toUpperCase());
+				cs.setShort(3, (short) 1);
+				cs.addBatch();
+			}
+			
+			cs.executeBatch();
+			
+		} catch ( SQLException e ) {
+			e.printStackTrace();
 		}
 	}
 	

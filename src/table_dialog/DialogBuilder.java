@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Text;
 
 import table_dialog.RowCreatorViewer.CatalogChangedListener;
 import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 import xlsx_reader.TableSchema;
 
 /**
@@ -525,7 +526,7 @@ public class DialogBuilder {
 	 * Set the table input
 	 * @param row
 	 */
-	public void setInput(Collection<TableRow> row) {
+	public void setInput(TableRowList row) {
 		
 		if (table == null)
 			return;
@@ -541,7 +542,7 @@ public class DialogBuilder {
 		if (table == null)
 			return;
 		
-		table.removeAll();
+		table.clear();
 	}
 	
 	/**
@@ -552,7 +553,7 @@ public class DialogBuilder {
 		if (table == null)
 			return;
 		
-		table.removeSelectedRow();
+		table.removeSelectedRows();
 	}
 	
 	/**
@@ -627,6 +628,10 @@ public class DialogBuilder {
 			return null;
 		
 		return table.getTableElements();
+	}
+	
+	public TableView getTable() {
+		return table;
 	}
 	
 	public TableSchema getSchema() {

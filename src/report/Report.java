@@ -250,15 +250,17 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * @throws ReportException 
 	 * @throws SOAPException
 	 */
-	public void exportAndSend(MessageConfigBuilder messageConfig) throws IOException, ParserConfigurationException, 
+	public void exportAndSend(OperationType opType) throws IOException, ParserConfigurationException, 
 		SAXException, SendMessageException, MySOAPException, ReportException {
 
+		MessageConfigBuilder messageConfig = getDefaultExportConfiguration(opType);
+		
 		// export the report and get an handle to the exported file
 		File file = this.export(messageConfig);
 
 		try {
 			
-			this.send(file, messageConfig.getOpType());
+			this.send(file, opType);
 			
 			// delete file also if exception occurs
 			if (!DebugConfig.debug)

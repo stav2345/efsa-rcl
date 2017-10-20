@@ -29,7 +29,7 @@ public class EFSARCL {
 	 * @param folder
 	 * @throws IOException
 	 */
-	private static void checkConfigFiles(String filePath, String folder) throws IOException {
+	public static void checkConfigFiles(String filePath, String folder) throws IOException {
 		
 		File configFile = new File(filePath);
 		if(!configFile.exists()) {

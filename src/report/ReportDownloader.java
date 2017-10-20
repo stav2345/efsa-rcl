@@ -11,6 +11,8 @@ import amend_manager.ReportImporter;
 import dataset.Dataset;
 import dataset.DatasetList;
 import global_utils.Warnings;
+import progress.ProgressBarDialog;
+import progress.ProgressListener;
 import webservice.MySOAPException;
 
 /**
@@ -48,7 +50,7 @@ public abstract class ReportDownloader {
 		if (Report.isLocallyPresent(senderId)) {
 			
 			int val = Warnings.warnUser(shell, "Warning", 
-					"This report already exists locally. Do you want to overwrite it?", 
+					"WARN700: This report already exists locally. Do you want to overwrite it?", 
 					SWT.YES | SWT.NO | SWT.ICON_WARNING);
 			
 			if (val == SWT.NO)  // user pressed cancel
@@ -61,45 +63,75 @@ public abstract class ReportDownloader {
 		
 		// get all the versions of the dataset that are present in the DCF
 		DatasetList<Dataset> allVersions = dialog.getSelectedDatasetVersions();
-		
+
 		// download and import the dataset
 		ReportImporter downloader = this.getImporter(allVersions);
+		ReportImporterThread thread = new ReportImporterThread(downloader);
 		
-		String title = null;
-		String message = null;
-		int style = SWT.ICON_ERROR;
+		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, "Downloading report");
+		progressBarDialog.open();
 		
-		try {
-			
-			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-			
-			// import the dataset
-			downloader.importReport();
-			
-			title = "Success";
-			message = "The report was successfully downloaded. Open it to check its content.";
-			style = SWT.ICON_INFORMATION;
-			
-		} catch (MySOAPException e) {
-			e.printStackTrace();
-			
-			String[] warnings = Warnings.getSOAPWarning(e.getError());
-			title = warnings[0];
-			message = warnings[1];
-			
-		} catch (XMLStreamException | IOException e) {
-			e.printStackTrace();
-			
-			title = "Error";
-			message = "The downloaded report is badly formatted. Please contact technical assistance.";
-		}
-		finally {
-			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-		}
+		thread.setProgressListener(new ProgressListener() {
+
+			@Override
+			public void progressCompleted() {
+				
+				// show warning
+				shell.getDisplay().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						
+						progressBarDialog.fillToMax();
+						progressBarDialog.close();
+						
+						String title = "Success";
+						String message = "The report was successfully downloaded. Open it to check its content.";
+						int style = SWT.ICON_INFORMATION;
+						Warnings.warnUser(shell, title, message, style);
+					}
+				});
+			}
+
+			@Override
+			public void progressChanged(double progressPercentage) {
+				progressBarDialog.setProgress(progressPercentage);
+			}
+
+			@Override
+			public void exceptionThrown(Exception e) {
+
+				// show warning
+				shell.getDisplay().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						
+						String title = null;
+						String message = null;
+
+						if (e instanceof MySOAPException) {
+							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e).getError());
+							title = warnings[0];
+							message = warnings[1];
+						}
+						else if (e instanceof XMLStreamException
+								|| e instanceof IOException) {
+							title = "Error";
+							message = "ERR701: The downloaded report is badly formatted. Please contact technical assistance.";
+						}
+						else {
+							title = "Error";
+							message = e.getMessage();
+						}
+						
+						Warnings.warnUser(shell, title, message);
+					}
+				});
+			}
+		});
 		
-		if (message != null) {
-			Warnings.warnUser(shell, title, message, style);
-		}
+		thread.start();
 	}
 	
 	/**

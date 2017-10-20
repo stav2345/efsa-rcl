@@ -1,7 +1,7 @@
 package message;
 
 public class MessageResponse {
-
+	
 	private String messageId;
 	private TrxCode trxState;
 	private String trxError;
@@ -20,6 +20,10 @@ public class MessageResponse {
 	}
 	public String getTrxError() {
 		return trxError;
+	}
+	
+	public SendMessageErrorType getErrorType() {
+		return SendMessageErrorType.fromString(trxError);
 	}
 	
 	/**

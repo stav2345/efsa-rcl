@@ -40,7 +40,7 @@ public class Formula {
 		this.dependenciesCount = 0;
 		evalDependencies();
 	}
-
+	
 	/**
 	 * Get the number of dependencies in terms of \columnname.field
 	 * @return
@@ -87,12 +87,11 @@ public class Formula {
 		value = solveRowKeywords(value);
 		
 		print(value, "KEYWORDS");
-		
-		// solve columns values
-		value = solveColumnsFormula(value);
 
+		// solve columns values if a row was passed
+		value = solveColumnsFormula(value);
 		print(value, "COLUMNS");
-		
+
 		// solve relations formulas
 		value = solveRelationFormula(value);
 		
@@ -119,7 +118,7 @@ public class Formula {
 	
 	private void print(String value, String header) {
 		
-		//if ((column.equals("senderDatasetId")) && fieldHeader.equals("putInOutput"))
+		//if ((column.equals("allele1")) && fieldHeader.equals("editable"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
 		//System.out.println("TIME for " + header + " => " 
 		//		+ (System.currentTimeMillis() - debugTime)/1000.00 + " seconds");
@@ -197,10 +196,6 @@ public class Formula {
 		// compute disequal
 		comparisonFormulas.addAll(FormulaFinder
 				.findComparatorFormulas(value, ComparatorFormula.DISEQUAL));
-		
-		// compute or
-		comparisonFormulas.addAll(FormulaFinder
-				.findComparatorFormulas(value, ComparatorFormula.OR));
 
 		return replaceFormulasWithSolution(comparisonFormulas, value, false);
 	}
@@ -218,6 +213,10 @@ public class Formula {
 		// compute or
 		comparisonFormulas.addAll(FormulaFinder
 				.findComparatorFormulas(value, ComparatorFormula.OR));
+		
+		// compute or
+		comparisonFormulas.addAll(FormulaFinder
+				.findComparatorFormulas(value, ComparatorFormula.AND));
 
 		return replaceFormulasWithSolution(comparisonFormulas, value, false);
 	}

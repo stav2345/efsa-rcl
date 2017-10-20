@@ -39,7 +39,7 @@ public class TableEditor extends EditingSupport {
 
 	@Override
 	protected boolean canEdit(Object arg0) {
-		return column.isEditable();
+		return true;
 	}
 	
 	/**
@@ -135,7 +135,7 @@ public class TableEditor extends EditingSupport {
 			
 			// edit is ended
 			if (listener != null)
-				listener.editEnded();
+				listener.editEnded(null, false);
 			
 			return;
 		}
@@ -186,16 +186,16 @@ public class TableEditor extends EditingSupport {
 		}
 
 		// update the row values
-		row.updateFormulas();
+		/*row.updateFormulas();
 
 		// save the row in the db
 		row.update();
 
-		viewer.refresh(row);
+		viewer.refresh(row);*/
 		
 		// edit is ended
 		if (listener != null)
-			listener.editEnded();
+			listener.editEnded(row, true);
 	}
 	
 	/**

@@ -3,6 +3,7 @@ package table_dialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -23,6 +24,7 @@ import org.eclipse.swt.widgets.Table;
 
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
@@ -39,7 +41,7 @@ public class TableView {
 	private TableViewer tableViewer;             // main table
 	private List<TableViewerColumn> columns;     // columns of the table
 	private TableSchema schema;                  // defines the table columns
-	private ArrayList<TableRow> tableElements;   // cache of the table elements to do sorting by column
+	private TableRowList tableElements;   // cache of the table elements to do sorting by column
 	private boolean editable;                    // table is editable or not?
 	private Listener inputChangedListener;       // called when table data changes
 	private EditorListener editorListener;       // called when editor starts/ends
@@ -60,7 +62,7 @@ public class TableView {
 		this.columns = new ArrayList<>();
 
 		this.schema = TableSchemaList.getByName(schemaSheetName);
-		this.tableElements = new ArrayList<>();
+		this.tableElements = new TableRowList(schema);
 	}
 
 	public void addParentTable(TableRow parent) {
@@ -76,12 +78,15 @@ public class TableView {
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		// create the table
-		this.tableViewer = new TableViewer(composite, SWT.VIRTUAL | SWT.BORDER | SWT.SINGLE
+		this.tableViewer = new TableViewer(composite, SWT.VIRTUAL | SWT.BORDER | SWT.MULTI
 				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
-
+		
+		this.tableViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		
 		this.tableViewer.getTable().setHeaderVisible(true);
 		this.tableViewer.setContentProvider(new TableContentProvider());
-		this.tableViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		this.tableViewer.setUseHashlookup(true);
+		this.tableViewer.getTable().setLinesVisible(true);
 
 		// create the columns based on the schema
 		createColumns();
@@ -267,9 +272,38 @@ public class TableView {
 		if (selection.isEmpty())
 			return null;
 
-		return (TableRow) selection.getFirstElement();
+		TableRow lightRow = (TableRow) selection.getFirstElement();
+		
+		return this.tableElements.getElementById(lightRow.getId());
 	}
+	
+	/**
+	 * Get the selected elements if present
+	 * @return
+	 */
+	public TableRowList getAllSelectedRows() {
 
+		IStructuredSelection selection = (IStructuredSelection) this.tableViewer.getSelection();
+
+		if (selection.isEmpty())
+			return null;
+		
+		TableRowList list = new TableRowList(schema);
+		
+		Iterator<?> iter = selection.iterator();
+		
+		while (iter.hasNext()) {
+			
+			TableRow lightRow = (TableRow) iter.next();
+			
+			TableRow completeRow = this.tableElements.getElementById(lightRow.getId());
+			
+			if (completeRow != null)
+				list.add(completeRow);
+		}
+		
+		return list;
+	}
 
 	/**
 	 * Get the number of elements contained in the table
@@ -310,8 +344,15 @@ public class TableView {
 		for (TableViewerColumn column : columns) {
 			
 			TableEditor editor = null;
+			
 			if (editable) {
+				
 				TableColumn columnSchema = (TableColumn) column.getColumn().getData("schema");
+				
+				// skip non editable columns
+				if (!columnSchema.isEditable(schema, parents))
+					continue;
+				
 				editor = new TableEditor(this, columnSchema);
 				
 				if (editorListener != null)
@@ -350,8 +391,17 @@ public class TableView {
 	public void addRow(TableRow row) {
 		this.tableViewer.add(row);
 		this.tableElements.add(row);
+		moveToBottom();
 	}
 
+	/**
+	 * Move the table to the bottom
+	 */
+	public void moveToBottom() {
+		this.tableViewer.getTable().select(tableViewer.getTable().getItemCount() - 1);
+		this.tableViewer.getTable().showSelection();
+	}
+	
 	/**
 	 * Add an element to the table viewer
 	 * @param row
@@ -372,23 +422,30 @@ public class TableView {
 		this.tableElements.remove(row);
 		row.delete();
 	}
+	
+	public void removeRows(TableRowList rows) {
+		this.tableViewer.remove(rows.toArray());
+		this.tableElements.removeAll(rows);
+		rows.deleteAll();
+	}
 
 	/**
-	 * Remove the selected row
+	 * Remove the selected rows
 	 */
-	public void removeSelectedRow() {
-		TableRow row = getSelection();
-
-		if(row == null)
-			return;
-
-		removeRow(row);
+	public void removeSelectedRows() {
+		
+		TableRowList list = getAllSelectedRows();
+		
+		// remove all the rows from the table
+		removeRows(list);
+		
+		refresh();
 	}
 
 	/**
 	 * Clear all the elements of the table
 	 */
-	public void removeAll() {
+	public void clear() {
 		this.tableElements.clear();
 		this.tableViewer.getTable().removeAll();
 	}
@@ -397,9 +454,10 @@ public class TableView {
 	 * Set the input of the table
 	 * @param elements
 	 */
-	public void setInput(Collection<TableRow> elements) {
+	public void setInput(TableRowList elements) {
 		this.tableViewer.setInput(elements);
-		this.tableElements = new ArrayList<>(elements);
+		this.tableViewer.setItemCount(elements.size());
+		this.tableElements = new TableRowList(elements);
 	}
 
 	/**
@@ -421,12 +479,29 @@ public class TableView {
 
 		this.validator.setLabelProvider(validatorLabelProvider);
 	}
-
+	
 	/**
 	 * Refresh a single row of the table
 	 * @param row
 	 */
 	public void refresh(TableRow row) {
+
+		TableRow oldRow = this.tableElements.getElementById(row.getId());
+		
+		if (oldRow == null) {
+			System.err.println("Cannot refresh row " 
+					+ row.getId() + " since it is not present in the table.");
+			return;
+		}
+
+		// update the edited values
+		oldRow.copyValues(row);
+
+		// update also the formulas using the new values
+		oldRow.updateFormulas();
+
+		// save in db the changed values
+		oldRow.update();
 
 		this.tableViewer.refresh(row);
 
