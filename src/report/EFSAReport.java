@@ -18,6 +18,7 @@ import dataset.IDataset;
 import message.MessageConfigBuilder;
 import message.SendMessageException;
 import message_creator.OperationType;
+import progress.ProgressListener;
 import table_skeleton.TableRow;
 import webservice.MySOAPException;
 
@@ -43,7 +44,7 @@ public interface EFSAReport extends IDataset {
 	 * to export the data into the file.
 	 * @param messageConfig configuration to create the report message
 	 */
-	public File export(MessageConfigBuilder messageConfig) 
+	public File export(MessageConfigBuilder messageConfig, ProgressListener progressListener) 
 			throws IOException, ParserConfigurationException, SAXException, ReportException;
 
 	/**

@@ -4,7 +4,7 @@ import app_config.BooleanValue;
 import table_skeleton.TableRow;
 
 /**
- * Manage comparison formulas as (op1==op2), (op1!=op2)
+ * Manage comparison formulas as (op1==op2), (op1!=op2), (op1ORop2), (op1ANDop2)
  * Note that without brackets it doesn't work
  * @author avonva
  *

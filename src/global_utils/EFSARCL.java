@@ -5,6 +5,11 @@ import java.io.IOException;
 
 import app_config.AppPaths;
 
+/**
+ * Component which initialises the EFSA Report Creator Library
+ * @author avonva
+ *
+ */
 public class EFSARCL {
 
 	public static void initialize() throws IOException {

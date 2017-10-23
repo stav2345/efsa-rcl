@@ -3,7 +3,7 @@ package app_config;
 public class AppPaths {
 	
 	// application folders
-	public static final String XML_FOLDER = "data" + System.getProperty("file.separator");
+	public static final String XML_FOLDER = "picklists" + System.getProperty("file.separator");
 	public static final String CONFIG_FOLDER = "config" + System.getProperty("file.separator");
 	public static final String HELP_FOLDER = "help" + System.getProperty("file.separator");
 	public static final String TEMP_FOLDER = "temp" + System.getProperty("file.separator");

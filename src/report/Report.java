@@ -21,6 +21,7 @@ import message.MessageConfigBuilder;
 import message.MessageResponse;
 import message.SendMessageException;
 import message_creator.OperationType;
+import progress.ProgressListener;
 import table_database.TableDao;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
@@ -228,7 +229,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	}
 	
 	@Override
-	public File export(MessageConfigBuilder messageConfig)
+	public File export(MessageConfigBuilder messageConfig, ProgressListener progressListener)
 			throws IOException, ParserConfigurationException, SAXException, ReportException {
 		
 		if (messageConfig.needEmptyDataset())
@@ -237,8 +238,25 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			
 			// get the previous report version to process amendments
 			ReportXmlBuilder creator = new ReportXmlBuilder(this, messageConfig, getRowIdFieldName());
+			creator.setProgressListener(progressListener);
 			return creator.exportReport();
 		}
+	}
+	
+	/**
+	 * Export and send without tracking progresses
+	 * @param opType
+	 * @throws MySOAPException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws ReportException
+	 */
+	public void exportAndSend(OperationType opType) 
+			throws MySOAPException, IOException, ParserConfigurationException, 
+			SAXException, SendMessageException, ReportException {
+		this.exportAndSend(opType, null);
 	}
 	
 	/**
@@ -250,13 +268,14 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * @throws ReportException 
 	 * @throws SOAPException
 	 */
-	public void exportAndSend(OperationType opType) throws IOException, ParserConfigurationException, 
+	public void exportAndSend(OperationType opType, ProgressListener progressListener) 
+			throws IOException, ParserConfigurationException, 
 		SAXException, SendMessageException, MySOAPException, ReportException {
 
 		MessageConfigBuilder messageConfig = getDefaultExportConfiguration(opType);
 		
 		// export the report and get an handle to the exported file
-		File file = this.export(messageConfig);
+		File file = this.export(messageConfig, progressListener);
 
 		try {
 			
@@ -272,8 +291,12 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			if (!DebugConfig.debug)
 				file.delete();
 
+			// then rethrow the exception
 			throw new MySOAPException(e);
 		}
+		
+		if (progressListener != null)
+			progressListener.progressCompleted();
 	}
 	
 	/**

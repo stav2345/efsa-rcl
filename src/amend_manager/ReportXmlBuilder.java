@@ -12,6 +12,7 @@ import app_config.AppPaths;
 import global_utils.TimeUtils;
 import message.MessageConfigBuilder;
 import message_creator.MessageXmlBuilder;
+import progress.ProgressListener;
 import report.EFSAReport;
 import report.ReportException;
 import table_skeleton.TableRow;
@@ -21,6 +22,7 @@ public class ReportXmlBuilder {
 	private EFSAReport report;
 	private MessageConfigBuilder messageConfig;
 	private String rowIdField;
+	private ProgressListener progressListener;
 	
 	/**
 	 * Send a report to the DCF
@@ -37,6 +39,19 @@ public class ReportXmlBuilder {
 		this.report = report;
 		this.messageConfig = messageConfig;
 		this.rowIdField = rowIdField;
+	}
+	
+	public void setProgressListener(ProgressListener progressListener) {
+		this.progressListener = progressListener;
+	}
+	
+	/**
+	 * Set the progress (call the listener if set)
+	 * @param progress
+	 */
+	private void setProgress(double progress) {
+		if (this.progressListener != null)
+			this.progressListener.progressChanged(progress);
 	}
 	
 	/**
@@ -83,8 +98,11 @@ public class ReportXmlBuilder {
 		// extract the report into the comparisons table
 		extractSingleVersion(report);
 		
+		setProgress(40);
+		
 		// if baseline, just extract it and export it
 		if (report.isBaselineVersion()) {
+			setProgress(100);
 			return createXmlFile();
 		}
 		
@@ -101,11 +119,17 @@ public class ReportXmlBuilder {
 		// extract also the previous report
 		extractSingleVersion(previousReport);
 		
+		setProgress(60);
+		
 		// solve the amendments of the two versions
 		solveDuplications();
 		
+		setProgress(80);
+		
 		// export the final xml file with the merged dataset
 		File xml = createXmlFile();
+		
+		setProgress(100);
 		
 		clearTable();
 		

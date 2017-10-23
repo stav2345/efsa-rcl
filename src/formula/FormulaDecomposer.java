@@ -232,6 +232,13 @@ public class FormulaDecomposer {
 			break;
 		}
 		
+		if(valueElements.size() != formulaElements.size()) {
+			throw new RuntimeException("Cannot parse foodex code: " 
+					+ value 
+					+ "; since it has a different number of elements than the formula: " 
+					+ formula);
+		}
+		
 		HashMap<String, String> decomposedValues = new HashMap<>();
 		
 		// for each value
@@ -282,8 +289,8 @@ public class FormulaDecomposer {
 
 	
 	public static void main(String[] args) throws FormulaException {
-		String formula2 = "RF-00004628-PAR|IF_NOT_NULL(%allele1.code,#allele=%allele1.code,)|IF_NOT_NULL(%allele2.code,$allele=%allele2.code,)";
-		String value2 = "RF-00004628-PAR";
+		String formula2 = "RF-00004628-PAR#allele=%allele1.code$allele=%allele2.code";
+		String value2 = "RF-00004628-PAR#allele=A$allele=B";
 		FormulaDecomposer d = new FormulaDecomposer(formula2, value2);
 		System.out.println(d.decomposeFoodexCode(true));
 	}

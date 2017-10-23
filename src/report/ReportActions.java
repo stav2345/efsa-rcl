@@ -14,6 +14,9 @@ import app_config.AppPaths;
 import app_config.PropertiesReader;
 import global_utils.Warnings;
 import message.SendMessageException;
+import progress.ProgressBarDialog;
+import progress.ProgressListener;
+import report.ReportSender.ReportSenderListener;
 import webservice.MySOAPException;
 
 /**
@@ -166,7 +169,7 @@ public class ReportActions {
 	 * @throws ParserConfigurationException 
 	 * @throws SendMessageException 
 	 */
-	public void send(Listener listener) {
+	/*public void send(Listener listener) {
 		
 		int val = Warnings.warnUser(shell, "Warning", 
 				"CONF904: Once the dataset is sent, the report will not be editable until "
@@ -292,6 +295,192 @@ public class ReportActions {
 		
 		// warn the user
 		Warnings.warnUser(shell, title, message, icon);
+	}*/
+	
+	/**
+	 * Export the report and send it to the dcf.
+	 * @param report
+	 * @throws ReportException 
+	 * @throws MySOAPException 
+	 * @throws IOException
+	 * @throws SOAPException
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
+	 * @throws SendMessageException 
+	 */
+	public void send(Listener listener) {
+		
+		int val = Warnings.warnUser(shell, "Warning", 
+				"CONF904: Once the dataset is sent, the report will not be editable until "
+				+ "it is completely processed by the DCF. Do you want to continue?", 
+				SWT.ICON_WARNING | SWT.YES | SWT.NO);
+		
+		if (val == SWT.NO)
+			return;
+		
+		// if invalid report
+		if (!report.isValid()) {
+			Warnings.warnUser(shell, "Error", 
+					"WARN403: The report contains error, please correct them before uploading data to DCF.");
+			return;
+		}
+		
+		// if test data collection ask confirmation
+		if (PropertiesReader.isTestDataCollection(report.getYear())) {
+			
+			int val2 = Warnings.warnUser(shell, "Warning", 
+					"CONF903: The dataset will be sent to " 
+					+ PropertiesReader.getDataCollectionCode(report.getYear()) 
+					+ " data collection. Do you want to continue?", 
+					SWT.ICON_WARNING | SWT.YES | SWT.NO);
+			
+			if (val2 == SWT.NO)
+				return;
+		}
+		
+		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, "Sending report");
+		progressBarDialog.open();
+		
+		// start the sender thread
+		ReportSender sender = new ReportSender(report);
+		
+		sender.setReportListener(new ReportSenderListener() {
+			
+			@Override
+			public void confirm(ReportSendOperation opType) {
+				
+				shell.getDisplay().syncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						
+						boolean goOn = showExportWarning(shell, opType);
+						
+						if (goOn) {
+							sender.confirmSend();
+						}
+						else {
+							sender.stopSend();
+						}
+					}
+				});
+			}
+		});
+		
+		
+		sender.setProgressListener(new ProgressListener() {
+			
+			@Override
+			public void progressCompleted() {
+				
+				progressBarDialog.fillToMax();
+				
+				progressBarDialog.close();
+				
+				shell.getDisplay().syncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+
+						if (listener != null)
+							listener.handleEvent(null);
+						
+						String title = "Success";
+						String message = "Report successfully sent to the dcf.";
+						int icon = SWT.ICON_INFORMATION;
+						
+						Warnings.warnUser(shell, title, message, icon);
+					}
+				});
+			}
+			
+			@Override
+			public void progressChanged(double progressPercentage) {
+				progressBarDialog.addProgress(progressPercentage);
+			}
+			
+			@Override
+			public void exceptionThrown(Exception e) {
+				
+				shell.getDisplay().syncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						
+						String title = "";
+						String message = "";
+						int icon = SWT.ICON_ERROR;
+						
+						if (e instanceof IOException) {
+							
+							title = "Error";
+							message = "ERR402: Errors occurred during the export of the report. Please contact zoonoses_support@efsa.europa.eu and attach this error message: " 
+									+ e.getMessage();
+							icon = SWT.ICON_ERROR;
+						}
+						else if (e instanceof MySOAPException) {
+							
+							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e).getError());
+							title = warnings[0];
+							message = warnings[1];
+							icon = SWT.ICON_ERROR;
+							
+						}
+						else if (e instanceof SAXException || e instanceof ParserConfigurationException) {
+							
+							title = "Error";
+							message = "ERR403: Errors occurred during the creation of the report. Please check if the " 
+									+ AppPaths.MESSAGE_GDE2_XSD 
+									+ " file is correct. Please contact urgently zoonoses_support@efsa.europa.eu and attach this error message: " 
+									+ e.getMessage();
+							icon = SWT.ICON_ERROR;
+							
+						}
+						else if (e instanceof SendMessageException) {
+							
+							SendMessageException sendE = (SendMessageException) e;
+							
+							switch(sendE.getResponse().getErrorType()) {
+							case NON_DP_USER:
+								
+								title = "Error";
+								message = "ERR103: The data provider profile in DCF is incomplete: please contact zoonoses_support@efsa.europa.eu.";
+								icon = SWT.ICON_ERROR;
+
+								break;
+								
+							case USER_WITHOUT_ORG:
+								
+								title = "Error";
+								message = "ERR102: The user is not correctly profiled in DCF: please contact zoonoses_support@efsa.europa.eu.";
+								icon = SWT.ICON_ERROR;
+								
+								break;
+								
+							default:
+								
+								title = "Error";
+								message = "ERR404: An unexpected error occurred. Please contact urgently zoonoses_support@efsa.europa.eu and attach this error message: " 
+										+ sendE.getErrorMessage();
+								icon = SWT.ICON_ERROR;
+								break;
+							}
+							
+						}
+						else if (e instanceof ReportException) {
+							
+							title = "Error";
+							message = "ERR700: Something went wrong, please check if the report senderDatasetId is set. Please contact zoonoses_support@efsa.europa.eu.";
+							icon = SWT.ICON_ERROR;
+						}
+						
+						Warnings.warnUser(shell, title, message, icon);
+					}
+				});
+			}
+		});
+		
+		sender.start();
 	}
 	
 	/**

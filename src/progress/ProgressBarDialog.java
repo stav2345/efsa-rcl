@@ -39,7 +39,7 @@ public class ProgressBarDialog implements IProgressBar {
 		
 		// create pop up
 		this.dialog = new Shell(parent, SWT.TITLE | SWT.APPLICATION_MODAL);
-		dialog.setSize(300, 130);
+		dialog.setSize(300, 70);
 		dialog.setText(title);
 		dialog.setLayout(new GridLayout(1, false));
 
