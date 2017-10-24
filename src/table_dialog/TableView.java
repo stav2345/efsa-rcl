@@ -424,7 +424,13 @@ public class TableView {
 	}
 	
 	public void removeRows(TableRowList rows) {
-		this.tableViewer.remove(rows.toArray());
+		
+		this.tableViewer.getTable().setRedraw(false);
+		
+		for (TableRow row : rows)
+			this.tableViewer.remove(row);
+		
+		this.tableViewer.getTable().setRedraw(true);
 		this.tableElements.removeAll(rows);
 		rows.deleteAll();
 	}
@@ -435,6 +441,9 @@ public class TableView {
 	public void removeSelectedRows() {
 		
 		TableRowList list = getAllSelectedRows();
+		
+		if (list == null || list.isEmpty())
+			return;
 		
 		// remove all the rows from the table
 		removeRows(list);
@@ -484,7 +493,7 @@ public class TableView {
 	 * Refresh a single row of the table
 	 * @param row
 	 */
-	public void refresh(TableRow row) {
+	public void refreshAndSave(TableRow row) {
 
 		TableRow oldRow = this.tableElements.getElementById(row.getId());
 		
@@ -502,7 +511,7 @@ public class TableView {
 
 		// save in db the changed values
 		oldRow.update();
-
+		
 		this.tableViewer.refresh(row);
 
 		// call listener
@@ -511,6 +520,20 @@ public class TableView {
 			event.data = row;
 			inputChangedListener.handleEvent(event);
 		}
+	}
+	
+	public void refresh(TableRow row) {
+		this.tableViewer.refresh(row);
+	}
+	
+	public void replaceRow(TableRow row) {
+		int index = this.tableElements.indexOf(row);
+		this.tableViewer.replace(row.getVisibleFields(), index);
+	}
+
+	
+	public void refreshValidator(TableRow row) {
+		this.validator.getViewer().refresh(row);
 	}
 
 	/**

@@ -294,6 +294,15 @@ public class DialogBuilder {
 	 * Add the help viewer to the parent
 	 * @param helpMessage
 	 */
+	public DialogBuilder addHelp(String helpMessage, boolean addHelpBtn) {
+		this.helpViewer = new HelpViewer(composite, helpMessage, addHelpBtn);
+		return this;
+	}
+	
+	/**
+	 * Add the help viewer to the parent
+	 * @param helpMessage
+	 */
 	public DialogBuilder addHelp(String helpMessage) {
 		this.helpViewer = new HelpViewer(composite, helpMessage);
 		return this;
@@ -446,12 +455,34 @@ public class DialogBuilder {
 	 * Refresh a row of the table
 	 * @param row
 	 */
+	public void refreshAndSave(TableRow row) {
+		
+		if (table == null)
+			return;
+		
+		this.table.refreshAndSave(row);
+	}
+	
+	public void replace(TableRow row) {
+		if (table == null)
+			return;
+		
+		this.table.replaceRow(row);
+	}
+	
 	public void refresh(TableRow row) {
 		
 		if (table == null)
 			return;
 		
 		this.table.refresh(row);
+	}
+	
+	public void refreshValidator(TableRow row) {
+		if (table == null)
+			return;
+		
+		this.table.refreshValidator(row);
 	}
 	
 	/**

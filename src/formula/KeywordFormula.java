@@ -21,6 +21,7 @@ public class KeywordFormula implements IFormula {
 	public static final String APP_NAME_KEYWORD = "{app.name}";
 	public static final String APP_VERSION_KEYWORD = "{app.version}";
 	public static final String APP_DC_CODE_KEYWORD = "{app.dcCode}";
+	public static final String APP_DC_TEST_CODE_KEYWORD = "{app.dcTestCode}";
 	public static final String APP_DC_TABLE_KEYWORD = "{app.dcTable}";
 	public static final String NULL_KEYWORD = "null";
 	public static final String CONCAT_KEYWORD = "|";
@@ -63,6 +64,9 @@ public class KeywordFormula implements IFormula {
 			break;
 		case APP_DC_CODE_KEYWORD:
 			solvedFormula = formula.replace(APP_DC_CODE_KEYWORD, PropertiesReader.getDataCollectionCode());
+			break;
+		case APP_DC_TEST_CODE_KEYWORD:
+			solvedFormula = formula.replace(APP_DC_TEST_CODE_KEYWORD, PropertiesReader.getTestDataCollectionCode());
 			break;
 		case APP_DC_TABLE_KEYWORD:
 			solvedFormula = formula.replace(APP_DC_TABLE_KEYWORD, PropertiesReader.getDataCollectionTable());

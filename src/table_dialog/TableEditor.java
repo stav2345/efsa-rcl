@@ -65,10 +65,15 @@ public class TableEditor extends EditingSupport {
 			
 			ComboBoxViewerCellEditor combo = new ComboBoxViewerCellEditor(viewer.getTable());
 			combo.setActivationStyle(ComboBoxViewerCellEditor.DROP_DOWN_ON_MOUSE_ACTIVATION);
-
+			
 			// get the list of possible values for the current column
 			// filtering by the summarized information type (bse..)
 			SelectionList list = column.getList(row);
+			
+			// empty list if null is found
+			if (list == null) {
+				list = new SelectionList();
+			}
 			
 			// add also an empty value
 			Selection emptySel = getEmptySelection();
@@ -135,7 +140,7 @@ public class TableEditor extends EditingSupport {
 			
 			// edit is ended
 			if (listener != null)
-				listener.editEnded(null, false);
+				listener.editEnded(null, column, false);
 			
 			return;
 		}
@@ -184,18 +189,10 @@ public class TableEditor extends EditingSupport {
 		default:
 			break;
 		}
-
-		// update the row values
-		/*row.updateFormulas();
-
-		// save the row in the db
-		row.update();
-
-		viewer.refresh(row);*/
 		
 		// edit is ended
 		if (listener != null)
-			listener.editEnded(row, true);
+			listener.editEnded(row, column, true);
 	}
 	
 	/**

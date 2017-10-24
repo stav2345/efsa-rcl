@@ -44,7 +44,7 @@ public class SendMessage extends SOAPRequest {
 	 * Send a dataset to the dcf
 	 * @param filename
 	 */
-	public MessageResponse send() throws SOAPException {
+	public MessageResponse send() throws MySOAPException {
 		
 		Object response = makeRequest(URL);
 		

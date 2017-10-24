@@ -18,13 +18,19 @@ public class AppPaths {
 	public static final String RELATIONS_SHEET = "Relations";
 	public static final String TABLES_SHEET = "Tables";
 	public static final String MESSAGE_CONFIG_SHEET = "MessageConfig";
-	
-	// column of the op type field in the message config sheet
+
+	// op type which will be used in the .xml
 	public static final String MESSAGE_CONFIG_OP_TYPE = "opType";
+	
+	// op type code which is used just to identify the action
+	// this should not be exported
+	public static final String MESSAGE_CONFIG_INTERNAL_OP_TYPE = "internalOpType";
 	
 	// the catalogue of months
 	public static final String YEARS_LIST = "yearsList";
 	public static final String MONTHS_LIST = "monthsList";
+	
+	public static final String CHILDREN_CONTAIN_ERRORS_COL = "childrenContainErrors";
 
 	public static final String REPORT_SHEET = "Report";
 	public static final String REPORT_YEAR = "reportYear";

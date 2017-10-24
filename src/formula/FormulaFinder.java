@@ -189,6 +189,7 @@ public class FormulaFinder {
 			.append(toRegex(KeywordFormula.APP_NAME_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.APP_VERSION_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.APP_DC_CODE_KEYWORD)).append("|")
+			.append(toRegex(KeywordFormula.APP_DC_TEST_CODE_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.APP_DC_TABLE_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.NULL_KEYWORD)).append("|")
 			.append(toRegex(KeywordFormula.CONCAT_KEYWORD)).append("|")

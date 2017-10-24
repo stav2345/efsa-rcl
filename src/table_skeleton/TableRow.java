@@ -3,14 +3,18 @@ package table_skeleton;
 import java.util.Collection;
 import java.util.HashMap;
 
+import app_config.AppPaths;
+import app_config.BooleanValue;
 import duplicates_detector.Checkable;
 import formula.Formula;
 import formula.FormulaException;
 import formula.FormulaSolver;
+import report.Report;
 import table_database.TableDao;
 import xlsx_reader.TableHeaders.XlsxHeader;
 import xlsx_reader.TableSchema;
 import xml_catalog_reader.Selection;
+import xml_catalog_reader.SelectionList;
 import xml_catalog_reader.XmlContents;
 import xml_catalog_reader.XmlLoader;
 
@@ -20,10 +24,11 @@ import xml_catalog_reader.XmlLoader;
  *
  */
 public class TableRow implements Checkable {
-
+	
 	public enum RowStatus {
 		OK,
-		MANDATORY_MISSING
+		MANDATORY_MISSING,
+		ERROR
 	};
 
 	private HashMap<String, TableColumnValue> values;
@@ -225,6 +230,17 @@ public class TableRow implements Checkable {
 			return value.getCode();
 	}
 	
+	public void setChildrenError() {
+		this.put(AppPaths.CHILDREN_CONTAIN_ERRORS_COL, BooleanValue.getTrueValue());
+	}
+	public void removeChildrenError() {
+		this.put(AppPaths.CHILDREN_CONTAIN_ERRORS_COL, BooleanValue.getFalseValue());
+	}
+	public boolean hasChildrenError() {
+		TableColumnValue value = this.get(AppPaths.CHILDREN_CONTAIN_ERRORS_COL);
+		return value != null && value.getCode() != null && BooleanValue.isTrue(value.getCode());
+	}
+	
 	/**
 	 * Put a selection into the data
 	 * @param key
@@ -248,6 +264,7 @@ public class TableRow implements Checkable {
 		if (schema != null && schema.getById(key) != null && schema.getById(key).isPicklist()) {
 			
 			String picklist = schema.getById(key).getPicklistKey();
+			String picklistFilter = schema.getById(key).getPicklistFilter(this);
 			XmlContents contents = XmlLoader.getByPicklistKey(picklist);
 			
 			if (contents == null) {
@@ -255,14 +272,28 @@ public class TableRow implements Checkable {
 				return;
 			}
 			
-			Selection selection = contents.getElementByCode(value);
+			SelectionList list = null;
+			if (picklistFilter != null) {
+				list = contents.getListById(picklistFilter);
+			}
+
+			
+			Selection selection = null;
+			
+			// use list if possible
+			if (list != null)
+				selection = list.getSelectionByCode(value);
+			else
+				selection = contents.getElementByCode(value);
 			
 			if (selection == null) {
-				System.err.println("Cannot find the selection " + value + " in the picklist " + picklist);
-				return;
+				System.err.println("Cannot find the selection " + value 
+						+ " in the picklist " + picklist + " using empty value");
+				row = new TableColumnValue();
 			}
-			
-			row = new TableColumnValue(selection);
+			else {
+				row = new TableColumnValue(selection);
+			}
 		}
 		else {
 			row = new TableColumnValue();
@@ -271,6 +302,14 @@ public class TableRow implements Checkable {
 		}
 
 		this.put(key, row);
+	}
+	
+	/**
+	 * Remove a value from the row
+	 * @param key
+	 */
+	public void remove(String key) {
+		this.values.remove(key);
 	}
 	
 	/**
@@ -570,7 +609,8 @@ public class TableRow implements Checkable {
 		for (TableColumn col: schema) {
 			
 			// remove invisible fields (not fk and id)
-			if (!col.isVisible(row) && !col.isForeignKey()) {
+			if (!col.isVisible(row) && !col.isForeignKey() 
+					&& !col.getId().equals(AppPaths.CHILDREN_CONTAIN_ERRORS_COL)) {
 				row.values.remove(col.getId());
 			}
 		}
@@ -588,6 +628,20 @@ public class TableRow implements Checkable {
 		for (String key : row.values.keySet()) {
 			this.put(key, row.get(key));
 		}
+	}
+	
+	@Override
+	public boolean equals(Object arg0) {
+		
+		if (arg0 instanceof TableRow) {
+			
+			TableRow other = (TableRow) arg0;
+			boolean sameSchema = this.schema.equals(other.schema);
+			boolean sameId = this.getId() == other.getId();
+			return sameSchema && sameId;
+		}
+		else 
+			return super.equals(arg0);
 	}
 	
 	@Override

@@ -19,7 +19,7 @@ public class PropertiesReader {
 	private static final String APP_ICON_PROPERTY = "Application.Icon";
 	private static final String APP_DC_PATTERN_PROPERTY = "Application.DataCollectionPattern";
 	private static final String APP_DC_TABLE_PROPERTY = "Application.DataCollectionTable";
-	private static final String APP_TEST_REPORT_PROPERTY = "Application.TestReportCode";
+	private static final String APP_DC_TEST_PROPERTY = "Application.DataCollectionTest";
 	private static final String APP_DC_STARTING_YEAR = "Application.DataCollectionStartingYear";
 	private static final String APP_STARTUP_HELP_PROPERTY = "Application.StartupHelpFile";
 	
@@ -117,7 +117,7 @@ public class PropertiesReader {
 		if (reportYearInt < startingYear) {
 			System.out.println("The report year is < than the starting year of the data collection. Using " 
 					+ getTestDataCollectionCode() + " instead.");
-			dcCode = resolveDCPattern(dcPattern, getTestReportCode());
+			dcCode = resolveDCPattern(dcPattern, getDcTestCode());
 		}
 		else {
 			// otherwise use the report year to identify the
@@ -134,7 +134,7 @@ public class PropertiesReader {
 	 */
 	public static String getTestDataCollectionCode() {
 		return resolveDCPattern(getValue(APP_DC_PATTERN_PROPERTY, "not found"), 
-				getTestReportCode());
+				getDcTestCode());
 	}
 	
 	private static String resolveDCPattern(String dataCollectionPattern, Object value) {
@@ -151,11 +151,11 @@ public class PropertiesReader {
 	}
 	
 	/**
-	 * Get the test report code
+	 * Get the code of the data collection of test
 	 * @return
 	 */
-	public static String getTestReportCode() {
-		return getValue(APP_TEST_REPORT_PROPERTY, "not found");
+	public static String getDcTestCode() {
+		return getValue(APP_DC_TEST_PROPERTY, "not found");
 	}
 	
 	/**

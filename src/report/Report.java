@@ -228,6 +228,11 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		return datasets.get(0);
 	}
 	
+	public File export(MessageConfigBuilder messageConfig) 
+			throws IOException, ParserConfigurationException, SAXException, ReportException {
+		return this.export(messageConfig, null);
+	}
+	
 	@Override
 	public File export(MessageConfigBuilder messageConfig, ProgressListener progressListener)
 			throws IOException, ParserConfigurationException, SAXException, ReportException {

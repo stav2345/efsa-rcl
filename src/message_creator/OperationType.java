@@ -1,5 +1,7 @@
 package message_creator;
 
+import app_config.AppPaths;
+
 /**
  * Operation types that are used to create a report
  * @author avonva
@@ -7,27 +9,38 @@ package message_creator;
  */
 public enum OperationType {
 	
-	INSERT("Insert"),
-	REPLACE("Replace"),
-	REJECT("Reject"),
-	SUBMIT("Submit"),
-	DEBUG_TEST("Debug TEST (Only for debugging purposes)"),
-	NOT_SUPPORTED("NotSupported");
+	INSERT("Insert", "Insert"),
+	REPLACE("Replace", "Replace"),
+	REJECT("Reject", "Reject"),
+	SUBMIT("Submit", "Submit"),
+	TEST("Test", "Insert"),
+	NOT_SUPPORTED("NotSupported", "NotSupported");
 	
-	private String code;
+	private String internalOpType;
+	private String opTypeName;
 
-	private OperationType(String code) {
-		this.code = code;
+	private OperationType(String internalOpType, String opTypeName) {
+		this.internalOpType = internalOpType;
+		this.opTypeName = opTypeName;
 	}
 	
 	/**
 	 * Get the code of the operation
 	 * @return
 	 */
-	public String getCode() {
-		return code;
+	public String getInternalOpType() {
+		return internalOpType;
 	}
 
+	/**
+	 * Get the code which will be used in the {@link AppPaths#APP_CONFIG_FILE}
+	 * as operation type and also in the exported file.
+	 * @return
+	 */
+	public String getOpType() {
+		return opTypeName;
+	}
+	
 	/**
 	 * Check if the operation needs an empty dataset
 	 * to be sent to the dcf
@@ -45,7 +58,7 @@ public enum OperationType {
 	public static OperationType fromString(String text) {
 		
 		for (OperationType b : OperationType.values()) {
-			if (b.code.equalsIgnoreCase(text)) {
+			if (b.internalOpType.equalsIgnoreCase(text)) {
 				return b;
 			}
 		}

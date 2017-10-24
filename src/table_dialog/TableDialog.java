@@ -89,6 +89,8 @@ public abstract class TableDialog {
 	private boolean createPopUp;
 	private boolean addSaveBtn;
 	
+	private EditorListener editorListener;
+	
 	/**
 	 * Create a dialog with a {@link HelpViewer}, a {@link TableView}
 	 * and possibly a {@link RowCreatorViewer} if {@code addSelector} is set to true.
@@ -170,15 +172,22 @@ public abstract class TableDialog {
 			
 			@Override
 			public void editStarted() {
+				
+				if (editorListener != null)
+					editorListener.editStarted();
+				
 				if (saveButton != null)
 					saveButton.setEnabled(false);
 			}
 			
 			@Override
-			public void editEnded(TableRow row, boolean changed) {
+			public void editEnded(TableRow row, TableColumn field, boolean changed) {
+				
+				if (editorListener != null)
+					editorListener.editEnded(row, field, changed);
 				
 				if (changed) {
-					panel.getTable().refresh(row);
+					panel.getTable().refreshAndSave(row);
 				}
 				
 				if (saveButton != null)
@@ -255,8 +264,8 @@ public abstract class TableDialog {
 		this.dialog.open();
 		
 		// Event loop
-		while ( !dialog.isDisposed() ) {
-			if ( !dialog.getDisplay().readAndDispatch() )
+		while (!dialog.isDisposed()) {
+			if (!dialog.getDisplay().readAndDispatch())
 				dialog.getDisplay().sleep();
 		}
 	}
@@ -346,8 +355,20 @@ public abstract class TableDialog {
 	 * Refresh a single row of the table
 	 * @param row
 	 */
+	public void refreshAndSave(TableRow row) {
+		this.panel.refreshAndSave(row);
+	}
+	
 	public void refresh(TableRow row) {
 		this.panel.refresh(row);
+	}
+	
+	public void refreshValidator(TableRow row) {
+		this.panel.refreshValidator(row);
+	}
+	
+	public void replace(TableRow row) {
+		this.panel.replace(row);
 	}
 	
 	/**
@@ -568,6 +589,14 @@ public abstract class TableDialog {
 	 */
 	public boolean isTableEmpty() {
 		return this.panel.isTableEmpty();
+	}
+	
+	/**
+	 * Called if a row is edited
+	 * @param editorListener
+	 */
+	public void setEditorListener(EditorListener editorListener) {
+		this.editorListener = editorListener;
 	}
 
 	/**

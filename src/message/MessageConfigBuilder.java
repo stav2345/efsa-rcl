@@ -55,7 +55,8 @@ public class MessageConfigBuilder {
 		row.initialize();
 
 		// add the op type to the row
-		row.put(AppPaths.MESSAGE_CONFIG_OP_TYPE, opType.getCode());
+		row.put(AppPaths.MESSAGE_CONFIG_OP_TYPE, opType.getOpType());
+		row.put(AppPaths.MESSAGE_CONFIG_INTERNAL_OP_TYPE, opType.getInternalOpType());
 
 		if (messageParents != null) {
 			
@@ -66,7 +67,7 @@ public class MessageConfigBuilder {
 		}
 		
 		row.updateFormulas();
-		
+
 		return row;
 	}
 }

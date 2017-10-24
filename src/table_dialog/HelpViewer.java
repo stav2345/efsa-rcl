@@ -26,6 +26,7 @@ public class HelpViewer {
 	private String title;
 	private Label info;
 	private Button helpBtn;
+	private boolean addHelpButton;
 	
 	/**
 	 * Panel that displays an help label with an help icon. The
@@ -36,10 +37,15 @@ public class HelpViewer {
 	 * @author avonva
 	 *
 	 */
-	public HelpViewer(Composite parent, String title) {
+	public HelpViewer(Composite parent, String title, boolean addHelpButton) {
 		this.parent = parent;
 		this.title = title;
+		this.addHelpButton = addHelpButton;
 		create();
+	}
+	
+	public HelpViewer(Composite parent, String title) {
+		this(parent, title, true);
 	}
 	
 	/**
@@ -47,7 +53,8 @@ public class HelpViewer {
 	 * @param listener
 	 */
 	public void setListener(MouseListener listener) {
-		this.helpBtn.addMouseListener(listener);
+		if (addHelpButton)
+			this.helpBtn.addMouseListener(listener);
 	}
 	
 	/**
@@ -55,7 +62,8 @@ public class HelpViewer {
 	 * @param text
 	 */
 	public void setToolTipText(String text) {
-		this.helpBtn.setToolTipText(text);
+		if (addHelpButton)
+			this.helpBtn.setToolTipText(text);
 	}
 	
 	private void create() {
@@ -74,8 +82,13 @@ public class HelpViewer {
 
 		this.info.setFont (font);
 		
+		if (!addHelpButton)
+			return;
+		
 		// help icon
 		helpBtn = new Button(composite, SWT.PUSH);
+		
+		helpBtn.setToolTipText("Click here to open the help");
 		
 		Image image = new Image(Display.getCurrent(), 
 				this.getClass().getClassLoader().getResourceAsStream("help.png"));

@@ -367,7 +367,7 @@ public class TableColumn implements Comparable<TableColumn> {
 		
 		if (picklistKey == null)
 			return null;
-		
+
 		XmlContents contents = XmlLoader.getByPicklistKey(picklistKey);
 
 		// if no filter, then we have a single list,
