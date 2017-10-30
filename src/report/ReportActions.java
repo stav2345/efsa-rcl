@@ -234,14 +234,14 @@ public class ReportActions {
 			@Override
 			public void progressCompleted() {
 				
-				progressBarDialog.fillToMax();
-				
-				progressBarDialog.close();
-				
 				shell.getDisplay().syncExec(new Runnable() {
 					
 					@Override
 					public void run() {
+						
+						progressBarDialog.fillToMax();
+						
+						progressBarDialog.close();
 
 						if (listener != null)
 							listener.handleEvent(null);
@@ -267,6 +267,8 @@ public class ReportActions {
 					
 					@Override
 					public void run() {
+						
+						progressBarDialog.close();
 						
 						String title = "";
 						String message = "";
@@ -404,6 +406,7 @@ public class ReportActions {
 		case DELETED:
 			// Do nothing, just avoid the default case
 			goOn = true;
+
 			break;
 		default:
 			title = "Error";
@@ -412,11 +415,15 @@ public class ReportActions {
 			break;
 		}
 		
-		int val = Warnings.warnUser(shell, title, message, style);
-		
-		// if the caller need confirmation
-		if (needConfirmation) {
-			goOn = val == SWT.YES;
+		if (title != null && message != null) {
+			
+			int val = Warnings.warnUser(shell, title, message, style);
+			
+			// if the caller need confirmation
+			if (needConfirmation) {
+				
+				goOn = val == SWT.YES;
+			}
 		}
 		
 		// default answer is no

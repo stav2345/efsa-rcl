@@ -26,15 +26,6 @@ public class HtmlViewer {
 	
 	/**
 	 * Open an html file in the browser
-	 * @param helpFileName
-	 */
-	public void open(String helpFileName) {
-		File file = new File(helpFileName);
-		this.open(file);
-	}
-	
-	/**
-	 * Open an html file in the browser
 	 * @param file
 	 */
 	public void open(File file) {
@@ -47,6 +38,10 @@ public class HtmlViewer {
 		}
 		
 		Program.launch(uri.toString());
+	}
+	
+	public void open(String url) {
+		Program.launch(url);
 	}
 
 	/**

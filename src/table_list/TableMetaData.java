@@ -1,11 +1,11 @@
 package table_list;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import app_config.AppPaths;
+import app_config.PropertiesReader;
 import html_viewer.HtmlViewer;
 
 public class TableMetaData {
@@ -78,8 +78,8 @@ public class TableMetaData {
 	 */
 	public void openHelp() {
 		
-		File file = new File(AppPaths.HELP_FOLDER + htmlFileName);
+		String url = PropertiesReader.getHelpRepositoryURL() + htmlFileName;
 		HtmlViewer viewer = new HtmlViewer();
-		viewer.open(file);
+		viewer.open(url);
 	}
 }

@@ -34,6 +34,30 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * @param regex
 	 * @return
 	 */
+	public DatasetList<T> filterByDatasetId(String regex) {
+		
+		DatasetList<T> filteredList = new DatasetList<T>();
+		
+		for (T dataset : this) {
+			
+			String datasetId = dataset.getDatasetId();
+			
+			// avoid null senderId
+			if (datasetId == null)
+				continue;
+			
+			if (datasetId.matches(regex))
+				filteredList.add(dataset);
+		}
+		
+		return filteredList;
+	}
+	
+	/**
+	 * Filter the datasets by their sender id (regex)
+	 * @param regex
+	 * @return
+	 */
 	public DatasetList<T> filterBySenderId(String regex) {
 		
 		DatasetList<T> filteredList = new DatasetList<T>();

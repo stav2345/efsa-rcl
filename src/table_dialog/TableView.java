@@ -398,8 +398,10 @@ public class TableView {
 	 * Move the table to the bottom
 	 */
 	public void moveToBottom() {
+		this.tableViewer.getTable().deselectAll();
 		this.tableViewer.getTable().select(tableViewer.getTable().getItemCount() - 1);
 		this.tableViewer.getTable().showSelection();
+		this.tableViewer.getTable().deselectAll();
 	}
 	
 	/**

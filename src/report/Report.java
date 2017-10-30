@@ -161,6 +161,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		case REJECTED_EDITABLE:
 		case VALID:
 		case VALID_WITH_WARNINGS:
+		case REJECTED:
 			opType = OperationType.REPLACE;
 			break;
 		case DELETED:
@@ -225,6 +226,8 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		if(datasets.isEmpty())
 			return null;
 		
+		//System.err.println("DEBUG return instead the first dataset encountered");
+		//return datasets.filterByDatasetId("10447").get(0);
 		return datasets.get(0);
 	}
 	

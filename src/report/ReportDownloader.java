@@ -107,6 +107,8 @@ public abstract class ReportDownloader {
 					@Override
 					public void run() {
 						
+						progressBarDialog.close();
+						
 						String title = null;
 						String message = null;
 

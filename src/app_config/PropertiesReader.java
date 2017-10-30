@@ -13,7 +13,7 @@ import report.Report;
  *
  */
 public class PropertiesReader {
-
+	
 	private static final String APP_NAME_PROPERTY = "Application.Name";
 	private static final String APP_VERSION_PROPERTY = "Application.Version";
 	private static final String APP_ICON_PROPERTY = "Application.Icon";
@@ -21,6 +21,7 @@ public class PropertiesReader {
 	private static final String APP_DC_TABLE_PROPERTY = "Application.DataCollectionTable";
 	private static final String APP_DC_TEST_PROPERTY = "Application.DataCollectionTest";
 	private static final String APP_DC_STARTING_YEAR = "Application.DataCollectionStartingYear";
+	private static final String APP_HELP_REPOSITORY_PROPERTY = "Application.HelpRepository";
 	private static final String APP_STARTUP_HELP_PROPERTY = "Application.StartupHelpFile";
 	
 	// cache properties, they do not change across time. We avoid
@@ -162,8 +163,12 @@ public class PropertiesReader {
 	 * 
 	 * @return
 	 */
-	public static String getStartupHelpFileName() {
-		return getValue(APP_STARTUP_HELP_PROPERTY, "not found");
+	public static String getStartupHelpURL() {
+		return getHelpRepositoryURL() + getValue(APP_STARTUP_HELP_PROPERTY, "not found");
+	}
+	
+	public static String getHelpRepositoryURL() {
+		return getValue(APP_HELP_REPOSITORY_PROPERTY, "not found") + "/";
 	}
 	
 	/**

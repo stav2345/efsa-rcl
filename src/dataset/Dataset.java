@@ -223,4 +223,16 @@ public class Dataset implements IDataset {
 		
 		return super.equals(arg0);
 	}
+
+	@Override
+	public String getDatasetId() {
+		if (operation != null && operation.getDatasetId() != null) {
+			return operation.getDatasetId();
+		}
+		
+		if (id != null)
+			return id;
+		
+		return null;
+	}
 }
