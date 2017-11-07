@@ -187,6 +187,11 @@ public class MessageXmlBuilder {
 			}
 			
 			String nodeValue = value.getLabel();
+			
+			if (nodeValue == null || nodeValue.isEmpty()) {
+				System.out.println("Skipping " + elementName + " since it is empty");
+				continue;
+			}
 
 			// append the value of the configuration to the xml node
 			sb.append(getXmlNode(elementName, nodeValue));

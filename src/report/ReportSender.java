@@ -49,8 +49,7 @@ public class ReportSender extends Thread {
 			
 			send();
 			
-		} catch (MySOAPException | ReportException | IOException | ParserConfigurationException | SAXException
-				| SendMessageException | InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			
 			if (progressListener != null)
@@ -92,8 +91,14 @@ public class ReportSender extends Thread {
 		
 		// Update the report dataset id if it was found in the DCF
 		// (Required if we are overwriting an existing report)
-		if (opType.getDataset() != null)
+		if (opType.getDataset() != null) {
+
+			System.out.println("Overwriting dataset id: " + report.getDatasetId() 
+				+ " with " + opType.getDataset().getId());
+			
 			report.setDatasetId(opType.getDataset().getId());
+			report.update();
+		}
 		
 		report.exportAndSend(opType.getOpType(), progressListener);
 	}

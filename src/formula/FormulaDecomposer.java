@@ -136,8 +136,9 @@ public class FormulaDecomposer {
 	 * Decompose a foodex code.
 	 * @param attributes if true it parses: baseTerm#attr1=facet1$attr2=facet2$... otherwise: baseTerm#facet1$facet2$...
 	 * @return
+	 * @throws FormulaException 
 	 */
-	public HashMap<String, String> decomposeFoodexCode(boolean attributes) {
+	public HashMap<String, String> decomposeFoodexCode(boolean attributes) throws FormulaException {
 		CompoundType type = CompoundType.FOODEX_CODE;
 		type.setAttributes(attributes);
 		return decompose(type);
@@ -148,8 +149,9 @@ public class FormulaDecomposer {
 	 * @param separator the separator between the fields
 	 * @param attributes if true it parses: attr1=value1$attr2=value2$... otherwise: value1$value2$...
 	 * @return
+	 * @throws FormulaException 
 	 */
-	public HashMap<String, String> decomposeSimpleField(String separator, boolean attributes) {
+	public HashMap<String, String> decomposeSimpleField(String separator, boolean attributes) throws FormulaException {
 		CompoundType type = CompoundType.SIMPLE;
 		type.setSeparator(separator);
 		type.setAttributes(attributes);
@@ -208,7 +210,7 @@ public class FormulaDecomposer {
 		return decomposedValues;
 	}
 	
-	private HashMap<String, String> decompose(CompoundType type) {
+	private HashMap<String, String> decompose(CompoundType type) throws FormulaException {
 		
 		if (type == CompoundType.SIMPLE && type.getSeparator() == null) {
 			System.err.println("No separator was found for CompoundType " 
@@ -233,7 +235,7 @@ public class FormulaDecomposer {
 		}
 		
 		if(valueElements.size() != formulaElements.size()) {
-			throw new RuntimeException("Cannot parse foodex code: " 
+			throw new FormulaException("Cannot parse foodex code: " 
 					+ value 
 					+ "; since it has a different number of elements than the formula: " 
 					+ formula);

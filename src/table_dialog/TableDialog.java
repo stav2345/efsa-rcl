@@ -413,6 +413,10 @@ public abstract class TableDialog {
 		return parentFilter;
 	}
 	
+	public Shell getParent() {
+		return parent;
+	}
+	
 	/**
 	 * Get the table schema
 	 * @return

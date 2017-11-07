@@ -335,7 +335,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		Ack ack = this.getAck();
 		
 		// if we have something in the ack
-		if (ack.isReady()) {
+		if (ack.isReady() && ack.getLog().isOk()) {
 
 			// save id
 			String datasetId = ack.getLog().getDatasetId();

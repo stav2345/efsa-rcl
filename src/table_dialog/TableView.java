@@ -449,8 +449,6 @@ public class TableView {
 		
 		// remove all the rows from the table
 		removeRows(list);
-		
-		refresh();
 	}
 
 	/**

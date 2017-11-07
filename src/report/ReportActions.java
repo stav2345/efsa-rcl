@@ -149,6 +149,19 @@ public class ReportActions {
 			title = "Error";
 			message = "ERR405: The dataset cannot be sent since the operation is not supported.";
 		}
+		catch (Exception e) {
+			StringBuilder sb = new StringBuilder();
+			for (StackTraceElement ste : e.getStackTrace()) {
+		        sb.append("\n\tat ");
+		        sb.append(ste);
+		    }
+		    String trace = sb.toString();
+		    
+		    message = "XERRX: Generic runtime error. Please contact zoonoses_support@efsa.europa.eu. Error message " 
+		    		+ trace;
+			
+			title = "Generic error";
+		}
 		finally {
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		}
@@ -221,7 +234,11 @@ public class ReportActions {
 							sender.confirmSend();
 						}
 						else {
+							
 							sender.stopSend();
+							
+							// close the progress bar
+							progressBarDialog.close();
 						}
 					}
 				});
@@ -335,6 +352,19 @@ public class ReportActions {
 							title = "Error";
 							message = "ERR700: Something went wrong, please check if the report senderDatasetId is set. Please contact zoonoses_support@efsa.europa.eu.";
 							icon = SWT.ICON_ERROR;
+						}
+						else {
+							StringBuilder sb = new StringBuilder();
+							for (StackTraceElement ste : e.getStackTrace()) {
+						        sb.append("\n\tat ");
+						        sb.append(ste);
+						    }
+						    String trace = sb.toString();
+						    
+						    message = "XERRX: Generic runtime error. Please contact zoonoses_support@efsa.europa.eu. Error message " 
+						    		+ trace;
+							
+							title = "Generic error";
 						}
 						
 						Warnings.warnUser(shell, title, message, icon);

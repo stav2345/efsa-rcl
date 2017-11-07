@@ -60,7 +60,7 @@ public class ReportAckManager {
 
 		// if ack is ready then check if the report status
 		// is the same as the one in the get dataset list
-		if (ack.isReady()) {
+		if (ack.isReady() && ack.getLog().isOk()) {
 			
 			AckLog log = ack.getLog();
 

@@ -1,12 +1,7 @@
 package report;
 
-import java.io.IOException;
-
-import javax.xml.stream.XMLStreamException;
-
 import amend_manager.ReportImporter;
 import progress.ProgressListener;
-import webservice.MySOAPException;
 
 /**
  * Thread to import a tse report
@@ -34,7 +29,7 @@ public class ReportImporterThread extends Thread {
 			
 			this.importer.importReport();
 			
-		} catch (MySOAPException | XMLStreamException | IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			
 			if (progressListener != null)

@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamException;
 
 import dataset.Dataset;
 import dataset.DatasetList;
+import formula.FormulaException;
 import progress.ProgressListener;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
@@ -77,8 +78,9 @@ public abstract class ReportImporter {
 	 * @throws MySOAPException
 	 * @throws XMLStreamException
 	 * @throws IOException
+	 * @throws FormulaException 
 	 */
-	public void importReport() throws MySOAPException, XMLStreamException, IOException {
+	public void importReport() throws MySOAPException, XMLStreamException, IOException, FormulaException {
 
 		System.out.println("Report downloader started");
 		
@@ -232,8 +234,9 @@ public abstract class ReportImporter {
 	 * Create the local report using the data received up to now
 	 * @throws IOException 
 	 * @throws XMLStreamException 
+	 * @throws FormulaException 
 	 */
-	private void createLocalReport() throws XMLStreamException, IOException {
+	private void createLocalReport() throws XMLStreamException, IOException, FormulaException {
 		
 		DatasetComparisonDao dao = new DatasetComparisonDao();
 		List<DatasetComparison> list = dao.getAll();
@@ -316,5 +319,5 @@ public abstract class ReportImporter {
 	 * Import into the local database the row (depends on the data collection)
 	 * @param row
 	 */
-	public abstract void importDatasetRows(List<TableRow> row);
+	public abstract void importDatasetRows(List<TableRow> row) throws FormulaException;
 }

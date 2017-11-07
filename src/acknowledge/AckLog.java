@@ -59,6 +59,16 @@ public class AckLog {
 		return OkCode.fromString(code);
 	}
 	
+	public boolean isOk() {
+		
+		OkCode ok = getOpResCode();
+		
+		if(ok == null)
+			return false;
+		
+		return ok == OkCode.OK;
+	}
+	
 	/**
 	 * Get the error message that is attached to the
 	 * operation node. Only present if the {@link #getOpResCode()}

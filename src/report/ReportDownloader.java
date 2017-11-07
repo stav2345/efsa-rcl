@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Shell;
 import amend_manager.ReportImporter;
 import dataset.Dataset;
 import dataset.DatasetList;
+import formula.FormulaException;
 import global_utils.Warnings;
 import progress.ProgressBarDialog;
 import progress.ProgressListener;
@@ -122,10 +123,24 @@ public abstract class ReportDownloader {
 							title = "Error";
 							message = "ERR701: The downloaded report is badly formatted. Please contact technical assistance.";
 						}
-						else {
+						else if (e instanceof FormulaException) { 
 							title = "Error";
-							message = e.getMessage();
+							message = "ERR701: Parsing error, the dataset contents are not well formed. Please contact zoonoses_support@efsa.europa.eu.";
 						}
+						else {
+							StringBuilder sb = new StringBuilder();
+							for (StackTraceElement ste : e.getStackTrace()) {
+						        sb.append("\n\tat ");
+						        sb.append(ste);
+						    }
+						    String trace = sb.toString();
+						    
+						    message = "XERRX: Generic runtime error. Please contact zoonoses_support@efsa.europa.eu. Error message " 
+						    		+ trace;
+							
+							title = "Generic error";
+						}
+						
 						
 						Warnings.warnUser(shell, title, message);
 					}
