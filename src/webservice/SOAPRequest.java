@@ -27,6 +27,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import app_config.AppPaths;
+import sun.net.www.protocol.http.AuthCacheImpl;
+import sun.net.www.protocol.http.AuthCacheValue;
 import user.User;
 import zip_manager.ZipManager;
 
@@ -103,6 +105,8 @@ public abstract class SOAPRequest {
 
 	public SOAPMessage createTemplateSOAPMessage(String prefix) throws SOAPException {
 
+		System.out.println("Creating a new template");
+		
 		// create the soap message
 		MessageFactory msgFactory = MessageFactory.newInstance();
 		SOAPMessage soapMsg = msgFactory.createMessage();
@@ -111,22 +115,28 @@ public abstract class SOAPRequest {
 		// add the content type header
 		soapMsg.getMimeHeaders().addHeader("Content-Type", "text/xml;charset=UTF-8");
 		
+		// reset the cache of the authentication
+		AuthCacheValue.setAuthCache(new AuthCacheImpl());
+		
 		// set the username and password for the https connection
 		// in order to be able to authenticate me to the DCF
 		Authenticator myAuth = new Authenticator() {
+			
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
-				
+
 				User user = User.getInstance();
 				
 				if (!user.isLogged())
 					return null;
 				
+				System.out.println("Connecting with " + user.getUsername() + " " + user.getPassword());
+				
 				return new PasswordAuthentication(user.getUsername(), 
 						user.getPassword().toCharArray());
 			}
 		};
-
+		
 		// set the default authenticator
 		Authenticator.setDefault(myAuth);
 

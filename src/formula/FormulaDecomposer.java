@@ -164,6 +164,53 @@ public class FormulaDecomposer {
 	 * @return
 	 * @throws FormulaException
 	 */
+	public HashMap<String, String> decomposeRelationFieldAsFoodex() throws FormulaException {
+		
+		HashMap<String, String> decomposedValues = new HashMap<>();
+		
+		// find all the attributes names
+		List<AttributeElement> elements = splitAsFoodex(value, false);
+		elements.remove(0);  // remove base term TODO fix this
+		
+		// search the relation that is related to the current element
+		String pattern = "";
+		
+		pattern = pattern + FormulaFinder.RELATION_REGEX;
+		
+		Pattern p = Pattern.compile(pattern);
+		Matcher m = p.matcher(formula);
+		
+		for (AttributeElement elem : elements) {
+			
+			if (m.find()) {
+
+				// get the match
+				String match = m.group();
+				
+				// get the relation formula
+				FormulaList list = FormulaFinder.findRelationFormulas(match);
+				
+				if (list.isEmpty()) {
+					continue;
+				}
+				
+				// get the relation formula
+				RelationFormula relF = (RelationFormula) list.get(0);
+				
+				// save in the parent column id the value of the element
+				decomposedValues.put(relF.getParentColumnId(), elem.getValue());
+			}
+		}
+		
+		return decomposedValues;
+	}
+	
+	/**
+	 * Search the fields in a formula with relations
+	 * @param separator
+	 * @return
+	 * @throws FormulaException
+	 */
 	public HashMap<String, String> decomposeRelationField(String separator, boolean attributes) throws FormulaException {
 		
 		HashMap<String, String> decomposedValues = new HashMap<>();
@@ -235,7 +282,7 @@ public class FormulaDecomposer {
 		}
 		
 		if(valueElements.size() != formulaElements.size()) {
-			throw new FormulaException("Cannot parse foodex code: " 
+			throw new FormulaException("Cannot parse code: " 
 					+ value 
 					+ "; since it has a different number of elements than the formula: " 
 					+ formula);
@@ -291,9 +338,9 @@ public class FormulaDecomposer {
 
 	
 	public static void main(String[] args) throws FormulaException {
-		String formula2 = "RF-00004628-PAR#allele=%allele1.code$allele=%allele2.code";
-		String value2 = "RF-00004628-PAR#allele=A$allele=B";
+		String formula2 = "A04MQ#RELATION{SummarizedInformation,source.code}$RELATION{CasesInformation,part.code}$RELATION{SummarizedInformation,prod.code}$RELATION{SummarizedInformation,animage.code}";
+		String value2 = "A04MQ#F01.A057B$F02.A06AM$F21.A07RV$F31.A16NK";
 		FormulaDecomposer d = new FormulaDecomposer(formula2, value2);
-		System.out.println(d.decomposeFoodexCode(true));
+		System.out.println(d.decomposeRelationFieldAsFoodex());
 	}
 }

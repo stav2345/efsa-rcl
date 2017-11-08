@@ -85,7 +85,7 @@ public class SendMessage extends SOAPRequest {
 		
 		// save the changes in the message and return it
 		request.saveChanges();
-		
+
 		return request;
 	}
 
@@ -98,8 +98,7 @@ public class SendMessage extends SOAPRequest {
 		String trxErr = extractTrxError(soapResponse);
 		
 		if (messageId == null || trxCode == null) {
-			System.err.println("SendMessage: no messageId or trxCode was found");
-			return null;
+			throw new SOAPException("SendMessage: no messageId or trxCode was found");
 		}
 		
 		// create the response
