@@ -66,7 +66,12 @@ public class MessageConfigBuilder {
 			}
 		}
 		
+		Relation.emptyCache();
+		
 		row.updateFormulas();
+		
+		System.out.println(row);
+		
 
 		return row;
 	}

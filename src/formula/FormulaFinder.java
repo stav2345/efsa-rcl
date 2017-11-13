@@ -157,7 +157,7 @@ public class FormulaFinder {
 		
 		FormulaList formulas = new FormulaList();
 		
-		String operand = "(" + VARIABLE + ")";
+		String operand = "(" + VARIABLE + "|)";
 		String pattern = "\\(" + operand + "\\s*" + operator + "\\s*" + operand + "\\)";
 		
 		Pattern r = Pattern.compile(pattern);

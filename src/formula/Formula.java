@@ -118,7 +118,7 @@ public class Formula {
 	
 	private void print(String value, String header) {
 		
-		//if ((column.equals("allele1")) && fieldHeader.equals("editable"))
+		//if ((column.equals("sampAnId")) && fieldHeader.equals("labelFormula"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
 		//System.out.println("TIME for " + header + " => " 
 		//		+ (System.currentTimeMillis() - debugTime)/1000.00 + " seconds");

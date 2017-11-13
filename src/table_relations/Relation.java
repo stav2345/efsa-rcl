@@ -134,6 +134,11 @@ public class Relation {
 		return parentValueCache.get(parent);
 	}
 	
+	public static void emptyCache() {
+		lastIds.clear();
+		parentValueCache.clear();
+	}
+	
 	/**
 	 * Update the cache of the parent if it was changed externally
 	 * @param parentId

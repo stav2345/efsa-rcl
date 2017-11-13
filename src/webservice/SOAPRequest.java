@@ -7,7 +7,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.Authenticator;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.Iterator;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -27,6 +32,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import app_config.AppPaths;
+import release.HttpManager;
+import release.ProxyConfigException;
 import sun.net.www.protocol.http.AuthCacheImpl;
 import sun.net.www.protocol.http.AuthCacheValue;
 import user.User;
@@ -51,7 +58,40 @@ public abstract class SOAPRequest {
 	public SOAPRequest(String namespace) {
 		this.namespace = namespace;
 	}
+	
+	private Proxy getProxy() throws ProxyConfigException {
+		return HttpManager.getProxy();
+	}
+	
+	private URL getEndpoint(String stringUrl) throws MalformedURLException, ProxyConfigException {
+		
+		Proxy proxy = getProxy();
+		
+		URL endpoint = new URL(null, stringUrl, new URLStreamHandler() {
+			
+	        protected URLConnection openConnection(URL url) throws IOException {
+	        	
+	            // The url is the parent of this stream handler, so must
+	            // create clone
+	            URL clone = new URL(url.toString());
 
+	            URLConnection connection = null;
+	            
+	            // set the proxy if needed
+	            if (proxy == null) {
+	                connection = clone.openConnection();
+	            } else
+	                connection = clone.openConnection(proxy);
+	            
+	            connection.setConnectTimeout(30000);
+	            connection.setReadTimeout(30000);
+	            return connection;
+	        }
+	    });
+		
+		return endpoint;
+	}
+	
 	/**
 	 * Create the request and get the response. Process the response and return the results.
 	 * @param soapConnection
@@ -70,9 +110,22 @@ public abstract class SOAPRequest {
 			// create the request message
 			SOAPMessage request = createRequest(soapConnection);
 	
-			// get the response
-			SOAPMessage response = soapConnection.call(request, url);
-	
+			SOAPMessage response;
+			try {
+				
+				URL endpoint = getEndpoint(url);
+				
+				// get the response
+				response = soapConnection.call(request, endpoint);
+				
+			} catch (MalformedURLException | ProxyConfigException e) {
+				e.printStackTrace();
+				
+				System.err.println("ERROR OCCURRED. Proceeding with NO_PROXY.");
+				// get the response with no proxy
+				response = soapConnection.call(request, url);
+			}
+			
 			// close the soap connection
 			soapConnection.close();
 			
@@ -104,8 +157,6 @@ public abstract class SOAPRequest {
 	 */
 
 	public SOAPMessage createTemplateSOAPMessage(String prefix) throws SOAPException {
-
-		System.out.println("Creating a new template");
 		
 		// create the soap message
 		MessageFactory msgFactory = MessageFactory.newInstance();
@@ -130,7 +181,7 @@ public abstract class SOAPRequest {
 				if (!user.isLogged())
 					return null;
 				
-				System.out.println("Connecting with " + user.getUsername() + " " + user.getPassword());
+				//System.out.println("Connecting with " + user.getUsername() + " " + user.getPassword());
 				
 				return new PasswordAuthentication(user.getUsername(), 
 						user.getPassword().toCharArray());

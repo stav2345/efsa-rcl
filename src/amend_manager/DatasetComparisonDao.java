@@ -19,7 +19,7 @@ public class DatasetComparisonDao {
 	 */
 	public void add(DatasetComparison comp) {
 		
-		String query = "insert into APP.DATASET_COMPARISON (ROW_ID, VERSION, XML_RECORD, AM_TYPE) values (?,?,?,?)";
+		String query = "insert into APP.DATASET_COMPARISON (ROW_ID, VERSION, XML_RECORD, AM_TYPE, IS_NULLIFIED) values (?,?,?,?,?)";
 
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query, 
@@ -34,6 +34,11 @@ public class DatasetComparisonDao {
 			else 
 				stmt.setString(4, comp.getAmType().getCode());
 			
+			if (comp.getIsNullified() == null)
+				stmt.setNull(5, Types.VARCHAR);
+			else 
+				stmt.setString(5, comp.getIsNullified());
+			
 			stmt.executeUpdate();
 		}
 		catch (SQLException e) {
@@ -47,8 +52,9 @@ public class DatasetComparisonDao {
 		String version = rs.getString("VERSION");
 		String xmlRecord = rs.getString("XML_RECORD");
 		AmendType amType = AmendType.fromCode(rs.getString("AM_TYPE"));
+		String isNullified = rs.getString("IS_NULLIFIED");
 		
-		return new DatasetComparison(rowId, version, xmlRecord, amType);
+		return new DatasetComparison(rowId, version, xmlRecord, amType, isNullified);
 	}
 
 	public List<DatasetComparison> getAll() {

@@ -11,7 +11,6 @@ import org.xml.sax.SAXException;
 import acknowledge.Ack;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
-import app_config.DebugConfig;
 import app_config.PropertiesReader;
 import dataset.Dataset;
 import dataset.DatasetList;
@@ -23,6 +22,7 @@ import message.SendMessageException;
 import message_creator.OperationType;
 import progress.ProgressListener;
 import table_database.TableDao;
+import table_relations.Relation;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
 import webservice.GetAck;
@@ -244,6 +244,8 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			return ReportXmlBuilder.createEmptyReport(messageConfig);
 		else {
 			
+			Relation.emptyCache();
+			
 			// get the previous report version to process amendments
 			ReportXmlBuilder creator = new ReportXmlBuilder(this, messageConfig, getRowIdFieldName());
 			creator.setProgressListener(progressListener);
@@ -290,14 +292,12 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			this.send(file, opType);
 			
 			// delete file also if exception occurs
-			if (!DebugConfig.debug)
-				file.delete();
+			file.delete();
 		}
 		catch (SOAPException e) {
 
 			// delete file also if exception occurs
-			if (!DebugConfig.debug)
-				file.delete();
+			file.delete();
 
 			// then rethrow the exception
 			throw new MySOAPException(e);
@@ -432,8 +432,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		// get the dataset related to the report from the
 		// GetDatasetList request
 		Dataset dataset = this.getDataset();
-		
-		System.out.println(dataset);
+
 		// if not dataset is retrieved
 		if (dataset == null) {
 			return this.getStatus();
@@ -483,7 +482,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * Force the report to be editable
 	 */
 	public void makeEditable() {
-		this.put(AppPaths.REPORT_STATUS, DatasetStatus.DRAFT.getStatus());
+		this.setStatus(DatasetStatus.DRAFT);
 	}
 	
 	/**

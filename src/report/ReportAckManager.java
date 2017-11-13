@@ -193,7 +193,7 @@ public class ReportAckManager {
 
 		} catch (MySOAPException e) {
 			e.printStackTrace();
-			String[] warning = Warnings.getSOAPWarning(e.getError());
+			String[] warning = Warnings.getSOAPWarning(e);
 			title = warning[0];
 			message = warning[1];
 			style = SWT.ERROR;
@@ -292,7 +292,7 @@ public class ReportAckManager {
 		}
 		catch (MySOAPException e) {
 			e.printStackTrace();
-			String[] warning = Warnings.getSOAPWarning(e.getError());
+			String[] warning = Warnings.getSOAPWarning(e);
 			title = warning[0];
 			message = warning[1];
 			style = SWT.ERROR;

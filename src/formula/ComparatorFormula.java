@@ -41,13 +41,27 @@ public class ComparatorFormula implements IFormula {
 
 		String[] split = formula.split(operator);
 		
-		if (split.length != 2) {
+		if (split.length > 2) {
 			throw new FormulaException("Wrong comparison for " + formula);
 		}
-		
-		// extract operands
-		this.leftOperand = split[0].trim().replace("(", "");
-		this.rightOperand = split[1].trim().replace(")", "");
+
+		if (split.length == 1) {
+			boolean missingLeft = split[0].startsWith("==");
+			
+			if (missingLeft) {
+				this.leftOperand = "";
+				this.rightOperand = split[0].trim().replace(")", "");
+			}
+			else {
+				this.leftOperand = split[0].trim().replace("(", "");
+				this.rightOperand = "";
+			}
+		}
+		else {
+			// extract operands
+			this.leftOperand = split[0].trim().replace("(", "");
+			this.rightOperand = split[1].trim().replace(")", "");
+		}
 	}
 
 	@Override

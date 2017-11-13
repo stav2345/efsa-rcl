@@ -1,5 +1,6 @@
 package table_skeleton;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -277,7 +278,6 @@ public class TableRow implements Checkable {
 				list = contents.getListById(picklistFilter);
 			}
 
-			
 			Selection selection = null;
 			
 			// use list if possible
@@ -287,8 +287,16 @@ public class TableRow implements Checkable {
 				selection = contents.getElementByCode(value);
 			
 			if (selection == null) {
-				System.err.println("Cannot find the selection " + value 
-						+ " in the picklist " + picklist + " using empty value");
+
+				// track where the method was called
+				try {
+					throw new IOException("Cannot find the selection " + value 
+							+ " in the picklist " + picklist + ". Using empty value instead.");
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+				
 				row = new TableColumnValue();
 			}
 			else {
@@ -312,6 +320,36 @@ public class TableRow implements Checkable {
 		this.values.remove(key);
 	}
 	
+	public void initialize(String colId) {
+		
+		TableColumn col = schema.getById(colId);
+		
+		// skip foreign keys
+		if (col.isForeignKey())
+			return;
+		
+		TableColumnValue sel = new TableColumnValue();
+
+		FormulaSolver solver = new FormulaSolver(this);
+		Formula code = null;
+		try {
+			code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
+			sel.setCode(code.getSolvedFormula());
+		} catch (FormulaException e) {
+			e.printStackTrace();
+		}
+		
+		Formula label = null;
+		try {
+			label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
+			sel.setLabel(label.getSolvedFormula());
+		} catch (FormulaException e) {
+			e.printStackTrace();
+		}
+
+		this.put(col.getId(), sel);
+	}
+	
 	/**
 	 * Initialize the row with the default values
 	 * note that this will override all the values of the row
@@ -321,31 +359,7 @@ public class TableRow implements Checkable {
 		
 		// create a slot for each column of the table
 		for (TableColumn col : schema) {
-
-			// skip foreign keys
-			if (col.isForeignKey())
-				continue;
-
-			TableColumnValue sel = new TableColumnValue();
-
-			FormulaSolver solver = new FormulaSolver(this);
-			Formula code = null;
-			try {
-				code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
-				sel.setCode(code.getSolvedFormula());
-			} catch (FormulaException e) {
-				e.printStackTrace();
-			}
-			
-			Formula label = null;
-			try {
-				label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
-				sel.setLabel(label.getSolvedFormula());
-			} catch (FormulaException e) {
-				e.printStackTrace();
-			}
-
-			this.put(col.getId(), sel);
+			initialize(col.getId());
 		}
 	}
 

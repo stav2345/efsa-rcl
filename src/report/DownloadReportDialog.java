@@ -23,6 +23,8 @@ import webservice.GetDatasetList;
 public class DownloadReportDialog extends DatasetListDialog {
 	
 	private DatasetList<Dataset> allDatasets;
+	private DatasetList<Dataset> downloadableDatasets;
+	private String validSenderIdPattern;
 	
 	/**
 	 * 
@@ -34,19 +36,26 @@ public class DownloadReportDialog extends DatasetListDialog {
 	public DownloadReportDialog(Shell parent, String validSenderIdPattern) {
 		
 		super(parent, "Available reports", "Download");
+		this.validSenderIdPattern = validSenderIdPattern;
+		this.allDatasets = new DatasetList<>();
+		this.downloadableDatasets = new DatasetList<>();
+	}
+	
+	public void loadDatasets() {
+		
+		Shell parent = getParent();
 		
 		parent.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 		
-		this.allDatasets = getDownloadableDatasets(validSenderIdPattern);
+		// prepare downloadableDatasets and allDatasets lists
+		initDatasets(validSenderIdPattern);
 		
 		// sort the datasets
-		this.allDatasets.sort();
+		this.downloadableDatasets.sort();
 		
-		this.setList(allDatasets);
+		this.setList(downloadableDatasets);
 		
 		parent.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-		
-		this.open();
 	}
 
 	/**
@@ -57,9 +66,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 	 * the datasets)
 	 * @return
 	 */
-	private DatasetList<Dataset> getDownloadableDatasets(String validSenderIdPattern) {
-		
-		DatasetList<Dataset> allDatasets = new DatasetList<>();
+	private void initDatasets(String validSenderIdPattern) {
 		
 		Collection<String> dcCodes = new ArrayList<>();
 		dcCodes.add(PropertiesReader.getTestDataCollectionCode()); // add test dc
@@ -85,14 +92,14 @@ public class DownloadReportDialog extends DatasetListDialog {
 			try {
 				
 				DatasetList<Dataset> datasets = req.getList();
-				allDatasets.addAll(datasets.getDownloadableDatasets(validSenderIdPattern));
+				allDatasets.addAll(datasets);
+				downloadableDatasets.addAll(
+						datasets.getDownloadableDatasets(validSenderIdPattern));
 				
 			} catch (SOAPException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		return allDatasets;
 	}
 	
 	/**
@@ -109,6 +116,8 @@ public class DownloadReportDialog extends DatasetListDialog {
 		
 		String senderId = dataset.getDecomposedSenderId();
 		
+		System.out.println("Selected dataset senderId" + senderId);
+		System.out.println("Filtering in " + allDatasets);
 		if (senderId == null)
 			return null;
 		

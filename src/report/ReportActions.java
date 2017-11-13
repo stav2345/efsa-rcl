@@ -120,15 +120,22 @@ public class ReportActions {
 			switch(action) {
 			case REJECT:
 				report.reject();
+				title = "Success";
+				message = "Reject request sent to DCF. Please wait email notification and then refresh the status.";
+				style = SWT.ICON_INFORMATION;
 				break;
 			case SUBMIT:
 				report.submit();
+				title = "Success";
+				message = "Submit request sent to DCF. Please wait email notification and then refresh the status.";
+				style = SWT.ICON_INFORMATION;
 				break;
+			default:
+				title = "Error";
+				message = "Action not allowed.";
 			}
 			
-			title = "Success";
-			message = "The submit request was successfully sent to DCF. Please refresh the status to check if the operation is completed.";
-			style = SWT.ICON_INFORMATION;
+
 			listener.handleEvent(null);
 			
 		} catch (IOException | ParserConfigurationException | SAXException e) {
@@ -141,7 +148,7 @@ public class ReportActions {
 			message = "ERR404: The dataset structure was not recognized by DCF. The operation could not be completed.";
 		} catch (MySOAPException e) {
 			e.printStackTrace();
-			String[] warning = Warnings.getSOAPWarning(e.getError());
+			String[] warning = Warnings.getSOAPWarning(e);
 			title = warning[0];
 			message = warning[1];
 		} catch (ReportException e) {
@@ -264,7 +271,7 @@ public class ReportActions {
 							listener.handleEvent(null);
 						
 						String title = "Success";
-						String message = "Report successfully sent to the dcf.";
+						String message = "Report uploaded to DCF. Please wait email notification and then refresh the status.";
 						int icon = SWT.ICON_INFORMATION;
 						
 						Warnings.warnUser(shell, title, message, icon);
@@ -300,7 +307,7 @@ public class ReportActions {
 						}
 						else if (e instanceof MySOAPException) {
 							
-							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e).getError());
+							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e));
 							title = warnings[0];
 							message = warnings[1];
 							icon = SWT.ICON_ERROR;

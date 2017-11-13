@@ -68,6 +68,7 @@ public class DatabaseStructureCreator extends XlsxReader {
 			.append("VERSION varchar(50) not null,\n")
 			.append("XML_RECORD varchar(30000) not null,\n")
 			.append("AM_TYPE varchar(100),\n")
+			.append("IS_NULLIFIED varchar(1),\n")
 			.append("primary key(ROW_ID, VERSION));\n");
 		
 		System.out.println(query.toString());

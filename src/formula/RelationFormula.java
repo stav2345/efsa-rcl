@@ -87,7 +87,8 @@ public class RelationFormula implements IFormula {
 		TableColumnValue colVal = row.get(r.getForeignKey());
 
 		if (colVal == null) {
-			throw new FormulaException("Formula: " + formula + ": No parent data found for " + r + " in the row " + row);
+			return "";
+			//throw new FormulaException("Formula: " + formula + ": No parent data found for " + r + " in the row " + row);
 		}
 
 		// get from the child row the foreign key for the parent
@@ -100,7 +101,7 @@ public class RelationFormula implements IFormula {
 
 		// get the parent row using the foreign key
 		TableRow parent = r.getParentValue(Integer.valueOf(foreignKey));
-
+		
 		if (parent == null) {
 			throw new FormulaException("No relation value found for " + foreignKey + "; relation " + r);
 		}
@@ -109,7 +110,8 @@ public class RelationFormula implements IFormula {
 		TableColumnValue parentValue = parent.get(parentColumnId);
 
 		if (parentValue == null) {
-			throw new FormulaException("No parent data value found for " + parentColumnId);
+			throw new FormulaException("No parent data value found for " + parentColumnId 
+					+ " in the row " + row + " with parent " + parent);
 		}
 		
 		String solvedFormula = null;

@@ -3,9 +3,13 @@ package table_dialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxViewerCellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ICellEditorListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -52,6 +56,37 @@ public class TableEditor extends EditingSupport {
 		selection.setDescription("");
 		return selection;
 	}
+	
+	private CellEditor getTextEditor(TableRow row, boolean pwd) {
+
+		int style = SWT.NONE;
+		if (pwd) {
+			style = SWT.PASSWORD;
+		}
+		
+		TextCellEditor editor = new TextCellEditor(viewer.getTable(), style);
+		editor.addListener(new ICellEditorListener() {
+			
+			@Override
+			public void editorValueChanged(boolean arg0, boolean arg1) {
+				//setRowValue(row, editor.getValue());
+			}
+			
+			@Override
+			public void cancelEditor() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void applyEditorValue() {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+		return editor;
+	}
 
 	@Override
 	protected CellEditor getCellEditor(Object arg0) {
@@ -66,6 +101,21 @@ public class TableEditor extends EditingSupport {
 			ComboBoxViewerCellEditor combo = new ComboBoxViewerCellEditor(viewer.getTable());
 			combo.setActivationStyle(ComboBoxViewerCellEditor.DROP_DOWN_ON_MOUSE_ACTIVATION);
 			
+			combo.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+				
+				@Override
+				public void selectionChanged(SelectionChangedEvent arg0) {
+
+					IStructuredSelection sel = ((IStructuredSelection) arg0.getSelection());
+					
+					if (sel.isEmpty())
+						return;
+					
+					Selection selection = (Selection) sel.getFirstElement();
+					
+					setValue(row, selection);
+				}
+			});
 			// get the list of possible values for the current column
 			// filtering by the summarized information type (bse..)
 			SelectionList list = column.getList(row);
@@ -90,10 +140,12 @@ public class TableEditor extends EditingSupport {
 			break;
 			
 		case PASSWORD:
-			editor = new TextCellEditor(viewer.getTable(), SWT.PASSWORD);
+			editor = getTextEditor(row, true);
+			
 			break;
 		default:
-			editor = new TextCellEditor(viewer.getTable());
+			editor = getTextEditor(row, false);
+			//editor = new TextCellEditor(viewer.getTable());
 			break;
 		}
 		
@@ -116,9 +168,9 @@ public class TableEditor extends EditingSupport {
 			break;
 			
 		default:
-			
+
 			TableColumnValue selection = row.get(column.getId());
-			
+
 			if (selection != null)
 				value = selection.getLabel();
 
@@ -126,61 +178,60 @@ public class TableEditor extends EditingSupport {
 				value = "";
 			break;
 		}
-		
+
 		return value;
 	}
 
-	@Override
-	protected void setValue(Object arg0, Object value) {
+	private void setRowValue(Object arg0, Object value) {
 		
 		// avoid refreshing if same value
 		Object oldValue = getValue(arg0);
-		
+
 		if (value == null || (oldValue != null && value.equals(oldValue))) {
-			
+
 			// edit is ended
 			if (listener != null)
 				listener.editEnded(null, column, false);
-			
+
 			return;
 		}
-		
+
 		TableRow row = (TableRow) arg0;
 
 		switch(column.getType()) {
-		
+
 		// signed integer
 		case INTEGER:
-			
+
 			String newValue = (String) value;
-			
+
 			// if change should be done, change
 			if (isNumeric(newValue)) {
 				row.put(column.getId(), Integer.valueOf(newValue).toString());
 			}
-			
+
 			break;
-			
-		// unsigned integer
+
+			// unsigned integer
 		case U_INTEGER:
-			
+
 			String unsignedInt = (String) value;
-			
+
 			// if change should be done, change
 			if (isUnsignedNumeric(unsignedInt)) {
 				row.put(column.getId(), Integer.valueOf(unsignedInt).toString());
 			}
-			
+
 			break;
-			
+
 		case PICKLIST:
-			
+
 			Selection sel = (Selection) value;
-			
+
 			TableColumnValue newSelection = new TableColumnValue(sel);
 			row.put(column.getId(), newSelection);
 			break;
-			
+
 		case STRING:
 		case PASSWORD:
 			String newValue2 = (String) value;
@@ -189,6 +240,14 @@ public class TableEditor extends EditingSupport {
 		default:
 			break;
 		}
+	}
+	
+	@Override
+	protected void setValue(Object arg0, Object value) {
+		
+		TableRow row = (TableRow) arg0;
+		
+		setRowValue(arg0, value);
 		
 		// edit is ended
 		if (listener != null)

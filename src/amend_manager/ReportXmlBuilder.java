@@ -144,10 +144,10 @@ public class ReportXmlBuilder {
 		
 		// for each row
 		for (TableRow record : report.getRecords()) {
-		
+			
 			// update all the record formulas
 			record.updateFormulas();
-			
+
 			// get the row id from the record
 			String rowId = record.getCode(rowIdField);
 			

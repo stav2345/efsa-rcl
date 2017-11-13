@@ -345,7 +345,6 @@ public class TableDao {
 		sel.setLabel(String.valueOf(id));
 		row.put(schema.getTableIdField(), sel);
 		
-		
 		for (TableColumn column : schema) {
 			
 			TableColumnValue selection = null;
@@ -366,7 +365,7 @@ public class TableDao {
 			else {
 				
 				String value = rs.getString(column.getId());
-				
+
 				// if no value go to the next field
 				if (value == null)
 					continue;
@@ -407,7 +406,7 @@ public class TableDao {
 						selection = new TableColumnValue();
 				}
 				else {
-					
+
 					// if simple element, then it is sufficient the
 					// description (which is the label)
 					selection = new TableColumnValue();
@@ -418,10 +417,10 @@ public class TableDao {
 
 			// set also the id of the row
 			row.setId(rs.getInt(schema.getTableIdField()));
-			
+
 			if (selection.getLabel().isEmpty())
 				selection.setLabel(selection.getCode());
-			
+
 			// insert the element into the row
 			row.put(column.getId(), selection);
 		}
@@ -461,6 +460,7 @@ public class TableDao {
 				while (rs.next()) {
 
 					TableRow row = getByResultSet(rs);
+	
 					if (row != null)
 						rows.add(row);
 				}

@@ -217,6 +217,11 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 		Collections.sort(this, new VersionComparator());
 	}
 	
+	public void sortAsc() {
+		sort();
+		Collections.reverse(this);
+	}
+	
 	/**
 	 * Filter all the old versions of datasets
 	 * @return
@@ -251,17 +256,16 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 		
 		Collection<DatasetStatus> statusFilter = new ArrayList<>();
 		statusFilter.add(DatasetStatus.REJECTED_EDITABLE);
-		statusFilter.add(DatasetStatus.ACCEPTED_DWH);
-		statusFilter.add(DatasetStatus.VALID);
-		statusFilter.add(DatasetStatus.VALID_WITH_WARNINGS);
-		statusFilter.add(DatasetStatus.SUBMITTED);
+		statusFilter.add(DatasetStatus.REJECTED);
+		statusFilter.add(DatasetStatus.PROCESSING);
+		statusFilter.add(DatasetStatus.DELETED);
 		
 		// filter also by the sender id, which should 
 		// be in the format country year(2) month(2) with
 		// an optional version number
 		// examples: IT1704 FR1411.1 SP1512.01 GR1109.14
 		
-		return filterByStatus(statusFilter)
+		return filterByStatus(statusFilter, true)
 				.filterBySenderId(validSenderIdPattern)
 				.filterOldVersions();
 	}

@@ -127,7 +127,7 @@ public class TableView {
 		
 		setEditable(editable);
 	}
-
+	
 	/**
 	 * Create a table column given the column properties
 	 * @param col

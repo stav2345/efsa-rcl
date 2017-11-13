@@ -11,26 +11,27 @@ import javax.xml.soap.SOAPException;
 public class MySOAPException extends SOAPException {
 
 	private static final long serialVersionUID = 1L;
-	private SOAPError error;
-	
+
 	public MySOAPException(SOAPException e) {
 		super(e);
-		
-		String message = e.getMessage();
-		
-		if (message.contains("401"))
-			this.setError(SOAPError.UNAUTHORIZED);
-		else if (message.contains("403"))
-			this.setError(SOAPError.FORBIDDEN);
-		else
-			this.setError(SOAPError.NO_CONNECTION);
-	}
-	
-	public void setError(SOAPError error) {
-		this.error = error;
+		e.printStackTrace();
 	}
 	
 	public SOAPError getError() {
+		
+		SOAPError error;
+		
+		String message = this.getMessage();
+		
+		/*if (message.contains("401"))
+			error = SOAPError.UNAUTHORIZED;
+		else if (message.contains("403"))
+			error = SOAPError.FORBIDDEN;
+		else
+			error = SOAPError.NO_CONNECTION;*/
+		
+		error = SOAPError.NO_CONNECTION;
+		
 		return error;
 	}
 }

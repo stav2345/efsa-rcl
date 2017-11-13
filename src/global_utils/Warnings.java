@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import webservice.MySOAPException;
 import webservice.SOAPError;
 
 public class Warnings {
@@ -30,14 +31,30 @@ public class Warnings {
 		return warnUser(shell, title, message, SWT.ICON_ERROR);
 	}
 	
-	public static String[] getSOAPWarning(SOAPError error) {
+	public static String getStackTrace(Exception e) {
+		
+		String message = e.getMessage();
+		
+		StringBuilder sb = new StringBuilder();
+		for (StackTraceElement ste : e.getStackTrace()) {
+	        sb.append("\n\tat ");
+	        sb.append(ste);
+	    }
+	    String trace = message + " " + sb.toString();
+	    
+	    return trace;
+	}
+	
+	public static String[] getSOAPWarning(MySOAPException e) {
 		
 		String title = null;
 		String message = null;
+		SOAPError error = e.getError();
 		switch(error) {
 		case NO_CONNECTION:
 			title = "Connection error";
-			message = "ERR600: It was not possible to connect to the DCF, please check your internet connection.";
+			String trace = Warnings.getStackTrace(e);
+			message = "ERR600: It was not possible to connect to the DCF, please check your internet connection." + trace;
 			break;
 		case UNAUTHORIZED:
 		case FORBIDDEN:
@@ -50,7 +67,7 @@ public class Warnings {
 	}
 	
 	
-	public static void showSOAPWarning(Shell shell, SOAPError error) {
+	public static void showSOAPWarning(Shell shell, MySOAPException error) {
 		String[] warning = Warnings.getSOAPWarning(error);
 		Warnings.warnUser(shell, warning[0], warning[1]);
 	}

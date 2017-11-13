@@ -7,7 +7,7 @@ import table_relations.Relation;
 import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
 
-public class TableImporter {
+public abstract class TableImporter {
 
 	/**
 	 * Copy all the children of a parent table into the children
@@ -16,7 +16,7 @@ public class TableImporter {
 	 * @param parentToCopy parent whose rows will be copied
 	 * @param parentToWrite parent whose rows will be replaced by the copied ones
 	 */
-	public static void copyByParent(TableSchema childSchema, 
+	public void copyByParent(TableSchema childSchema, 
 			TableRow parentToCopy, TableRow parentToWrite) {
 		
 		TableDao dao = new TableDao(childSchema);
@@ -39,8 +39,16 @@ public class TableImporter {
 			// set as new parent the parentToWrite parent
 			Relation.injectParent(parentToWrite, row);
 			
+			filterRowData(row);
+			
 			// add the row
 			writeDao.add(row);
 		}
 	}
+	
+	/**
+	 * Manage and filter the row which will be inserted in the new report
+	 * @param row
+	 */
+	public abstract void filterRowData(TableRow row);
 }

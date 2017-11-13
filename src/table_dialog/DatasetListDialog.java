@@ -23,7 +23,7 @@ public class DatasetListDialog {
 	private String okBtnText;
 	private Dataset selectedDataset;
 	
-	private TableViewer datasetList;
+	private TableViewer table;
 	
 	public DatasetListDialog(Shell parent, String title, String okBtnText) {
 		this.parent = parent;
@@ -33,7 +33,7 @@ public class DatasetListDialog {
 	}
 	
 	public void setList(DatasetList<Dataset> list) {
-		datasetList.setInput(list);
+		table.setInput(list);
 	}
 	
 	private void create() {
@@ -45,32 +45,11 @@ public class DatasetListDialog {
 		dialog.setLayout(new GridLayout(1, false));
 		dialog.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		this.datasetList = new TableViewer(dialog, SWT.BORDER | SWT.SINGLE
+		this.table = new TableViewer(dialog, SWT.BORDER | SWT.SINGLE
 				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
-		datasetList.getTable().setHeaderVisible(true);
-		datasetList.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		datasetList.setContentProvider(new DatasetContentProvider());
-		
-		// Add the column to the parent table
-		TableViewerColumn idCol = new TableViewerColumn(datasetList, SWT.NONE);
-		idCol.getColumn().setText("Dataset id");
-		idCol.setLabelProvider(new DatasetLabelProvider("id"));
-		idCol.getColumn().setWidth(100);
-		
-		TableViewerColumn senderIdCol = new TableViewerColumn(datasetList, SWT.NONE);
-		senderIdCol.getColumn().setText("Sender id");
-		senderIdCol.setLabelProvider(new DatasetLabelProvider("senderId"));
-		senderIdCol.getColumn().setWidth(100);
-		
-		TableViewerColumn statusCol = new TableViewerColumn(datasetList, SWT.NONE);
-		statusCol.getColumn().setText("DCF status");
-		statusCol.setLabelProvider(new DatasetLabelProvider("status"));
-		statusCol.getColumn().setWidth(130);
-		
-		TableViewerColumn revisionCol = new TableViewerColumn(datasetList, SWT.NONE);
-		revisionCol.getColumn().setText("Current revision");
-		revisionCol.setLabelProvider(new DatasetLabelProvider("revision"));
-		revisionCol.getColumn().setWidth(100);
+		table.getTable().setHeaderVisible(true);
+		table.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		table.setContentProvider(new DatasetContentProvider());
 
 		// ok button to select a dataset
 		Button okBtn = new Button(dialog, SWT.PUSH);
@@ -81,7 +60,7 @@ public class DatasetListDialog {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				
-				IStructuredSelection selection = (IStructuredSelection) datasetList.getSelection();
+				IStructuredSelection selection = (IStructuredSelection) table.getSelection();
 				if (selection.isEmpty()) {
 					Warnings.warnUser(dialog, "Error", "No dataset was selected");
 					return;
@@ -92,6 +71,39 @@ public class DatasetListDialog {
 				dialog.close();
 			}
 		});
+	}
+	
+	public TableViewer getTable() {
+		return table;
+	}
+
+	public void addIdCol() {
+		// Add the column to the parent table
+		TableViewerColumn idCol = new TableViewerColumn(table, SWT.NONE);
+		idCol.getColumn().setText("Dataset id");
+		idCol.setLabelProvider(new DatasetLabelProvider("id"));
+		idCol.getColumn().setWidth(100);
+	}
+	
+	public void addSenderIdCol() {
+		TableViewerColumn senderIdCol = new TableViewerColumn(table, SWT.NONE);
+		senderIdCol.getColumn().setText("Sender id");
+		senderIdCol.setLabelProvider(new DatasetLabelProvider("senderId"));
+		senderIdCol.getColumn().setWidth(100);
+	}
+	
+	public void addStatusCol() {
+		TableViewerColumn statusCol = new TableViewerColumn(table, SWT.NONE);
+		statusCol.getColumn().setText("DCF status");
+		statusCol.setLabelProvider(new DatasetLabelProvider("status"));
+		statusCol.getColumn().setWidth(130);
+	}
+	
+	public void addRevisionCol() {
+		TableViewerColumn revisionCol = new TableViewerColumn(table, SWT.NONE);
+		revisionCol.getColumn().setText("Current revision");
+		revisionCol.setLabelProvider(new DatasetLabelProvider("revision"));
+		revisionCol.getColumn().setWidth(100);
 	}
 	
 	public void open() {

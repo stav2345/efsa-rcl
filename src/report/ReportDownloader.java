@@ -35,8 +35,9 @@ public abstract class ReportDownloader {
 	 */
 	public void download(String validSenderId) {
 		
-		// show only the datasets that can be downloaded (valid status, valid senderId)
-		DownloadReportDialog dialog = new DownloadReportDialog(shell, validSenderId);
+		DownloadReportDialog dialog = getDialog();
+		
+		dialog.open();
 		
 		// get the chosen dataset
 		Dataset selectedDataset = dialog.getSelectedDataset();
@@ -87,7 +88,7 @@ public abstract class ReportDownloader {
 						progressBarDialog.close();
 						
 						String title = "Success";
-						String message = "The report was successfully downloaded. Open it to check its content.";
+						String message = "Report successfully downloaded. The downloaded report is not automatically opened. Please open it to see the content.";
 						int style = SWT.ICON_INFORMATION;
 						Warnings.warnUser(shell, title, message, style);
 					}
@@ -114,7 +115,7 @@ public abstract class ReportDownloader {
 						String message = null;
 
 						if (e instanceof MySOAPException) {
-							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e).getError());
+							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e));
 							title = warnings[0];
 							message = warnings[1];
 						}
@@ -159,4 +160,6 @@ public abstract class ReportDownloader {
 	 * @param allVersions
 	 */
 	public abstract ReportImporter getImporter(DatasetList<Dataset> allVersions);
+	
+	public abstract DownloadReportDialog getDialog();
 }

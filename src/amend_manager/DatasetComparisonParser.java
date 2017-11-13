@@ -150,20 +150,29 @@ public class DatasetComparisonParser implements Closeable {
 		
 		if (isResultBlock && currentNode != null) {
 			
-			// save also the xml node
-			StringBuilder xmlNode = new StringBuilder("<")
-					.append(currentNode)
-					.append(">")
-					.append(contents)
-					.append("</")
-					.append(currentNode)
-					.append(">");
+			if (currentNode.equals("isNullified")) {
+				this.datasetComp.setIsNullified(contents);
+			}
+			else if (currentNode.equals("amType")) {
+				this.datasetComp.setAmType(AmendType.fromCode(contents));
+			}
+			else {
+				
+				// save also the xml node
+				StringBuilder xmlNode = new StringBuilder("<")
+						.append(currentNode)
+						.append(">")
+						.append(contents)
+						.append("</")
+						.append(currentNode)
+						.append(">");
 
-			this.datasetComp.addXmlNode(xmlNode.toString());
-			
-			// if we have the id save it
-			if (currentNode.equals(rowIdField)) {
-				this.datasetComp.setRowId(contents);
+				this.datasetComp.addXmlNode(xmlNode.toString());
+				
+				// if we have the id save it
+				if (currentNode.equals(rowIdField)) {
+					this.datasetComp.setRowId(contents);
+				}
 			}
 		}
 		
@@ -219,7 +228,7 @@ public class DatasetComparisonParser implements Closeable {
 	
 	/*public static void main(String[] args) throws IOException, XMLStreamException {
 		
-		String filename = "C:\\Users\\avonva\\Desktop\\TseBseReportInterface\\TseBseReportCreator\\temp\\attachment_1507813685581.xml";
+		String filename = "C:\\Users\\avonva\\Desktop\\DatasetExport_11104_2017-11-13 09-57-36.xml";
 		File file = new File(filename);
 		
 		DatasetComparisonParser parser = new DatasetComparisonParser(file, "senderDatasetId", "resId");
@@ -227,7 +236,7 @@ public class DatasetComparisonParser implements Closeable {
 		DatasetComparison comp;
 		while ((comp = parser.next()) != null) {
 			//parser.next();
-			//System.out.println(comp.getXmlRecord());
+			System.out.println(comp.getIsNullified());
 		}
 		
 		parser.close();

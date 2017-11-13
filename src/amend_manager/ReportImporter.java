@@ -93,15 +93,17 @@ public abstract class ReportImporter {
 		System.out.println("Last version found is " + n 
 				+ ", while last ACCEPTED_DWH version found is " + k);
 		
-		// sort the datasets by version
-		datasetVersions.sort();
+		System.out.println(datasetVersions);
+		
+		// sort the datasets by version ascendent
+		datasetVersions.sortAsc();
 		
 		// in order, import the datasets processing the amendments if needed
 		for (Dataset dataset : datasetVersions) {
 			
 			setProgress(processedDatasets / datasetVersions.size() * 25);
 			
-			System.out.println("Importing the single version " + dataset);
+			System.out.println("importSingleVersion of " + dataset);
 			
 			// import the single dataset into db
 			importSingleVersion(dataset);
@@ -178,7 +180,7 @@ public abstract class ReportImporter {
 	 */
 	private void importDatasetFile(File file) throws XMLStreamException, IOException {
 		
-		// parse it to extractthe relevan information
+		// parse it to extract the relevant information
 		DatasetComparisonParser parser = new DatasetComparisonParser(
 				file, rowIdField, versionField);
 
@@ -196,13 +198,15 @@ public abstract class ReportImporter {
 	 * Process the amendments of the current processed dataset
 	 */
 	private void processAmendments() {
-		deleteOldRecords();
-		deleteRemovedRecords();
+		//deleteOldRecords();
+		//deleteRemovedRecords();
+		deleteNullifiedRecords();
 	}
 	
 	/**
 	 * Delete all the records which are not at their last version
 	 */
+	@Deprecated
 	private void deleteOldRecords() {
 		
 		StringBuilder query = new StringBuilder();
@@ -220,6 +224,20 @@ public abstract class ReportImporter {
 	/**
 	 * Delete all the records which were amended as deleted
 	 */
+	private void deleteNullifiedRecords() {
+		
+		StringBuilder query = new StringBuilder();
+		query.append("delete from APP.DATASET_COMPARISON ")
+			.append("where IS_NULLIFIED = '1'");
+		
+		DatasetComparisonDao dao = new DatasetComparisonDao();
+		dao.executeQuery(query.toString());
+	}
+	
+	/**
+	 * Delete all the records which were amended as deleted
+	 */
+	@Deprecated
 	private void deleteRemovedRecords() {
 		
 		StringBuilder query = new StringBuilder();

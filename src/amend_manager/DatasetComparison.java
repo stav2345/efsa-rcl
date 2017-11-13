@@ -6,18 +6,21 @@ public class DatasetComparison {
 	private String version;
 	private String xmlRecord;
 	private AmendType amType;
+	private String isNullified;
 	
 	private StringBuilder xmlRecordBuilder;
 	
-	public DatasetComparison(String rowId, String version, String xmlRecord, AmendType amType) {
+	public DatasetComparison(String rowId, 
+			String version, String xmlRecord, AmendType amType, String isNullified) {
 		this.rowId = rowId;
 		this.version = version;
 		this.xmlRecord = xmlRecord;
 		this.amType = amType;
+		this.isNullified = isNullified;
 	}
 	
 	public DatasetComparison(String rowId, String version, String xmlRecord) {
-		this(rowId, version, xmlRecord, null);
+		this(rowId, version, xmlRecord, null, null);
 	}
 	
 	/**
@@ -70,6 +73,10 @@ public class DatasetComparison {
 		this.amType = amType;
 	}
 	
+	public void setIsNullified(String isNullified) {
+		this.isNullified = isNullified;
+	}
+	
 	public String getRowId() {
 		return rowId;
 	}
@@ -81,6 +88,9 @@ public class DatasetComparison {
 	}
 	public AmendType getAmType() {
 		return amType;
+	}
+	public String getIsNullified() {
+		return isNullified;
 	}
 	
 	@Override

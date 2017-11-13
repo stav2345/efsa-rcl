@@ -88,7 +88,8 @@ public enum DatasetStatus {
 	 */
 	public boolean canBeMadeEditable() {
 		return this == VALID || this == VALID_WITH_WARNINGS 
-				|| this == REJECTED_EDITABLE;
+				|| this == REJECTED_EDITABLE || this == REJECTED 
+				|| this == UPLOAD_FAILED || this == DELETED;
 	}
 	
 	/**
@@ -132,7 +133,7 @@ public enum DatasetStatus {
 	 * @return
 	 */
 	public boolean canBeAmended() {
-		return this == ACCEPTED_DWH; 
+		return this == ACCEPTED_DWH;
 	}
 	
 	/**
