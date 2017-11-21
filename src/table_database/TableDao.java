@@ -72,7 +72,7 @@ public class TableDao {
 		while (iterator.hasNext()) {
 			
 			// go to the next
-			TableColumn col = iterator.next();
+			iterator.next();
 			
 			query.append("?");
 			

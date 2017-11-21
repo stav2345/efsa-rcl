@@ -23,14 +23,12 @@ public class MySOAPException extends SOAPException {
 		
 		String message = this.getMessage();
 		
-		/*if (message.contains("401"))
+		if (message.contains("401"))
 			error = SOAPError.UNAUTHORIZED;
 		else if (message.contains("403"))
 			error = SOAPError.FORBIDDEN;
 		else
-			error = SOAPError.NO_CONNECTION;*/
-		
-		error = SOAPError.NO_CONNECTION;
+			error = SOAPError.NO_CONNECTION;
 		
 		return error;
 	}

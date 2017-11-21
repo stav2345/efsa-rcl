@@ -59,9 +59,13 @@ public class ReportActions {
 		if (val == SWT.NO)
 			return null;
 		
+		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
+		
 		// create a new version of the report in the db
 		// it affects directly the current object
 		report.amend();
+		
+		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		
 		// we can returned the modified object
 		return report;

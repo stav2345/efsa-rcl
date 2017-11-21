@@ -7,6 +7,12 @@ import table_relations.Relation;
 import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
 
+/**
+ * Copy all the children of a parent table into the children
+ * of another parent table. 
+ * @author avonva
+ *
+ */
 public abstract class TableImporter {
 
 	/**

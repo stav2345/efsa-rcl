@@ -7,9 +7,7 @@ public class FormulaFinder {
 	
 	// regex components
 	private static final String NUMBER = "[0-9]{1,13}(\\.[0-9]*)?";
-	private static final String INTEGER = "[0-9]+";
 	private static final String LETTER = "[a-zA-Z]";
-	private static final String STRING = "(" + LETTER + ")+";
 	private static final String VARIABLE = "((" + NUMBER + ")|(" + LETTER + "))+";
 	
 	public static final String RELATION_REGEX = "RELATION\\{.+?,.+?\\}";

@@ -31,9 +31,9 @@ public abstract class ReportDownloader {
 	
 	/**
 	 * Download a dataset from the dcf
-	 * @param shell
+	 * @param validSenderId
 	 */
-	public void download(String validSenderId) {
+	public void download() {
 		
 		DownloadReportDialog dialog = getDialog();
 		
@@ -161,5 +161,10 @@ public abstract class ReportDownloader {
 	 */
 	public abstract ReportImporter getImporter(DatasetList<Dataset> allVersions);
 	
+	/**
+	 * Get the dialog which should be shown to select the dataset to download.
+	 * Here it is possible to customize the columns that should be shown.
+	 * @return
+	 */
 	public abstract DownloadReportDialog getDialog();
 }

@@ -16,7 +16,8 @@ import table_dialog.DatasetListDialog;
 import webservice.GetDatasetList;
 
 /**
- * Show the list of dcf datasets
+ * Show the list of dcf datasets. A {@link GetDatasetList} is performed
+ * for each data collection year considered.
  * @author avonva
  *
  */

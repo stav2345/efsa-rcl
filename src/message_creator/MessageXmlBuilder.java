@@ -33,7 +33,6 @@ public class MessageXmlBuilder {
 
 	private File file;            // file to create
 	private MessageConfigBuilder messageConfig; // configuration to create the message
-
 	private Document gde2Xsd;     // schema of a generic message
 
 	private PrintWriter writer;   // writer of the file
@@ -57,8 +56,7 @@ public class MessageXmlBuilder {
 
 		this.file = file;
 		this.messageConfig = messageConfig;
-		
-		this.writer = new PrintWriter(file);
+		this.writer = new PrintWriter(file, "UTF-8");
 	}
 
 	/**
