@@ -8,8 +8,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import app_config.AppPaths;
-import global_utils.TimeUtils;
 import message.MessageConfigBuilder;
 import message_creator.MessageXmlBuilder;
 import progress.ProgressListener;
@@ -64,17 +62,8 @@ public class ReportXmlBuilder {
 	 */
 	public static File createEmptyReport(MessageConfigBuilder messageConfig) 
 			throws ParserConfigurationException, SAXException, IOException {
-		MessageXmlBuilder creator = new MessageXmlBuilder(generateTempFile(), messageConfig);
+		MessageXmlBuilder creator = new MessageXmlBuilder(messageConfig.getOut(), messageConfig);
 		return creator.exportEmpty();
-	}
-	
-	/**
-	 * Generate a temporary .xml file to export the dataset
-	 * @return
-	 */
-	private static File generateTempFile() {
-		String filename = AppPaths.TEMP_FOLDER + "report-" + TimeUtils.getTodayTimestamp() + ".xml";
-		return new File(filename);
 	}
 	
 	private void clearTable() {
@@ -186,7 +175,7 @@ public class ReportXmlBuilder {
 		Collection<DatasetComparison> comps = dao.getAll();
 		
 		// export the xml file
-		MessageXmlBuilder creator = new MessageXmlBuilder(generateTempFile(), this.messageConfig);
+		MessageXmlBuilder creator = new MessageXmlBuilder(messageConfig.getOut(), this.messageConfig);
 		return creator.export(comps);
 	}
 	

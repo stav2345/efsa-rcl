@@ -13,6 +13,7 @@ public class AppPaths {
 	public static final String TABLES_SCHEMA_FILE = CONFIG_FOLDER + "tablesSchema.xlsx";
 	public static final String APP_CONFIG_FILE = CONFIG_FOLDER + "appConfig.xml";
 	public static final String MESSAGE_GDE2_XSD = CONFIG_FOLDER + "GDE2_message.xsd";
+	public static final String REPORT_ERRORS_HEAD_FILE = CONFIG_FOLDER + "ReportErrorsHtmlHead.txt";
 	
 	// TABLES_SCHEMA_FILE special sheets used for other purposes
 	public static final String RELATIONS_SHEET = "Relations";

@@ -151,11 +151,15 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		Dataset dataset = this.getDataset();
 		
 		// if no dataset is present => we do an insert
-		if (dataset == null)
+		if (dataset == null) {
+			System.out.println("No valid dataset found in DCF, using INSERT as operation");
 			return new ReportSendOperation(null, OperationType.INSERT);
+		}
 		
 		// otherwise we check the dataset status
 		DatasetStatus status = dataset.getStatus();
+		
+		System.out.println("Found dataset in DCF in status " + status);
 		
 		switch (status) {
 		case REJECTED_EDITABLE:
@@ -196,8 +200,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		
 		// add also the version to match correctly the dataset sender id
 		// but if we have the baseline use just the sender id
-		if (senderDatasetId != null && !this.getVersion().isEmpty() 
-				&& !TableVersion.isFirstVersion(this.getVersion())) {
+		if (senderDatasetId != null && !this.getVersion().isEmpty()) {
 			senderDatasetId = TableVersion.mergeNameAndVersion(senderDatasetId, 
 					this.getVersion());
 		}
@@ -205,7 +208,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		if (senderDatasetId == null) {
 			throw new ReportException("Cannot retrieve the report sender id for " + this);
 		}
-		
+
 		DatasetList<Dataset> datasets = request.getList();
 
 		return datasets.filterBySenderId(senderDatasetId);

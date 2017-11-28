@@ -1,6 +1,7 @@
 package table_skeleton;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -202,7 +203,7 @@ public class TableRow implements Checkable {
 			numValue = Integer.valueOf(value);
 		}
 		catch (NumberFormatException e) {
-			e.printStackTrace();
+			System.err.println("Cannot get number for value:" + value);
 		}
 		
 		return numValue;
@@ -494,6 +495,16 @@ public class TableRow implements Checkable {
 	 * @return
 	 */
 	public boolean areMandatoryFilled() {
+		return getMandatoryFieldNotFilled().isEmpty();
+	}
+	
+	/**
+	 * Get all the mandatory fields that are not filled
+	 * @return
+	 */
+	public Collection<TableColumn> getMandatoryFieldNotFilled() {
+		
+		Collection<TableColumn> notFilled = new ArrayList<>();
 		
 		for (TableColumn column : schema) {
 			
@@ -502,11 +513,11 @@ public class TableRow implements Checkable {
 				TableColumnValue value = this.get(column.getId());
 				
 				if (value == null || value.isEmpty())
-					return false;
+					notFilled.add(column);
 			}
 		}
 		
-		return true;
+		return notFilled;
 	}
 	
 	/**

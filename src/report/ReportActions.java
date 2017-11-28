@@ -28,7 +28,7 @@ import webservice.MySOAPException;
  * @author avonva
  *
  */
-public class ReportActions {
+public class ReportActions {	
 	
 	private enum ReportAction {
 		REJECT,

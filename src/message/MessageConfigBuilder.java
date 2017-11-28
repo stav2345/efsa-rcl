@@ -1,9 +1,11 @@
 package message;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
 import app_config.AppPaths;
+import global_utils.TimeUtils;
 import message_creator.MessageXmlBuilder;
 import message_creator.OperationType;
 import table_relations.Relation;
@@ -15,6 +17,7 @@ public class MessageConfigBuilder {
 
 	private Collection<TableRow> messageParents;
 	private OperationType opType;
+	private File out;
 	
 	/**
 	 * Create a configuration for a message that will be created
@@ -25,8 +28,23 @@ public class MessageConfigBuilder {
 	 * ({@link AppPaths#MESSAGE_CONFIG_SHEET}).
 	 */
 	public MessageConfigBuilder(Collection<TableRow> messageParents, OperationType opType) {
+		this(messageParents, opType, generateTempFile());
+	}
+	
+	public MessageConfigBuilder(Collection<TableRow> messageParents, OperationType opType, File out) {
 		this.messageParents = messageParents;
 		this.opType = opType;
+		this.out = out;
+	}
+	
+	
+	/**
+	 * Generate a temporary .xml file to export the dataset
+	 * @return
+	 */
+	private static File generateTempFile() {
+		String filename = AppPaths.TEMP_FOLDER + "report-" + TimeUtils.getTodayTimestamp() + ".xml";
+		return new File(filename);
 	}
 	
 	public Collection<TableRow> getMessageParents() {
@@ -39,6 +57,14 @@ public class MessageConfigBuilder {
 	
 	public boolean needEmptyDataset() {
 		return opType.needEmptyDataset();
+	}
+	
+	/**
+	 * Get the file where the export will be created
+	 * @return
+	 */
+	public File getOut() {
+		return out;
 	}
 	
 	/**
@@ -70,9 +96,6 @@ public class MessageConfigBuilder {
 		
 		row.updateFormulas();
 		
-		System.out.println(row);
-		
-
 		return row;
 	}
 }

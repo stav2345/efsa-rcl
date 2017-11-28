@@ -182,10 +182,11 @@ public class TableView {
 		int size = 80;
 		switch (column.getType()) {
 		case INTEGER:
+		case U_INTEGER:
 			size = 80;
 			break;
 		default:
-			size = 80 + column.getLabel().length() * 4;
+			size = 115 + column.getLabel().length() * 4;
 			break;
 		}
 
@@ -348,10 +349,6 @@ public class TableView {
 			if (editable) {
 				
 				TableColumn columnSchema = (TableColumn) column.getColumn().getData("schema");
-				
-				// skip non editable columns
-				if (!columnSchema.isEditable(schema, parents))
-					continue;
 				
 				editor = new TableEditor(this, columnSchema);
 				

@@ -215,6 +215,10 @@ public class TableColumn implements Comparable<TableColumn> {
 		return xmlTag;
 	}
 	
+	public String getEditableFormula() {
+		return editable;
+	}
+	
 	/**
 	 * Can the user edit the value?
 	 * @return

@@ -8,6 +8,7 @@ package dataset;
 public enum DatasetStatus {
 	
 	DRAFT("DRAFT", "Draft"),  // local status, if message was never sent
+	LOCALLY_VALIDATED("LOCALLY_VALIDATED", "Locally validated"),
 	UPLOAD_FAILED("UPLOAD_FAILED", "Upload failed"),  // local status, used if send message fails
 	VALID("VALID", "Valid"),
 	UPLOADED("UPLOADED", "Uploaded"),  // dataset sent but no response received yet 
@@ -78,8 +79,16 @@ public enum DatasetStatus {
 	 * @return
 	 */
 	public boolean canBeSent() {
-		return this == DRAFT || this == UPLOAD_FAILED 
+		return this == LOCALLY_VALIDATED || this == UPLOAD_FAILED 
 				|| this == REJECTED;
+	}
+	
+	/**
+	 * Check if the dataset is valid or not
+	 * @return
+	 */
+	public boolean isValid() {
+		return this == LOCALLY_VALIDATED;
 	}
 	
 	/**
@@ -89,7 +98,11 @@ public enum DatasetStatus {
 	public boolean canBeMadeEditable() {
 		return this == VALID || this == VALID_WITH_WARNINGS 
 				|| this == REJECTED_EDITABLE || this == REJECTED 
-				|| this == UPLOAD_FAILED || this == DELETED;
+				|| this == UPLOAD_FAILED || this == DELETED || this == LOCALLY_VALIDATED;
+	}
+	
+	public boolean canBeChecked() {
+		return this == DRAFT;
 	}
 	
 	/**

@@ -485,7 +485,7 @@ public abstract class TableDialog {
 	}
 	
 	/**
-	 * Warn the user with a message box with custom icon
+	 * Warn the user with a message box with error icon
 	 * @param title
 	 * @param message
 	 */

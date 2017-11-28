@@ -226,6 +226,13 @@ public class FunctionFormula implements IFormula {
 		
 		double totalSum = 0;
 		for (String operand : operands) {
+			
+			// return empty value if empty operand
+			if (operand.isEmpty()) {
+				System.err.println("Warning: An operand of the SUM function is empty. Operands: " + operands + ". Returning empty value");
+				return "";
+			}
+			
 			try {
 				double number = Double.valueOf(operand);
 				

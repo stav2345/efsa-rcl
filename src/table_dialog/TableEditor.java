@@ -43,7 +43,8 @@ public class TableEditor extends EditingSupport {
 
 	@Override
 	protected boolean canEdit(Object arg0) {
-		return true;
+		TableRow row = (TableRow) arg0;
+		return column.isEditable(row);
 	}
 	
 	/**

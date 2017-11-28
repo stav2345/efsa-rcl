@@ -28,4 +28,17 @@ public class FileUtils {
 			}
 		}
 	}
+	
+	/**
+	 * Generate a temporary file
+	 * @return
+	 */
+	public static File generateTempFile(String format) {
+		
+		createFolder(AppPaths.TEMP_FOLDER);
+		
+		String filename = AppPaths.TEMP_FOLDER + "temp-" + TimeUtils.getTodayTimestamp() + format;
+		
+		return new File(filename);
+	}
 }
