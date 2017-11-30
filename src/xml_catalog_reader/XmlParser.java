@@ -26,6 +26,7 @@ public class XmlParser {
 
 	private String filename = "";
 	private boolean parsingDescriptionNode;  // true if we are parsing the description node
+	private String dataNode;
 	private SelectionList selectionList;     // single selection list which is created step by step
 	private Selection selection;             // single selection which is created step by step
 	private XmlContents xmlContents;         // object which contains the .xml contents
@@ -193,6 +194,7 @@ public class XmlParser {
 			
 			break;
 		default:
+			this.dataNode = qName;
 			break;
 		}
 	}
@@ -214,6 +216,18 @@ public class XmlParser {
 		// set the description for the selection
 		if (parsingDescriptionNode) {
 			selection.setDescription(contents);
+		}
+		else {
+
+			if (dataNode != null) {
+				// data cannot be outside of selection object
+				if(this.selection == null) {
+					printError("data node <" + dataNode + "> cannot be outside of " + XmlNodes.SELECTION);
+				}
+				else {
+					selection.addData(dataNode, contents);
+				}
+			}
 		}
 	}
 	
@@ -245,9 +259,12 @@ public class XmlParser {
 		case XmlNodes.DESCRIPTION:
 			this.parsingDescriptionNode = false;
 			break;
-			
 		default:
 			break;
+		}
+		
+		if (qName.equals(this.dataNode)) {
+			this.dataNode = null;
 		}
 	}
 	

@@ -10,6 +10,9 @@ public class TableRowList extends ArrayList<TableRow> {
 	private static final long serialVersionUID = -3747461146664774866L;
 	private TableSchema schema;
 	
+	public TableRowList() {
+	}
+	
 	public TableRowList(Collection<TableRow> rows) {
 		super(rows);
 	}

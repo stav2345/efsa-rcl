@@ -395,6 +395,10 @@ public class TableColumn implements Comparable<TableColumn> {
 		return isTrue(row, XlsxHeader.VISIBLE.getHeaderName());
 	}
 	
+	public String getVisibleFormula() {
+		return visible;
+	}
+	
 	/**
 	 * Should the column be visualized in the table?
 	 * @return

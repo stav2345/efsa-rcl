@@ -314,6 +314,19 @@ public abstract class TableDialog {
 		this.panel.setInput(rows);
 	}
 	
+	public void setParents(TableRow... parents) {
+		
+		if (this.panel.getTable() == null) {
+			System.err.println("Cannot setParents on panel builder without table.");
+			return;
+		}
+		
+		this.panel.getTable().clear();
+		for (TableRow parent : parents) {
+			this.panel.getTable().addParentTable(parent);
+		}
+	}
+	
 	/**
 	 * Clear all the table rows
 	 * and the parent table object

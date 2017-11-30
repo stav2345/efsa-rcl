@@ -14,7 +14,9 @@ import dataset.Dataset;
 import dataset.DatasetList;
 import formula.FormulaException;
 import progress.ProgressListener;
+import report.Report;
 import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
 import webservice.MySOAPException;
 
@@ -22,6 +24,8 @@ public abstract class ReportImporter {
 
 	private ProgressListener progressListener;
 	
+	private TableRowList newVersions;
+	private TableRowList oldVersions;
 	private DatasetList<Dataset> datasetVersions;
 	private String senderDatasetId;
 	private String rowIdField;
@@ -72,6 +76,21 @@ public abstract class ReportImporter {
 			this.progressListener.progressChanged(progress);
 	}
 	
+	private void saveOldVersions() {
+		this.oldVersions = Report.getAllVersions(this.senderDatasetId);
+	}
+	
+	/**
+	 * Delete all the old versions of the report
+	 */
+	public void deleteOldVersions() {
+		this.oldVersions.deleteAll();
+	}
+	
+	public void abort() {
+		this.newVersions.deleteAll();
+	}
+	
 	/**
 	 * Import an entire report (composed of several dataset versions)
 	 * The amendment is also managed here
@@ -81,8 +100,11 @@ public abstract class ReportImporter {
 	 * @throws FormulaException 
 	 */
 	public void importReport() throws MySOAPException, XMLStreamException, IOException, FormulaException {
-
+		
 		System.out.println("Report downloader started");
+		
+		// save old versions of the report if present
+		saveOldVersions();
 		
 		// clear cache
 		clearTable();
@@ -129,7 +151,12 @@ public abstract class ReportImporter {
 				Dataset popDataset = dataset.populateMetadata();
 				
 				// process the dataset header/operation
-				importDatasetMetadata(popDataset);
+				TableRow newReport = importDatasetMetadata(popDataset);
+				if (this.newVersions == null) {
+					this.newVersions = new TableRowList(newReport.getSchema());
+				}
+				
+				newVersions.add(newReport);
 				
 				// process the amendments of the current dataset
 				processAmendments();
@@ -146,6 +173,9 @@ public abstract class ReportImporter {
 		
 		// at the end clear the database table
 		clearTable();
+		
+		// delete all the old versions (we don't need them anymore)
+		deleteOldVersions();
 		
 		if (this.progressListener != null)
 			this.progressListener.progressCompleted();
@@ -297,7 +327,7 @@ public abstract class ReportImporter {
 	 * Import the dataset header/operation
 	 * @param dataset
 	 */
-	public abstract void importDatasetMetadata(Dataset dataset);
+	public abstract TableRow importDatasetMetadata(Dataset dataset);
 	
 	/**
 	 * Import into the local database the row (depends on the data collection)

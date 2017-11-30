@@ -1,5 +1,7 @@
 package report_validator;
 
+import java.util.Collection;
+
 public interface ReportError {
 	
 	enum ErrorType {
@@ -19,7 +21,7 @@ public interface ReportError {
 	
 	public ErrorType getTypeOfError();
 	public String getErrorMessage();
-	public String getInvolvedRowsIdsMessage();
+	public Collection<String> getInvolvedRowsIdsMessage();
 	public String getCorrectExample();
-	public String getErroneousValue();
+	public Collection<String> getErroneousValues();
 }

@@ -13,4 +13,9 @@ public class ReportList extends ArrayList<EFSAReport> {
 	public void reverse() {
 		Collections.reverse(this);
 	}
+	public void deleteAll() {
+		for (EFSAReport report : this) {
+			report.deleteAllVersions();
+		}
+	}
 }

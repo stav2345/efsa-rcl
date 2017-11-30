@@ -4,7 +4,7 @@ import amend_manager.ReportImporter;
 import progress.ProgressListener;
 
 /**
- * Thread to import a tse report
+ * Thread to import a report
  * @author avonva
  *
  */
@@ -31,6 +31,9 @@ public class ReportImporterThread extends Thread {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			
+			// delete the corrupted versions
+			this.importer.abort();
 			
 			if (progressListener != null)
 				this.progressListener.exceptionThrown(e);

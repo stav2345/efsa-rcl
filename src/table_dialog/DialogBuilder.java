@@ -386,25 +386,7 @@ public class DialogBuilder {
 	/**
 	 * Add the table to the parent
 	 */
-	public DialogBuilder addTable(String schemaSheetName, boolean editable) {
-		Collection<TableRow> parents = new ArrayList<>();
-		return this.addTable(schemaSheetName, editable, parents);
-	}
-	
-	/**
-	 * Add the table to the parent
-	 */
-	public DialogBuilder addTable(String schemaSheetName, boolean editable, TableRow parent) {
-		
-		Collection<TableRow> parents = new ArrayList<>();
-		parents.add(parent);
-		return this.addTable(schemaSheetName, editable, parents);
-	}
-	
-	/**
-	 * Add the table to the parent
-	 */
-	public DialogBuilder addTable(String schemaSheetName, boolean editable, Collection<TableRow> parents) {
+	public DialogBuilder addTable(String schemaSheetName, boolean editable, TableRow... parents) {
 		
 		this.table = new TableView(composite, schemaSheetName, editable);
 		

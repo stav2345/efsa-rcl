@@ -57,8 +57,6 @@ public abstract class ReportDownloader {
 			
 			if (val == SWT.NO)  // user pressed cancel
 				return;
-			
-			Report.deleteAllVersions(senderId);
 		}
 		
 		// import report

@@ -68,6 +68,11 @@ public class TableView {
 	public void addParentTable(TableRow parent) {
 		parents.add(parent);
 	}
+	
+	public void clearParents() {
+		parents.clear();
+	}
+	
 	/**
 	 * Create the interface into the composite 
 	 */

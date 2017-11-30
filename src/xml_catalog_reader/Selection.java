@@ -1,5 +1,7 @@
 package xml_catalog_reader;
 
+import java.util.HashMap;
+
 import table_skeleton.TableColumnValue;
 
 /**
@@ -13,6 +15,11 @@ public class Selection {
 	private String listId;       // list in which the selection is present (BSE/SCRAPIE...)
 	private String code;         // code of the selection (identifies a value of the list)
 	private String description;  // label of the selection
+	private HashMap<String, String> data;         // optional data
+	
+	public Selection() {
+		data = new HashMap<>();
+	}
 	
 	public void setListId(String listId) {
 		this.listId = listId;
@@ -23,6 +30,9 @@ public class Selection {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	public void addData(String key, String value) {
+		this.data.put(key, value);
+	}
 	
 	public String getListId() {
 		return listId;
@@ -32,6 +42,16 @@ public class Selection {
 	}
 	public String getDescription() {
 		return description;
+	}
+	public String getData(String key) {
+		return data.get(key);
+	}
+	
+	public Integer getNumData(String key) {
+		String data = getData(key);
+		if (data == null)
+			return null;
+		return Integer.valueOf(data);
 	}
 	
 	@Override

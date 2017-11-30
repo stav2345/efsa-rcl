@@ -10,5 +10,6 @@ public class XmlNodes {
 	public static final String SELECTION_LIST_ID_ATTR = "id";
 	public static final String SELECTION = "selection";
 	public static final String SELECTION_CODE_ATTR = "code";
+	public static final String SELECTION_DATA = "data";
 	public static final String DESCRIPTION = "description";
 }

@@ -108,9 +108,9 @@ public abstract class ReportValidator {
 		writer.append("<tr>");
 		writer.append("<th scope='col'>Error type</th>");
 		writer.append("<th scope='col'>Error message</th>");
-		writer.append("<th scope='col'>Example of correct value</th>");
 		writer.append("<th scope='col'>Involved rows</th>");
 		writer.append("<th scope='col'>Erroneous values</th>");
+		writer.append("<th scope='col'>Suggestions</th>");	
 		writer.append("</tr>");
 		writer.append("</thead>");
 		
@@ -131,22 +131,31 @@ public abstract class ReportValidator {
 			writer.append("</td>");
 
 			writer.append("<td>");
+			if (error.getInvolvedRowsIdsMessage() != null 
+					&& !error.getInvolvedRowsIdsMessage().isEmpty()) {
+				for (String rowId : error.getInvolvedRowsIdsMessage())
+					writer.append("<div>" + rowId + "</div>");
+			}
+			writer.append("</td>");
+			
+			writer.append("<td>");
+			if (error.getErroneousValues() != null 
+					&& !error.getErroneousValues().isEmpty()) {
+				for (String value : error.getErroneousValues()) {
+					
+					if (value.isEmpty())
+						value = " - ";
+					
+					writer.append("<div>" + value + "</div>");
+				}
+			}
+			writer.append("</td>");
+			
+			writer.append("<td>");
 			if (error.getCorrectExample() != null)
 				writer.append(error.getCorrectExample());
 			writer.append("</td>");
 
-
-			writer.append("<td>");
-			if (error.getInvolvedRowsIdsMessage() != null)
-				writer.append(error.getInvolvedRowsIdsMessage());
-			writer.append("</td>");
-
-
-			writer.append("<td>");
-			if (error.getErroneousValue() != null)
-				writer.append(error.getErroneousValue());
-			writer.append("</td>");
-			
 			writer.append("</tr>");
 		}
 		

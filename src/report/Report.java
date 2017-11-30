@@ -24,6 +24,7 @@ import progress.ProgressListener;
 import table_database.TableDao;
 import table_relations.Relation;
 import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
 import webservice.GetAck;
 import webservice.GetDatasetList;
@@ -513,6 +514,11 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		// delete the old versions of the report (the one with the same senderId)
 		TableDao dao = new TableDao(TableSchemaList.getByName(AppPaths.REPORT_SHEET));
 		return dao.deleteByStringField(AppPaths.REPORT_SENDER_ID, senderId);
+	}
+	
+	public static TableRowList getAllVersions(String senderId) {
+		TableDao dao = new TableDao(TableSchemaList.getByName(AppPaths.REPORT_SHEET));
+		return dao.getByStringField(AppPaths.REPORT_SENDER_ID, senderId);
 	}
 	
 	/**

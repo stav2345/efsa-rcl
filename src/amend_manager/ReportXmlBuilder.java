@@ -219,7 +219,13 @@ public class ReportXmlBuilder {
 				.append("from APP.DATASET_COMPARISON ")
 				.append("where VERSION in (")
 					.append("select MIN(VERSION) ")
-					.append("from APP.DATASET_COMPARISON")
+					.append("from APP.DATASET_COMPARISON ")
+				.append(")")
+				.append("and ROW_ID in (")  // avoid to set amType = U for new records
+					.append("select ROW_ID ")
+					.append("from APP.DATASET_COMPARISON ")
+					.append("group by ROW_ID ")
+					.append("having COUNT(VERSION) = 2")
 				.append(")")
 			.append(")");
 		

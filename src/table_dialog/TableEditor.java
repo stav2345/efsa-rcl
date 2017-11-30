@@ -228,7 +228,6 @@ public class TableEditor extends EditingSupport {
 		case PICKLIST:
 
 			Selection sel = (Selection) value;
-
 			TableColumnValue newSelection = new TableColumnValue(sel);
 			row.put(column.getId(), newSelection);
 			break;

@@ -291,8 +291,14 @@ public class TableRow implements Checkable {
 
 				// track where the method was called
 				try {
-					throw new IOException("Cannot find the selection " + value 
-							+ " in the picklist " + picklist + ". Using empty value instead.");
+					
+					String error = "Cannot find the selection " + value 
+							+ " in the picklist " + picklist + ". Using empty value instead.";
+					
+					if (picklistFilter != null) {
+						error = error + "The search was performed with filter=" + picklistFilter; 
+					}
+					throw new IOException(error);
 				}
 				catch (IOException e) {
 					e.printStackTrace();
