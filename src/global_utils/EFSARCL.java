@@ -2,8 +2,10 @@ package global_utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 
 import app_config.AppPaths;
+import table_database.Database;
 
 /**
  * Component which initialises the EFSA Report Creator Library
@@ -12,11 +14,16 @@ import app_config.AppPaths;
  */
 public class EFSARCL {
 
-	public static void initialize() throws IOException {
+	/**
+	 * Initialize the EFSA Report Creator Library. This will check important files existance
+	 * and will update the database if needed.
+	 * @throws IOException
+	 * @throws SQLException
+	 */
+	public static void init() throws IOException, SQLException {
 		
 		// create folders if they do not exist
 		FileUtils.createFolder(AppPaths.CONFIG_FOLDER);
-		FileUtils.createFolder(AppPaths.HELP_FOLDER);
 		FileUtils.createFolder(AppPaths.TEMP_FOLDER);
 		FileUtils.createFolder(AppPaths.XML_FOLDER);
 		
@@ -26,6 +33,10 @@ public class EFSARCL {
 		
 		// clear the temporary folder
 		FileUtils.clearTempFolder();
+		
+		// update the database if needed
+		Database db = new Database();
+		db.update();
 	}
 	
 	/**

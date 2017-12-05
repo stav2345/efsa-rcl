@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamException;
 
 import dataset.Dataset;
 import dataset.DatasetList;
+import dataset.NoAttachmentException;
 import formula.FormulaException;
 import progress.ProgressListener;
 import report.Report;
@@ -88,7 +89,8 @@ public abstract class ReportImporter {
 	}
 	
 	public void abort() {
-		this.newVersions.deleteAll();
+		if (this.newVersions != null)
+			this.newVersions.deleteAll();
 	}
 	
 	/**
@@ -98,8 +100,9 @@ public abstract class ReportImporter {
 	 * @throws XMLStreamException
 	 * @throws IOException
 	 * @throws FormulaException 
+	 * @throws NoAttachmentException 
 	 */
-	public void importReport() throws MySOAPException, XMLStreamException, IOException, FormulaException {
+	public void importReport() throws MySOAPException, XMLStreamException, IOException, FormulaException, NoAttachmentException {
 		
 		System.out.println("Report downloader started");
 		
@@ -189,9 +192,10 @@ public abstract class ReportImporter {
 	 * @throws MySOAPException
 	 * @throws XMLStreamException
 	 * @throws IOException
+	 * @throws NoAttachmentException 
 	 */
 	private void importSingleVersion(Dataset dataset) throws MySOAPException, 
-		XMLStreamException, IOException {
+		XMLStreamException, IOException, NoAttachmentException {
 		
 		// download the dataset file
 		File file = dataset.download();
@@ -209,6 +213,10 @@ public abstract class ReportImporter {
 	 * @throws IOException
 	 */
 	private void importDatasetFile(File file) throws XMLStreamException, IOException {
+		
+		if (file == null || !file.exists()) {
+			throw new IOException("Cannot find the dataset attachment in the DCF response.");
+		}
 		
 		// parse it to extract the relevant information
 		DatasetComparisonParser parser = new DatasetComparisonParser(

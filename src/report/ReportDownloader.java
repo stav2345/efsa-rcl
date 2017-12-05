@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Shell;
 import amend_manager.ReportImporter;
 import dataset.Dataset;
 import dataset.DatasetList;
+import dataset.NoAttachmentException;
 import formula.FormulaException;
 import global_utils.Warnings;
 import progress.ProgressBarDialog;
@@ -120,11 +121,15 @@ public abstract class ReportDownloader {
 						else if (e instanceof XMLStreamException
 								|| e instanceof IOException) {
 							title = "Error";
-							message = "ERR701: The downloaded report is badly formatted. Please contact technical assistance.";
+							message = "ERR702: The downloaded report is badly formatted. Please contact technical assistance.";
 						}
 						else if (e instanceof FormulaException) { 
 							title = "Error";
 							message = "ERR701: Parsing error, the dataset contents are not well formed. Please contact zoonoses_support@efsa.europa.eu.";
+						}
+						else if (e instanceof NoAttachmentException) {
+							title = "Error";
+							message = "ERR703: No attachment was found for the selected dataset in the DCF response.";
 						}
 						else {
 							StringBuilder sb = new StringBuilder();

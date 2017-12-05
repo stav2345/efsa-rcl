@@ -14,6 +14,7 @@ import report.Report;
  */
 public class PropertiesReader {
 	
+	private static final String DB_REQUIRED_VERSION_PROPERTY = "Db.MinRequiredVersion";
 	private static final String APP_NAME_PROPERTY = "Application.Name";
 	private static final String APP_VERSION_PROPERTY = "Application.Version";
 	private static final String APP_ICON_PROPERTY = "Application.Icon";
@@ -70,6 +71,14 @@ public class PropertiesReader {
 		return getValue(APP_VERSION_PROPERTY, "not found");
 	}
 	
+	/**
+	 * Get the required database version to run
+	 * the current application version
+	 * @return
+	 */
+	public static String getMinRequiredDbVersion() {
+		return getValue(DB_REQUIRED_VERSION_PROPERTY, "not found");
+	}
 	
 	/**
 	 * Check if the current data collection is the test one

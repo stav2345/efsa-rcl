@@ -1,6 +1,5 @@
 package table_database;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -11,12 +10,10 @@ import java.sql.Statement;
 
 public class SQLScriptExec {
 
-	private String query;
 	private String dbUrl;
 
-	SQLScriptExec(String dbUrl, String query) throws FileNotFoundException {
+	SQLScriptExec(String dbUrl) {
 		this.dbUrl = dbUrl;
-		this.query = query;
 	}
 
 	/**
@@ -76,7 +73,7 @@ public class SQLScriptExec {
 	 * @warning SQL statement can be maximum 2000 characters
 	 * @throws IOException
 	 */
-	public void exec() throws IOException {
+	public void exec(String query) throws IOException {
 		
 		Reader reader = new InputStreamReader(new ByteArrayInputStream(query.getBytes("UTF-8")));
 

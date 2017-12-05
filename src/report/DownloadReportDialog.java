@@ -93,6 +93,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 			try {
 				
 				DatasetList<Dataset> datasets = req.getList();
+
 				allDatasets.addAll(datasets);
 				downloadableDatasets.addAll(
 						datasets.getDownloadableDatasets(validSenderIdPattern));
@@ -123,6 +124,6 @@ public class DownloadReportDialog extends DatasetListDialog {
 			return null;
 		
 		// get all the versions of the dataset
-		return this.allDatasets.filterByDecomposedSenderId(senderId);
+		return this.downloadableDatasets.filterByDecomposedSenderId(senderId);
 	}
 }

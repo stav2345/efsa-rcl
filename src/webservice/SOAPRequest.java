@@ -278,7 +278,7 @@ public abstract class SOAPRequest {
 		Iterator<?> iter = message.getAttachments();
 		
 		if (!iter.hasNext()) {
-			System.err.println("No attachment found for ");
+			System.err.println("No attachment found! Got the following response:");
 			try {
 				message.writeTo(System.err);
 			} catch (IOException e) {

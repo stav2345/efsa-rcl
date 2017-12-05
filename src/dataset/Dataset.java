@@ -77,7 +77,7 @@ public class Dataset implements IDataset {
 		return split;
 	}
 	
-	public File download() throws MySOAPException {
+	public File download() throws MySOAPException, NoAttachmentException {
 		
 		// use cache if possible
 		if (this.datasetFile != null && this.datasetFile.exists()) {
@@ -88,7 +88,7 @@ public class Dataset implements IDataset {
 		File file = req.getDatasetFile();
 		
 		if (file == null)
-			return null;
+			throw new NoAttachmentException("Cannot find the attachment of the dataset with id=" + id);
 		
 		this.datasetFile = file;
 		
@@ -101,8 +101,9 @@ public class Dataset implements IDataset {
 	 * @throws XMLStreamException
 	 * @throws MySOAPException
 	 * @throws IOException
+	 * @throws NoAttachmentException 
 	 */
-	public Dataset populateMetadata() throws XMLStreamException, MySOAPException, IOException {
+	public Dataset populateMetadata() throws XMLStreamException, MySOAPException, IOException, NoAttachmentException {
 		
 		File file = download();
 		

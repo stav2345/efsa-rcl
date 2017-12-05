@@ -167,7 +167,6 @@ public class ReportActions {
 		        sb.append(ste);
 		    }
 		    String trace = sb.toString();
-		    
 		    message = "XERRX: Generic runtime error. Please contact zoonoses_support@efsa.europa.eu. Error message " 
 		    		+ trace;
 			

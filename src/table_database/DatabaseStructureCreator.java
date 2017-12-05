@@ -1,17 +1,13 @@
 package table_database;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
+import java.util.ListIterator;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-
-import table_list.TableListParser;
-import table_relations.RelationParser;
+import table_skeleton.TableColumn;
 import table_skeleton.TableColumn.ColumnType;
-import xlsx_reader.TableHeaders.XlsxHeader;
-import xlsx_reader.XlsxReader;
+import xlsx_reader.TableSchema;
+import xlsx_reader.TableSchemaList;
 
 /**
  * This class receives as input an .xlsx file which contains the
@@ -20,50 +16,130 @@ import xlsx_reader.XlsxReader;
  * @author avonva
  *
  */
-public class DatabaseStructureCreator extends XlsxReader {
+public class DatabaseStructureCreator {
 
-	private StringBuilder query;  // it contains the query to create the database
-	private ColumnType currentColumnType;
-	private String currentColumnId;
-	private List<String> foreignKeys;
-	//private boolean isCompositeCode;
-	//private boolean isCompositeLabel;
+	public static final String DB_INFO_TABLE = "APP.DB_INFO";
 	
-	/**
-	 * Initialize the creator.
-	 * @param filename the .xlsx file which contains the tables schema
-	 * @throws IOException
-	 */
-	public DatabaseStructureCreator(String filename) throws IOException {
-		super(filename);
-		//this.isCompositeCode = false;
-		//this.isCompositeLabel = false;
-		this.foreignKeys = new ArrayList<>();
-	}
-
 	/**
 	 * Get a complete query to generate the database
 	 * @return 
 	 * @throws IOException
 	 */
-	public String getQuery() throws IOException {
+	public String getCreateDatabaseQuery(TableSchemaList tables) throws IOException {
 		
-		query = new StringBuilder();
+		StringBuilder query = new StringBuilder();
 		
-		// for each excel sheet create the table with the proper columns
-		// which are defined in the columns schema
-		for (Sheet sheet : getSheets()) {
-			
-			// skip special sheets
-			if (RelationParser.isRelationsSheet(sheet.getSheetName())
-					|| TableListParser.isTablesSheet(sheet.getSheetName()))
-				continue;
-			
-			addTableStatement(sheet.getSheetName());
+		// create the tables
+		for (TableSchema table : tables)
+			query.append(getNewTableQuery(table));
+		
+		query.append(getDatasetComparisonTableQuery());
+		
+		// add the key/value table
+		query.append(getDbInfoTableQuery(DB_INFO_TABLE));
+		
+		// add foreign keys after having created the tables
+		for (TableSchema table : tables)
+			query.append("\n" + getIntegrityConstraintsQuery(table));
+		
+		return query.toString();
+	}
+	
+	/**
+	 * Get the query needed to add a column to an existing table
+	 * @param tableName
+	 * @param columnName
+	 * @return
+	 */
+	public String getAddNewColumnQuery(String tableName, TableColumn column) {
+
+		String colType = column.getType() == ColumnType.FOREIGNKEY ? "integer" : "varchar(1000)";
+		
+		String query = "ALTER TABLE APP." + tableName + " ADD " 
+				+ column.getId() + " " + colType + " ;";
+		
+		// add integrity constraint if foreign key
+		if (column.isForeignKey())
+			query = query + getAddForeignKeyQuery(tableName, column);
+		
+		return query;
+	}
+	
+	/**
+	 * Get the query to generate the table
+	 * @param table
+	 * @return
+	 */
+	public String getNewTableQuery(TableSchema table) {
+		
+		StringBuilder query = new StringBuilder();
+		
+		// create table
+		query.append("\ncreate table ")
+			.append(table.getSheetName())
+			.append("(");
+		
+		// primary key of table is sheetName + Id
+		query.append("\n" + table.getSheetName() + "Id")
+			.append(" integer not null primary key generated always as identity (start with 1, increment by 1)");
+		
+		ListIterator<TableColumn> iter = table.listIterator();
+		
+		// after primary key add comma if needed
+		if (iter.hasNext()) {
+			query.append(",");
 		}
 		
+		// for each column create one in the db
+		while (iter.hasNext()) {
+			
+			TableColumn column = iter.next();
+			
+			query.append("\n" + getNewColumnQuery(column));
+			
+			// add also the comma if another column
+			// will be added
+			if (iter.hasNext()) {
+				query.append(",");
+			}
+		}
+		
+		query.append(");");
+		
+		return query.toString();
+	}
+	
+	/**
+	 * Get the query to generate a new column inside a create table statement
+	 * @param col
+	 * @return
+	 */
+	public String getNewColumnQuery(TableColumn col) {
+		
+		StringBuilder query = new StringBuilder();
+		
+		query.append(col.getId());
+		
+		if (col.isForeignKey()) {
+			query.append(" integer not null");
+		}
+		else
+			query.append(" varchar(1000)");
+		
+		return query.toString();
+	}
+	
+	/**
+	 * Get the query needed to create the dataset comparison
+	 * query (needed for amendments)
+	 * @return
+	 */
+	private String getDatasetComparisonTableQuery() {
+		
+		StringBuilder query = new StringBuilder();
+		
 		// create also the dataset comparison table
-		query.append("create table APP.DATASET_COMPARISON (\n")
+		query.append("create table APP.DATASET_COMPARISON(\n")
 			.append("ROW_ID varchar(100) not null,\n")
 			.append("VERSION varchar(50) not null,\n")
 			.append("XML_RECORD varchar(30000) not null,\n")
@@ -71,175 +147,110 @@ public class DatabaseStructureCreator extends XlsxReader {
 			.append("IS_NULLIFIED varchar(1),\n")
 			.append("primary key(ROW_ID, VERSION));\n");
 		
-		System.out.println(query.toString());
+		return query.toString();
+	}
+
+	/**
+	 * Get the query needed to create the info table
+	 * for the database (contains version, date of creation...)
+	 * @param tableName
+	 * @return
+	 */
+	private String getDbInfoTableQuery(String tableName) {
+		
+		StringBuilder query = new StringBuilder();
+		
+		query.append("\ncreate table ")
+			.append(tableName)
+			.append("(");
+		
+		query.append("\nVAR_KEY varchar(500) not null primary key,");
+		query.append("\nVAR_VALUE varchar(500) not null\n");
+		query.append(");\n");
+		
+		return query.toString();
+	}
+	
+	/**
+	 * Get the query needed to generate the foreign keys of a table
+	 * @param sheetName
+	 */
+	public String getAddForeignKeyQuery(String tableName, TableColumn col) {
+	
+		StringBuilder query = new StringBuilder();
+
+		if (!col.isForeignKey())
+			return query.toString();
+
+		// get the foreign table name from the foreign key
+		// by removing the Id word
+		String foreignTable = col.getId().replace("Id", "");
+
+		query.append("alter table APP.")
+		.append(tableName)
+		.append(" add foreign key(")
+		.append(col.getId())
+		.append(") references APP.")
+		.append(foreignTable)
+		.append("(")
+		.append(col.getId())  // (convention) the id name is the same in the foreign table
+		.append(") on delete cascade;\n");  // cascade delete is default
+
+
+		return query.toString();
+	}
+	
+	/**
+	 * Get the query to the remove from the database a foreign key constraint
+	 * @param tableName
+	 * @param foreignKeyName
+	 * @return
+	 * @throws SQLException
+	 */
+	public String getRemoveForeignKeyQuery(String tableName, String foreignKeyName)
+			throws SQLException {
+		
+		DatabaseBuilder creator = new DatabaseBuilder();
+		ForeignKey key = creator.getForeignKeyByColumnName(tableName, foreignKeyName);
+
+		if (key == null) {
+			return "";
+		}
+		
+		StringBuilder query = new StringBuilder();
+		query.append("alter table APP.")
+			.append(tableName)
+			.append(" drop foreign key ")
+			.append(key.getName()).append(";");
+		
+		// make the old foreign key nullable
+		query.append("alter table APP.")
+			.append(tableName)
+			.append(" alter column ")
+			.append(foreignKeyName)
+			.append(" NULL ")
+			.append(";");
 		
 		return query.toString();
 	}
 
 	/**
-	 * Add a single table statement with all the columns defined
-	 * in the sheet rows
-	 * @param sheetName
-	 * @throws IOException
-	 */
-	private void addTableStatement(String sheetName) throws IOException {
-		
-		// add the "create table" statement
-		// using the sheet name as table name
-		addCreateStatement(sheetName);
-		
-		// add the primary key
-		addPrimaryKeyStatement(sheetName + "Id");
-		
-		// add the columns to the statement (also primary key)
-		addColumnsStatement(sheetName);
-		
-		// add foreign keys
-		addIntegrityConstraints(sheetName);
-	}
-	
-	/**
-	 * Add the create table statement
-	 * @param tableName
-	 */
-	private void addCreateStatement(String tableName) {
-		
-		query.append("create table APP.")
-			.append(tableName)
-			.append("(\n");
-	}
-	
-	/**
-	 * Add a primary key to the table, it should be the first variable
-	 * @param primaryKeyName
-	 */
-	private void addPrimaryKeyStatement(String primaryKeyName) {
-
-		query.append(primaryKeyName)
-			.append(" integer not null primary key generated always as identity (start with 1, increment by 1)");
-	}
-	
-	/**
-	 * Add all the columns statement using the id field of the row of the sheet
-	 * as column name. All the columns are by default varchar.
-	 * @param sheetName
-	 * @throws IOException
-	 */
-	private void addColumnsStatement(String sheetName) throws IOException {
-
-		// read the sheet to activate processCell and start/end row methods
-		this.read(sheetName);
-	}
-	
-
-	/**
-	 * 
+	 * Get the query needed to generate the foreign keys of a table
 	 * @param sheetName
 	 */
-	private void addIntegrityConstraints(String sheetName) {
+	private String getIntegrityConstraintsQuery(TableSchema table) {
 	
-		for (String foreignKey : foreignKeys) {
-			
-			// get the foreign table name from the foreign key
-			// by removing the Id word
-			String foreignTable = foreignKey.replace("Id", "");
-			
-			query.append("alter table APP.")
-				.append(sheetName)
-				.append(" add foreign key(")
-				.append(foreignKey)
-				.append(") references APP.")
-				.append(foreignTable)
-				.append("(")
-				.append(foreignKey)  // (convention) the id name is the same in the foreign table
-				.append(") on delete cascade;\n");  // cascade delete is default
-		}
+		StringBuilder query = new StringBuilder();
 		
-		// restart
-		foreignKeys.clear();
-	}
-	
-	@Override
-	public void processCell(String header, String value) {
-
-		XlsxHeader h = null;
-		try {
-			h = XlsxHeader.fromString(header);  // get enum from string
-		}
-		catch(IllegalArgumentException e) {
-			return;
-		}
-		
-		// we need just the ID to create the table
-		if (h == XlsxHeader.ID) {
-			this.currentColumnId = value;
-		}
-		else if (h == XlsxHeader.TYPE) {
-
-			// get the type of field
-			this.currentColumnType = ColumnType.fromString(value);
-		}
-		/*else if (h == XlsxHeader.CODE_FORMULA) {
-			this.isCompositeCode = !(value == null || value.isEmpty() || value.equals("null"));
-		}
-		else if (h == XlsxHeader.LABEL_FORMULA) {
-			this.isCompositeLabel = !(value == null || value.isEmpty() || value.equals("null"));
-		}*/
-	}
-
-	@Override
-	public void startRow(Row row) {
-		
-		// reset values
-		//this.isCompositeCode = false;
-		//this.isCompositeLabel = false;
-	}
-
-	@Override
-	public void endRow(Row row) {
-
-		if (this.currentColumnType == null) {
+		// for each foreign key of the table
+		for (TableColumn col : table) {
 			
-			System.err.println("Empty " + XlsxHeader.TYPE + " field found. Setting " 
-					+ ColumnType.STRING + " as default.");
-			
-			this.currentColumnType = ColumnType.STRING;
-		}
-
-
-		// add the field just for non composite fields
-		//if (!this.isCompositeCode && !this.isCompositeLabel) {
-
-			// new variable
-			query.append(",\n");
-			
-			// append the id name as variable name
-			// set the field as string
-			switch (this.currentColumnType) {
-			case FOREIGNKEY:
+			if (col.isForeignKey()) {
 				
-				// save the foreign key column id
-				foreignKeys.add(this.currentColumnId);
-				
-				query.append(this.currentColumnId)
-				.append(" integer not null");
-				break;
-			default:
-				query.append(this.currentColumnId)
-				.append(" varchar(1000)");
-				break;
+				query.append(getAddForeignKeyQuery(table.getSheetName(), col));
 			}
-		//}
-		
-			
-		int last = row.getSheet().getLastRowNum();
-			
-		boolean isLast = row.getRowNum() == last;
-			
-		if (isLast) {
-			// if last row, then close the
-			// create table statement and put a semicolon
-			query.append(");\n\n");
 		}
+		
+		return query.toString();
 	}
 }

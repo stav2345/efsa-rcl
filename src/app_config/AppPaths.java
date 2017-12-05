@@ -5,12 +5,14 @@ public class AppPaths {
 	// application folders
 	public static final String XML_FOLDER = "picklists" + System.getProperty("file.separator");
 	public static final String CONFIG_FOLDER = "config" + System.getProperty("file.separator");
-	public static final String HELP_FOLDER = "help" + System.getProperty("file.separator");
 	public static final String TEMP_FOLDER = "temp" + System.getProperty("file.separator");
 	public static final String DB_FOLDER = "database" + System.getProperty("file.separator");
+	public static final String COMPAT_FOLDER = "compat" + System.getProperty("file.separator");
 	
 	// config files
-	public static final String TABLES_SCHEMA_FILE = CONFIG_FOLDER + "tablesSchema.xlsx";
+	public static final String TABLES_SCHEMA_FILENAME = "tablesSchema";
+	public static final String TABLES_SCHEMA_FORMAT = ".xlsx";
+	public static final String TABLES_SCHEMA_FILE = CONFIG_FOLDER + TABLES_SCHEMA_FILENAME + TABLES_SCHEMA_FORMAT;
 	public static final String APP_CONFIG_FILE = CONFIG_FOLDER + "appConfig.xml";
 	public static final String MESSAGE_GDE2_XSD = CONFIG_FOLDER + "GDE2_message.xsd";
 	public static final String REPORT_ERRORS_HEAD_FILE = CONFIG_FOLDER + "ReportErrorsHtmlHead.txt";
