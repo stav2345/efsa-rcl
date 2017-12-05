@@ -269,19 +269,29 @@ public class FormulaDecomposer {
 		List<AttributeElement> valueElements = new ArrayList<>();
 		switch (type) {
 		case FOODEX_CODE:
-			formulaElements = splitAsFoodex(formula, type.isAttributes());
+			
+			// no need of formula if we have attributes
+			if (!type.isAttributes())
+				formulaElements = splitAsFoodex(formula, type.isAttributes());
+			
 			valueElements = splitAsFoodex(value, type.isAttributes());
 			break;
 		case SIMPLE:
-			formulaElements = splitAsSimple(formula, type.getSeparator(), type.isAttributes());
+			
+			// no need of formula if we have attributes
+			if (!type.isAttributes())
+				formulaElements = splitAsSimple(formula, type.getSeparator(), type.isAttributes());
+			
 			valueElements = splitAsSimple(value, type.getSeparator(), type.isAttributes());
 			break;
 		default:
 			System.err.println("CompoundType not recognized " + type);
 			break;
 		}
-		
-		if(valueElements.size() != formulaElements.size()) {
+
+		// if we do not have attributes we need the same size for formulas and value elements
+		// otherwise we do not know which variable is related to which value
+		if(!type.isAttributes() && valueElements.size() != formulaElements.size()) {
 			throw new FormulaException("Cannot parse code: " 
 					+ value 
 					+ "; since it has a different number of elements than the formula: " 
@@ -293,11 +303,22 @@ public class FormulaDecomposer {
 		// for each value
 		for (int i = 0; i < valueElements.size(); ++i) {
 			
-			// get the value formula
-			String currentFormula = formulaElements.get(i).getValue();
+			String columnId = null;
 			
-			// get the column id of the column formula (if it is that)
-			String columnId = getColumnId(currentFormula);
+			// if no attributes, we need the formula to know which
+			// variable is where
+			if (!type.isAttributes()) {
+				// get the value formula
+				String currentFormula = formulaElements.get(i).getValue();
+				
+				// get the column id of the column formula (if it is that)
+				columnId = getColumnId(currentFormula);
+			}
+			else {
+				// if we have the attributes, simply get the value from the
+				// value string (we have the variables names there!)
+				columnId = valueElements.get(i).getName();
+			}
 			
 			// if we have a column id as formula
 			if (columnId != null) {

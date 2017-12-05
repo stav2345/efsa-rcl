@@ -71,6 +71,9 @@ public class DatasetListDialog {
 				dialog.close();
 			}
 		});
+		
+		this.dialog.pack();
+		this.dialog.setSize(500, dialog.getSize().y);
 	}
 	
 	public TableViewer getTable() {
