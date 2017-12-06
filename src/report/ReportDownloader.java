@@ -13,6 +13,7 @@ import dataset.DatasetList;
 import dataset.NoAttachmentException;
 import formula.FormulaException;
 import global_utils.Warnings;
+import i18n_messages.Messages;
 import progress.ProgressBarDialog;
 import progress.ProgressListener;
 import webservice.MySOAPException;
@@ -52,8 +53,8 @@ public abstract class ReportDownloader {
 		// if the report already exists locally, warn that it will be overwritten
 		if (Report.isLocallyPresent(senderId)) {
 			
-			int val = Warnings.warnUser(shell, "Warning", 
-					"WARN700: This report already exists locally. Do you want to overwrite it?", 
+			int val = Warnings.warnUser(shell, Messages.get("warning.title"), 
+					Messages.get("download.replace"), 
 					SWT.YES | SWT.NO | SWT.ICON_WARNING);
 			
 			if (val == SWT.NO)  // user pressed cancel
@@ -69,7 +70,7 @@ public abstract class ReportDownloader {
 		ReportImporter downloader = this.getImporter(allVersions);
 		ReportImporterThread thread = new ReportImporterThread(downloader);
 		
-		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, "Downloading report");
+		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, Messages.get("download.progress.title"));
 		progressBarDialog.open();
 		
 		thread.setProgressListener(new ProgressListener() {
@@ -86,8 +87,8 @@ public abstract class ReportDownloader {
 						progressBarDialog.fillToMax();
 						progressBarDialog.close();
 						
-						String title = "Success";
-						String message = "Report successfully downloaded. The downloaded report is not automatically opened. Please open it to see the content.";
+						String title = Messages.get("success.title");
+						String message = Messages.get("download.success");
 						int style = SWT.ICON_INFORMATION;
 						Warnings.warnUser(shell, title, message, style);
 					}
@@ -120,16 +121,16 @@ public abstract class ReportDownloader {
 						}
 						else if (e instanceof XMLStreamException
 								|| e instanceof IOException) {
-							title = "Error";
-							message = "ERR702: The downloaded report is badly formatted. Please contact technical assistance.";
+							title = Messages.get("error.title");
+							message = Messages.get("download.bad.format");
 						}
 						else if (e instanceof FormulaException) { 
-							title = "Error";
-							message = "ERR701: Parsing error, the dataset contents are not well formed. Please contact zoonoses_support@efsa.europa.eu.";
+							title = Messages.get("error.title");
+							message = Messages.get("download.bad.parsing");
 						}
 						else if (e instanceof NoAttachmentException) {
-							title = "Error";
-							message = "ERR703: No attachment was found for the selected dataset in the DCF response.";
+							title = Messages.get("error.title");
+							message = Messages.get("download.no.attachment");
 						}
 						else {
 							StringBuilder sb = new StringBuilder();
@@ -139,10 +140,9 @@ public abstract class ReportDownloader {
 						    }
 						    String trace = sb.toString();
 						    
-						    message = "XERRX: Generic runtime error. Please contact zoonoses_support@efsa.europa.eu. Error message " 
-						    		+ trace;
+						    message = Messages.get("generic.error", trace);
 							
-							title = "Generic error";
+							title = Messages.get("error.title");
 						}
 						
 						

@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import i18n_messages.Messages;
 import webservice.MySOAPException;
 import webservice.SOAPError;
 
@@ -52,14 +53,14 @@ public class Warnings {
 		SOAPError error = e.getError();
 		switch(error) {
 		case NO_CONNECTION:
-			title = "Connection error";
+			title = Messages.get("error.title");
 			String trace = Warnings.getStackTrace(e);
-			message = "ERR600: It was not possible to connect to the DCF, please check your internet connection." + trace;
+			message = Messages.get("no.connection", trace);
 			break;
 		case UNAUTHORIZED:
 		case FORBIDDEN:
-			title = "Wrong credentials";
-			message = "ERR100: Your credentials are incorrect. Please check them in the Settings.";
+			title = Messages.get("error.title");
+			message = Messages.get("wrong.credentials");
 			break;
 		}
 		

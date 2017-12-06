@@ -11,6 +11,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 
+import i18n_messages.Messages;
+
 /**
  * Panel that displays an help label with an help icon. The
  * help icon can be clicked to trigger the listener set 
@@ -88,7 +90,7 @@ public class HelpViewer {
 		// help icon
 		helpBtn = new Button(composite, SWT.PUSH);
 		
-		helpBtn.setToolTipText("Click here to open the help");
+		helpBtn.setToolTipText(Messages.get("help.tip"));
 		
 		Image image = new Image(Display.getCurrent(), 
 				this.getClass().getClassLoader().getResourceAsStream("help.png"));

@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Shell;
 import dataset.Dataset;
 import dataset.DatasetList;
 import global_utils.Warnings;
+import i18n_messages.Messages;
 
 public class DatasetListDialog {
 
@@ -62,7 +63,9 @@ public class DatasetListDialog {
 				
 				IStructuredSelection selection = (IStructuredSelection) table.getSelection();
 				if (selection.isEmpty()) {
-					Warnings.warnUser(dialog, "Error", "No dataset was selected");
+					Warnings.warnUser(dialog, 
+							Messages.get("error.title"), 
+							Messages.get("dataset.not.selected"));
 					return;
 				}
 				
@@ -71,9 +74,6 @@ public class DatasetListDialog {
 				dialog.close();
 			}
 		});
-		
-		this.dialog.pack();
-		this.dialog.setSize(500, dialog.getSize().y);
 	}
 	
 	public TableViewer getTable() {
@@ -83,28 +83,28 @@ public class DatasetListDialog {
 	public void addIdCol() {
 		// Add the column to the parent table
 		TableViewerColumn idCol = new TableViewerColumn(table, SWT.NONE);
-		idCol.getColumn().setText("Dataset id");
+		idCol.getColumn().setText(Messages.get("dataset.header.id"));
 		idCol.setLabelProvider(new DatasetLabelProvider("id"));
 		idCol.getColumn().setWidth(100);
 	}
 	
 	public void addSenderIdCol() {
 		TableViewerColumn senderIdCol = new TableViewerColumn(table, SWT.NONE);
-		senderIdCol.getColumn().setText("Sender id");
+		senderIdCol.getColumn().setText(Messages.get("dataset.header.sender.id"));
 		senderIdCol.setLabelProvider(new DatasetLabelProvider("senderId"));
 		senderIdCol.getColumn().setWidth(100);
 	}
 	
 	public void addStatusCol() {
 		TableViewerColumn statusCol = new TableViewerColumn(table, SWT.NONE);
-		statusCol.getColumn().setText("DCF status");
+		statusCol.getColumn().setText(Messages.get("dataset.header.status"));
 		statusCol.setLabelProvider(new DatasetLabelProvider("status"));
 		statusCol.getColumn().setWidth(130);
 	}
 	
 	public void addRevisionCol() {
 		TableViewerColumn revisionCol = new TableViewerColumn(table, SWT.NONE);
-		revisionCol.getColumn().setText("Current revision");
+		revisionCol.getColumn().setText(Messages.get("dataset.header.revision"));
 		revisionCol.setLabelProvider(new DatasetLabelProvider("revision"));
 		revisionCol.getColumn().setWidth(100);
 	}
@@ -112,6 +112,7 @@ public class DatasetListDialog {
 	public void open() {
 		
 		dialog.pack();
+		this.dialog.setSize(dialog.getSize().x, 500);
 		dialog.open();
 
 		// Event loop

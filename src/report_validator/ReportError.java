@@ -2,12 +2,14 @@ package report_validator;
 
 import java.util.Collection;
 
+import i18n_messages.Messages;
+
 public interface ReportError {
 	
 	enum ErrorType {
 		
-		ERROR("Error"),
-		WARNING("Warning");
+		ERROR(Messages.get("table.type.error")),
+		WARNING(Messages.get("table.type.warning"));
 		
 		private String text;
 		private ErrorType(String text) {
@@ -22,6 +24,6 @@ public interface ReportError {
 	public ErrorType getTypeOfError();
 	public String getErrorMessage();
 	public Collection<String> getInvolvedRowsIdsMessage();
-	public String getCorrectExample();
+	public String getSuggestions();
 	public Collection<String> getErroneousValues();
 }

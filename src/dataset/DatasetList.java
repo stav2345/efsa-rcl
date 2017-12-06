@@ -252,6 +252,15 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * Get the list of dataset that can be downloaded from the tool
 	 * @return
 	 */
+	public DatasetList<T> getDownloadableDatasetsLatestVersions(String validSenderIdPattern) {
+		return getDownloadableDatasets(validSenderIdPattern)
+				.filterOldVersions();
+	}
+	
+	/**
+	 * Get the list of dataset that can be downloaded from the tool
+	 * @return
+	 */
 	public DatasetList<T> getDownloadableDatasets(String validSenderIdPattern) {
 		
 		Collection<DatasetStatus> statusFilter = new ArrayList<>();
@@ -266,7 +275,6 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 		// examples: IT1704 FR1411.1 SP1512.01 GR1109.14
 		
 		return filterByStatus(statusFilter, true)
-				.filterBySenderId(validSenderIdPattern)
-				.filterOldVersions();
+				.filterBySenderId(validSenderIdPattern);
 	}
 }

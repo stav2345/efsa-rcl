@@ -1,5 +1,7 @@
 package dataset;
 
+import i18n_messages.Messages;
+
 /**
  * Enumerator that identifies the status of a {@link Dataset}
  * @author avonva
@@ -7,22 +9,22 @@ package dataset;
  */
 public enum DatasetStatus {
 	
-	DRAFT("DRAFT", "Draft"),  // local status, if message was never sent
-	LOCALLY_VALIDATED("LOCALLY_VALIDATED", "Locally validated"),
-	UPLOAD_FAILED("UPLOAD_FAILED", "Upload failed"),  // local status, used if send message fails
-	VALID("VALID", "Valid"),
-	UPLOADED("UPLOADED", "Uploaded"),  // dataset sent but no response received yet 
-	PROCESSING("PROCESSING", "Processing"),
-	VALID_WITH_WARNINGS("VALID_WITH_WARNINGS", "Valid with warnings"),
-	REJECTED_EDITABLE("REJECTED EDITABLE", "Rejected editable"),
-	REJECTED("REJECTED", "Rejected"),
-	REJECTION_SENT("REJECTION_SENT", "Rejection sent"),
-	DELETED("DELETED", "Deleted"),
-	SUBMITTED("SUBMITTED", "Submitted"),
-	SUBMISSION_SENT("SUBMISSION_SENT", "Submission sent"),
-	ACCEPTED_DWH("ACCEPTED DWH", "Accepted DWH"),
-	UPDATED_BY_DATA_RECEIVER("UPLOADED_BY_DATA_RECEIVER", "Uploaded by data receiver"),
-	OTHER("OTHER", "Other");  // error state
+	DRAFT("DRAFT", Messages.get("draft")),  // local status, if message was never sent
+	LOCALLY_VALIDATED("LOCALLY_VALIDATED", Messages.get("validated")),
+	UPLOAD_FAILED("UPLOAD_FAILED", Messages.get("upload.failed")),  // local status, used if send message fails
+	VALID("VALID", Messages.get("valid")),
+	UPLOADED("UPLOADED", Messages.get("uploaded")),  // dataset sent but no response received yet 
+	PROCESSING("PROCESSING", Messages.get("processing")),
+	VALID_WITH_WARNINGS("VALID_WITH_WARNINGS", Messages.get("valid.warnings")),
+	REJECTED_EDITABLE("REJECTED EDITABLE", Messages.get("rejected.editable")),
+	REJECTED("REJECTED", Messages.get("rejected")),
+	REJECTION_SENT("REJECTION_SENT", Messages.get("rejection.sent")),
+	DELETED("DELETED", Messages.get("deleted")),
+	SUBMITTED("SUBMITTED", Messages.get("submitted")),
+	SUBMISSION_SENT("SUBMISSION_SENT", Messages.get("submission.sent")),
+	ACCEPTED_DWH("ACCEPTED DWH", Messages.get("accepted.dwh")),
+	UPDATED_BY_DATA_RECEIVER("UPLOADED_BY_DATA_RECEIVER", Messages.get("uploaded.receiver")),
+	OTHER("OTHER", Messages.get("other"));  // error state
 	
 	private String status;
 	private String label;

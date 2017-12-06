@@ -5,6 +5,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
 import dataset.Dataset;
+import i18n_messages.Messages;
 import table_skeleton.TableVersion;
 
 /**
@@ -57,7 +58,7 @@ public class DatasetLabelProvider extends ColumnLabelProvider {
 		case "revision":
 			text = dataset.getVersion();
 			if (TableVersion.isFirstVersion(text)) {
-				text = "None";
+				text = Messages.get("dataset.baseline.version");
 			}
 			break;
 		default:

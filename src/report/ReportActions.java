@@ -13,6 +13,7 @@ import org.xml.sax.SAXException;
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import global_utils.Warnings;
+import i18n_messages.Messages;
 import message.SendMessageException;
 import progress.ProgressBarDialog;
 import progress.ProgressListener;
@@ -51,8 +52,8 @@ public class ReportActions {
 	 */
 	public Report amend() {
 		
-		int val = Warnings.warnUser(shell, "Warning", 
-				"CONF907: Do you confirm you need to apply changes to the report already accepted in the EFSA Data Warehouse?",
+		int val = Warnings.warnUser(shell, Messages.get("warning.title"), 
+				Messages.get("amend.confirm"), 
 				SWT.ICON_WARNING | SWT.YES | SWT.NO);
 		
 		// go on only if yes
@@ -77,9 +78,7 @@ public class ReportActions {
 	 */
 	public void reject(Listener listener) {
 		
-		int val = Warnings.warnUser(shell, "Warning", 
-				"CONF900: After the rejection of the dataset, to provide again the same report "
-				+ "into DCF you need to edit it and send it again. Do you confirm the rejection?",
+		int val = Warnings.warnUser(shell, Messages.get("warning.title"), Messages.get("reject.confirm"),
 				SWT.ICON_WARNING | SWT.YES | SWT.NO);
 		
 		// go on only if yes
@@ -95,9 +94,8 @@ public class ReportActions {
 	 */
 	public void submit(Listener listener) {
 		
-		int val = Warnings.warnUser(shell, "Warning", 
-				"CONF901: After the submission of the dataset, the data will be processed for being inserted into EFSA Data Warehouse. "
-				+ "You will be asked to verify data again in the Validation report. Do you confirm the submission?",
+		int val = Warnings.warnUser(shell, Messages.get("warning.title"), 
+				Messages.get("submit.confirm"),
 				SWT.ICON_WARNING | SWT.YES | SWT.NO);
 		
 		// go on only if yes
@@ -124,19 +122,19 @@ public class ReportActions {
 			switch(action) {
 			case REJECT:
 				report.reject();
-				title = "Success";
-				message = "Reject request sent to DCF. Please wait email notification and then refresh the status.";
+				title = Messages.get("success.title");
+				message = Messages.get("reject.success");
 				style = SWT.ICON_INFORMATION;
 				break;
 			case SUBMIT:
 				report.submit();
-				title = "Success";
-				message = "Submit request sent to DCF. Please wait email notification and then refresh the status.";
+				title = Messages.get("success.title");
+				message = Messages.get("submit.success");
 				style = SWT.ICON_INFORMATION;
 				break;
 			default:
-				title = "Error";
-				message = "Action not allowed.";
+				title = Messages.get("error.title");
+				message = Messages.get("report.unsupported.action");
 			}
 			
 
@@ -144,12 +142,12 @@ public class ReportActions {
 			
 		} catch (IOException | ParserConfigurationException | SAXException e) {
 			e.printStackTrace();
-			title = "Error";
-			message = "ERR402: An unexpected error occurred. Please contant technical assistance.";
+			title = Messages.get("error.title");
+			message = Messages.get("report.io.error");
 		} catch (SendMessageException e) {
 			e.printStackTrace();
-			title = "Error";
-			message = "ERR404: The dataset structure was not recognized by DCF. The operation could not be completed.";
+			title = Messages.get("error.title");
+			message = Messages.get("send.message.failed", e.getErrorMessage());
 		} catch (MySOAPException e) {
 			e.printStackTrace();
 			String[] warning = Warnings.getSOAPWarning(e);
@@ -157,8 +155,8 @@ public class ReportActions {
 			message = warning[1];
 		} catch (ReportException e) {
 			e.printStackTrace();
-			title = "Error";
-			message = "ERR405: The dataset cannot be sent since the operation is not supported.";
+			title = Messages.get("error.title");
+			message = Messages.get("report.unsupported.action");
 		}
 		catch (Exception e) {
 			StringBuilder sb = new StringBuilder();
@@ -167,10 +165,9 @@ public class ReportActions {
 		        sb.append(ste);
 		    }
 		    String trace = sb.toString();
-		    message = "XERRX: Generic runtime error. Please contact zoonoses_support@efsa.europa.eu. Error message " 
-		    		+ trace;
+		    message = Messages.get("generic.error", trace);
 			
-			title = "Generic error";
+			title = Messages.get("error.title");
 		}
 		finally {
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -194,9 +191,7 @@ public class ReportActions {
 	 */
 	public void send(Listener listener) {
 		
-		int val = Warnings.warnUser(shell, "Warning", 
-				"CONF904: Once the dataset is sent, the report will not be editable until "
-				+ "it is completely processed by the DCF. Do you want to continue?", 
+		int val = Warnings.warnUser(shell, Messages.get("warning.title"), Messages.get("send.confirm"), 
 				SWT.ICON_WARNING | SWT.YES | SWT.NO);
 		
 		if (val == SWT.NO)
@@ -204,25 +199,24 @@ public class ReportActions {
 		
 		// if invalid report
 		if (!report.isValid()) {
-			Warnings.warnUser(shell, "Error", 
-					"WARN403: The report contains error, please correct them before uploading data to DCF.");
+			Warnings.warnUser(shell, Messages.get("error.title"), 
+					Messages.get("send.report.check"));
 			return;
 		}
 		
 		// if test data collection ask confirmation
 		if (PropertiesReader.isTestDataCollection(report.getYear())) {
 			
-			int val2 = Warnings.warnUser(shell, "Warning", 
-					"CONF903: The dataset will be sent to " 
-					+ PropertiesReader.getDataCollectionCode(report.getYear()) 
-					+ " data collection. Do you want to continue?", 
+			String dc = PropertiesReader.getDataCollectionCode(report.getYear());
+			int val2 = Warnings.warnUser(shell, Messages.get("warning.title"), 
+					Messages.get("send.confirm.dc", dc),
 					SWT.ICON_WARNING | SWT.YES | SWT.NO);
 			
 			if (val2 == SWT.NO)
 				return;
 		}
 		
-		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, "Sending report");
+		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, Messages.get("send.progress.title"));
 		progressBarDialog.open();
 		
 		// start the sender thread
@@ -273,8 +267,8 @@ public class ReportActions {
 						if (listener != null)
 							listener.handleEvent(null);
 						
-						String title = "Success";
-						String message = "Report uploaded to DCF. Please wait email notification and then refresh the status.";
+						String title = Messages.get("success.title");
+						String message = Messages.get("send.success");
 						int icon = SWT.ICON_INFORMATION;
 						
 						Warnings.warnUser(shell, title, message, icon);
@@ -303,9 +297,8 @@ public class ReportActions {
 						
 						if (e instanceof IOException) {
 							
-							title = "Error";
-							message = "ERR402: Errors occurred during the export of the report. Please contact zoonoses_support@efsa.europa.eu and attach this error message: " 
-									+ e.getMessage();
+							title = Messages.get("error.title");
+							message = Messages.get("report.io.error", e.getMessage());
 							icon = SWT.ICON_ERROR;
 						}
 						else if (e instanceof MySOAPException) {
@@ -318,11 +311,8 @@ public class ReportActions {
 						}
 						else if (e instanceof SAXException || e instanceof ParserConfigurationException) {
 							
-							title = "Error";
-							message = "ERR403: Errors occurred during the creation of the report. Please check if the " 
-									+ AppPaths.MESSAGE_GDE2_XSD 
-									+ " file is correct. Please contact urgently zoonoses_support@efsa.europa.eu and attach this error message: " 
-									+ e.getMessage();
+							title = Messages.get("error.title");
+							message = Messages.get("gde2.missing", AppPaths.MESSAGE_GDE2_XSD, e.getMessage());
 							icon = SWT.ICON_ERROR;
 							
 						}
@@ -333,25 +323,24 @@ public class ReportActions {
 							switch(sendE.getResponse().getErrorType()) {
 							case NON_DP_USER:
 								
-								title = "Error";
-								message = "ERR103: The data provider profile in DCF is incomplete: please contact zoonoses_support@efsa.europa.eu.";
+								title = Messages.get("error.title");
+								message = Messages.get("account.incomplete");
 								icon = SWT.ICON_ERROR;
 
 								break;
 								
 							case USER_WITHOUT_ORG:
 								
-								title = "Error";
-								message = "ERR102: The user is not correctly profiled in DCF: please contact zoonoses_support@efsa.europa.eu.";
+								title = Messages.get("error.title");
+								message = Messages.get("account.incorrect");
 								icon = SWT.ICON_ERROR;
 								
 								break;
 								
 							default:
 								
-								title = "Error";
-								message = "ERR404: An unexpected error occurred. Please contact urgently zoonoses_support@efsa.europa.eu and attach this error message: " 
-										+ sendE.getErrorMessage();
+								title = Messages.get("error.title");
+								message = Messages.get("send.message.failed", sendE.getErrorMessage());
 								icon = SWT.ICON_ERROR;
 								break;
 							}
@@ -359,8 +348,8 @@ public class ReportActions {
 						}
 						else if (e instanceof ReportException) {
 							
-							title = "Error";
-							message = "ERR700: Something went wrong, please check if the report senderDatasetId is set. Please contact zoonoses_support@efsa.europa.eu.";
+							title = Messages.get("error.title");
+							message = Messages.get("send.failed.no.senderId", e.getMessage());
 							icon = SWT.ICON_ERROR;
 						}
 						else {
@@ -371,10 +360,9 @@ public class ReportActions {
 						    }
 						    String trace = sb.toString();
 						    
-						    message = "XERRX: Generic runtime error. Please contact zoonoses_support@efsa.europa.eu. Error message " 
-						    		+ trace;
+						    message = Messages.get("generic.error", trace);
 							
-							title = "Generic error";
+							title = Messages.get("error.title");
 						}
 						
 						Warnings.warnUser(shell, title, message, icon);
@@ -409,36 +397,26 @@ public class ReportActions {
 		
 		switch(operation.getStatus()) {
 		case ACCEPTED_DWH:
-			title = "Error";
-			message = "WARN405: An existing report in DCF with dataset id " 
-					+ datasetId 
-					+ " was found in status ACCEPTED_DWH. To amend it please download and open it.";
+			title = Messages.get("error.title");
+			message = Messages.get("send.warning.acc.dwh", datasetId);
 			goOn = false;
 			break;
 		case SUBMITTED:
-			title = "Error";
-			message = "WARN406: An existing report in DCF with dataset id " 
-					+ datasetId 
-					+ " was found in status SUBMITTED. Please reject it in the validation report if changes are needed.";
+			title = Messages.get("error.title");
+			message = Messages.get("send.warning.submitted", datasetId);
 			goOn = false;
 			break;
 		case PROCESSING:
-			title = "Error";
-			message = "WARN404: An existing report in DCF with dataset id " 
-					+ datasetId 
-					+ " was found in status PROCESSING. Please wait the completion of the validation.";
+			title = Messages.get("error.title");
+			message = Messages.get("send.warning.processing", datasetId);
 			goOn = false;
 			break;
 		case REJECTED_EDITABLE:
 		case VALID:
 		case VALID_WITH_WARNINGS:
 			
-			title = "Warning";
-			message = "WARN407: An existing report in DCF with dataset id "
-					+ datasetId
-					+ " was found in status "
-					+ operation.getStatus()
-					+ " and will be overwritten. Do you want to proceed?.";
+			title = Messages.get("warning.title");
+			message = Messages.get("send.warning.replace", datasetId, operation.getStatus().getLabel());
 			style = SWT.YES | SWT.NO | SWT.ICON_WARNING;
 			needConfirmation = true;
 			break;
@@ -449,8 +427,8 @@ public class ReportActions {
 
 			break;
 		default:
-			title = "Error";
-			message = "ERR400: An error occurred due to a conflicting dataset in DCF. Please contact zoonoses_support@efsa.europa.eu.";
+			title = Messages.get("error.title");
+			message = Messages.get("send.error.acc.dcf");
 			goOn = false;
 			break;
 		}

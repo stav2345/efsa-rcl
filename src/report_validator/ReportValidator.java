@@ -10,6 +10,7 @@ import java.util.List;
 import app_config.AppPaths;
 import global_utils.FileUtils;
 import html_viewer.HtmlViewer;
+import i18n_messages.Messages;
 
 /**
  * Validate a report and show the errors to the user
@@ -106,11 +107,11 @@ public abstract class ReportValidator {
 		// headers
 		writer.append("<thead>");
 		writer.append("<tr>");
-		writer.append("<th scope='col'>Error type</th>");
-		writer.append("<th scope='col'>Error message</th>");
-		writer.append("<th scope='col'>Involved rows</th>");
-		writer.append("<th scope='col'>Erroneous values</th>");
-		writer.append("<th scope='col'>Suggestions</th>");	
+		writer.append("<th scope='col'>" + Messages.get("table.header.type") + "</th>");
+		writer.append("<th scope='col'>" + Messages.get("table.header.message") + "</th>");
+		writer.append("<th scope='col'>" + Messages.get("table.header.rows") + "</th>");
+		writer.append("<th scope='col'>" + Messages.get("table.header.wrong.values") + "</th>");
+		writer.append("<th scope='col'>" + Messages.get("table.header.tips") + "</th>");	
 		writer.append("</tr>");
 		writer.append("</thead>");
 		
@@ -152,8 +153,8 @@ public abstract class ReportValidator {
 			writer.append("</td>");
 			
 			writer.append("<td>");
-			if (error.getCorrectExample() != null)
-				writer.append(error.getCorrectExample());
+			if (error.getSuggestions() != null)
+				writer.append(error.getSuggestions());
 			writer.append("</td>");
 
 			writer.append("</tr>");

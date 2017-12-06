@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 
+import i18n_messages.Messages;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
@@ -107,7 +108,7 @@ public class TableView {
 		if (editable) {
 			this.validator = new TableViewerColumn(this.tableViewer, SWT.NONE);
 			validator.getColumn().setWidth(140);
-			validator.getColumn().setText("Data check");
+			validator.getColumn().setText(Messages.get("data.check.header"));
 		}
 
 		for (TableColumn col : schema) {
@@ -155,9 +156,9 @@ public class TableView {
 
 			// if the mandatory depends on the row
 			if (col.isConditionallyMandatory())
-				label = label + "°";
+				label = label + Messages.get("conditionally.mandatory.column.marker");
 			else if (!col.isMandatory())  // if optional
-				label = label + "#";
+				label = label + Messages.get("optional.column.marker");
 
 			columnViewer.getColumn().setText(label);
 		}

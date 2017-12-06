@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 
 import global_utils.Warnings;
+import i18n_messages.Messages;
 import table_database.TableDao;
 import table_dialog.DialogBuilder.RowCreationMode;
 import table_dialog.RowCreatorViewer.CatalogChangedListener;
@@ -215,7 +216,7 @@ public abstract class TableDialog {
 		if (addSaveBtn) {
 			// save button
 			this.saveButton = new Button(dialog, SWT.PUSH);
-			this.saveButton.setText("Save");
+			this.saveButton.setText(Messages.get("save.button"));
 			this.saveButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
 			this.saveButton.setEnabled(panel.areMandatoryFilled());
 			

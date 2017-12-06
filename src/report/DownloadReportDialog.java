@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Shell;
 import app_config.PropertiesReader;
 import dataset.Dataset;
 import dataset.DatasetList;
+import i18n_messages.Messages;
 import table_dialog.DatasetListDialog;
 import webservice.GetDatasetList;
 
@@ -36,7 +37,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 	 */
 	public DownloadReportDialog(Shell parent, String validSenderIdPattern) {
 		
-		super(parent, "Available reports", "Download");
+		super(parent, Messages.get("download.title"), Messages.get("download.button"));
 		this.validSenderIdPattern = validSenderIdPattern;
 		this.allDatasets = new DatasetList<>();
 		this.downloadableDatasets = new DatasetList<>();
@@ -94,9 +95,9 @@ public class DownloadReportDialog extends DatasetListDialog {
 				
 				DatasetList<Dataset> datasets = req.getList();
 
-				allDatasets.addAll(datasets);
+				allDatasets.addAll(datasets.getDownloadableDatasets(validSenderIdPattern));
 				downloadableDatasets.addAll(
-						datasets.getDownloadableDatasets(validSenderIdPattern));
+						datasets.getDownloadableDatasetsLatestVersions(validSenderIdPattern));
 				
 			} catch (SOAPException e) {
 				e.printStackTrace();
@@ -124,6 +125,6 @@ public class DownloadReportDialog extends DatasetListDialog {
 			return null;
 		
 		// get all the versions of the dataset
-		return this.downloadableDatasets.filterByDecomposedSenderId(senderId);
+		return this.allDatasets.filterByDecomposedSenderId(senderId);
 	}
 }

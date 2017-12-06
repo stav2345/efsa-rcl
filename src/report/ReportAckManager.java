@@ -17,6 +17,7 @@ import app_config.PropertiesReader;
 import dataset.DatasetStatus;
 import global_utils.Warnings;
 import html_viewer.HtmlViewer;
+import i18n_messages.Messages;
 import webservice.MySOAPException;
 
 public class ReportAckManager {
@@ -68,8 +69,9 @@ public class ReportAckManager {
 			if (!log.getDatasetStatus().existsInDCF()) {
 
 				// warn the user, the ack cannot be retrieved yet
-				String title = "Acknowledgment received";
-				String message = "ERR804: The status is not valid, found status " + log.getDatasetStatus();
+				String title = Messages.get("success.title");
+				String message = Messages.get("ack.invalid", 
+						log.getDatasetStatus().getLabel());
 				int style = SWT.ICON_ERROR;
 				Warnings.warnUser(shell, title, message, style);
 
@@ -81,8 +83,8 @@ public class ReportAckManager {
 		else {
 
 			// warn the user, the ack cannot be retrieved yet
-			String title = "Warning";
-			String message = "WARN501: Dataset still in processing.";
+			String title = Messages.get("warning.title");
+			String message = Messages.get("ack.processing");
 			int style = SWT.ICON_INFORMATION;
 			Warnings.warnUser(shell, title, message, style);
 		}
@@ -100,8 +102,7 @@ public class ReportAckManager {
 		
 		// if no message id found
 		if (messageId == null || messageId.isEmpty()) {
-			Warnings.warnUser(shell, "Error", 
-					"ERR800: The ack message is not available within the tool, please check on DCF.");
+			Warnings.warnUser(shell, Messages.get("error.title"), Messages.get("ack.no.message.id"));
 			return;
 		}
 		
@@ -127,8 +128,8 @@ public class ReportAckManager {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-			Warnings.warnUser(shell, "Error", 
-					"ERR802: Cannot process the acknowledgement.");
+			Warnings.warnUser(shell, Messages.get("error.title"), 
+					Messages.get("ack.file.not.found"));
 		}
 		
 		// open the ack in the browser to see it formatted
@@ -147,7 +148,7 @@ public class ReportAckManager {
 		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 
 		boolean errorOccurred = false;
-		String title = "Error";
+		String title = Messages.get("error.title");
 		String message = null;
 		int style = SWT.ERROR;
 
@@ -158,7 +159,7 @@ public class ReportAckManager {
 			ack = report.getAck();
 
 			if (ack == null) {
-				message = "ERR803: No acknowledgment was found for the report.";
+				message = Messages.get("ack.not.available");
 				errorOccurred = true;
 			}
 			else {
@@ -167,13 +168,13 @@ public class ReportAckManager {
 					OpResError error = ack.getLog().getOpResError();
 					switch(error) {
 					case NOT_EXISTING_DC:
-						message = "ERR407: The data collection " + PropertiesReader.getDataCollectionCode() 
-						+ " is not a valid one. Please contact zoonoses_support@efsa.europa.eu.";
+						message = Messages.get("dc.not.valid", 
+								PropertiesReader.getDataCollectionCode());
 						errorOccurred = true;
 						break;
 					case USER_NOT_AUTHORIZED:
-						message = "ERR101: Your account is not authorized for the data collection " 
-								+ PropertiesReader.getDataCollectionCode();
+						message = Messages.get("account.unauthorized", 
+								PropertiesReader.getDataCollectionCode());
 						errorOccurred = true;
 						break;
 					default:
@@ -236,8 +237,8 @@ public class ReportAckManager {
 			// if we have the same status then ok stop
 			// we have the report updated
 			if (oldStatus == newStatus) {
-				title = "Acknowledgment received";
-				message = "Current report state: " + newStatus;
+				title = Messages.get("success.title");
+				message = Messages.get("refresh.status.success", newStatus.getLabel());
 				style = SWT.ICON_INFORMATION;
 			}
 
@@ -250,8 +251,8 @@ public class ReportAckManager {
 				case ACCEPTED_DWH:
 				case REJECTED_EDITABLE:
 
-					title = "Acknowledgment received";
-					message = "Current report state: " + newStatus;
+					title = Messages.get("success.title");
+					message = Messages.get("refresh.status.success", newStatus.getLabel());
 					style = SWT.ICON_INFORMATION;
 					break;
 				default:
@@ -266,11 +267,9 @@ public class ReportAckManager {
 				case DELETED:
 				case REJECTED:
 
-					title = "Warning";
-					message = "WARN501: The related dataset in DCF is in status " 
-							+ newStatus 
-							+ ". Local report status will be changed to " 
-							+ DatasetStatus.DRAFT;
+					title = Messages.get("warning.title");
+					message = Messages.get("refresh.auto.draft", 
+							newStatus.getLabel(), DatasetStatus.DRAFT.getLabel());
 
 					style = SWT.ICON_WARNING;
 
@@ -279,11 +278,8 @@ public class ReportAckManager {
 					// otherwise inconsistent status
 				default:
 
-					title = "Error";
-					message = "ERR501: The related dataset in DCF is in status " 
-							+ newStatus
-							+ ". Status of local report is inconsistent. Please contact zoonoses_support@efsa.europa.eu.";
-
+					title = Messages.get("error.title");
+					message = Messages.get("refresh.error", newStatus.getLabel());
 					style = SWT.ICON_ERROR;
 
 					break;
@@ -299,8 +295,8 @@ public class ReportAckManager {
 
 		} catch (ReportException e) {
 			e.printStackTrace();
-			title = "Error";
-			message = "ERR700: The dataset of the report cannot be retrieved since the report lacks of datasetSenderId.";
+			title = Messages.get("error.title");
+			message = Messages.get("refresh.failed.no.senderId", e.getMessage());
 			style = SWT.ERROR;
 		}
 		finally {
