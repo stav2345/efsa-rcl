@@ -1,22 +1,13 @@
 package report;
 
-import java.io.IOException;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import amend_manager.ReportImporter;
 import dataset.Dataset;
 import dataset.DatasetList;
-import dataset.NoAttachmentException;
-import formula.FormulaException;
-import global_utils.Warnings;
 import i18n_messages.Messages;
 import progress.ProgressBarDialog;
 import progress.ProgressListener;
-import webservice.MySOAPException;
 
 /**
  * Download a report into the database
@@ -53,11 +44,10 @@ public abstract class ReportDownloader {
 		// if the report already exists locally, warn that it will be overwritten
 		if (Report.isLocallyPresent(senderId)) {
 			
-			int val = Warnings.warnUser(shell, Messages.get("warning.title"), 
-					Messages.get("download.replace"), 
-					SWT.YES | SWT.NO | SWT.ICON_WARNING);
+			// ask confirmation to the user
+			boolean confirm = askConfirmation();
 			
-			if (val == SWT.NO)  // user pressed cancel
+			if (!confirm)
 				return;
 		}
 		
@@ -87,10 +77,7 @@ public abstract class ReportDownloader {
 						progressBarDialog.fillToMax();
 						progressBarDialog.close();
 						
-						String title = Messages.get("success.title");
-						String message = Messages.get("download.success");
-						int style = SWT.ICON_INFORMATION;
-						Warnings.warnUser(shell, title, message, style);
+						end();
 					}
 				});
 			}
@@ -111,42 +98,8 @@ public abstract class ReportDownloader {
 						
 						progressBarDialog.close();
 						
-						String title = null;
-						String message = null;
-
-						if (e instanceof MySOAPException) {
-							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e));
-							title = warnings[0];
-							message = warnings[1];
-						}
-						else if (e instanceof XMLStreamException
-								|| e instanceof IOException) {
-							title = Messages.get("error.title");
-							message = Messages.get("download.bad.format");
-						}
-						else if (e instanceof FormulaException) { 
-							title = Messages.get("error.title");
-							message = Messages.get("download.bad.parsing");
-						}
-						else if (e instanceof NoAttachmentException) {
-							title = Messages.get("error.title");
-							message = Messages.get("download.no.attachment");
-						}
-						else {
-							StringBuilder sb = new StringBuilder();
-							for (StackTraceElement ste : e.getStackTrace()) {
-						        sb.append("\n\tat ");
-						        sb.append(ste);
-						    }
-						    String trace = sb.toString();
-						    
-						    message = Messages.get("generic.error", trace);
-							
-							title = Messages.get("error.title");
-						}
-						
-						
-						Warnings.warnUser(shell, title, message);
+						// manage the exception
+						manageException(e);
 					}
 				});
 			}
@@ -170,4 +123,18 @@ public abstract class ReportDownloader {
 	 * @return
 	 */
 	public abstract DownloadReportDialog getDialog();
+	
+	
+	public abstract boolean askConfirmation();
+	
+	/**
+	 * Manage an exception that was thrown during the download process
+	 * @param e
+	 */
+	public abstract void manageException(Exception e);
+	
+	/**
+	 * Called at the end of the process
+	 */
+	public abstract void end();
 }

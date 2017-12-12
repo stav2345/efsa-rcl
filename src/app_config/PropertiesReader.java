@@ -14,6 +14,7 @@ import report.Report;
  */
 public class PropertiesReader {
 	
+	private static final String TECH_SUPPORT_EMAIL_PROPERTY = "TechnicalSupport.Email";
 	private static final String DB_REQUIRED_VERSION_PROPERTY = "Db.MinRequiredVersion";
 	private static final String APP_NAME_PROPERTY = "Application.Name";
 	private static final String APP_VERSION_PROPERTY = "Application.Version";
@@ -59,7 +60,7 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getAppName() {
-		return getValue(APP_NAME_PROPERTY, "not found");
+		return getValue(APP_NAME_PROPERTY);
 	}
 	
 	/**
@@ -68,7 +69,7 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getAppVersion() {
-		return getValue(APP_VERSION_PROPERTY, "not found");
+		return getValue(APP_VERSION_PROPERTY);
 	}
 	
 	/**
@@ -77,7 +78,16 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getMinRequiredDbVersion() {
-		return getValue(DB_REQUIRED_VERSION_PROPERTY, "not found");
+		return getValue(DB_REQUIRED_VERSION_PROPERTY);
+	}
+	
+	/**
+	 * Get the email that the user should contact
+	 * in case of technical support need
+	 * @return
+	 */
+	public static String getSupportEmail() {
+		return getValue(TECH_SUPPORT_EMAIL_PROPERTY);
 	}
 	
 	/**
@@ -115,7 +125,7 @@ public class PropertiesReader {
 	 */
 	public static String getDataCollectionCode(String reportYear) {
 
-		String dcPattern = getValue(APP_DC_PATTERN_PROPERTY, "not found");		
+		String dcPattern = getValue(APP_DC_PATTERN_PROPERTY);		
 
 		int reportYearInt = Integer.valueOf(reportYear);
 		int startingYear = getDataCollectionStartingYear();
@@ -143,7 +153,7 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getTestDataCollectionCode() {
-		return resolveDCPattern(getValue(APP_DC_PATTERN_PROPERTY, "not found"), 
+		return resolveDCPattern(getValue(APP_DC_PATTERN_PROPERTY), 
 				getDcTestCode());
 	}
 	
@@ -157,7 +167,7 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getDataCollectionTable() {
-		return getValue(APP_DC_TABLE_PROPERTY, "not found");
+		return getValue(APP_DC_TABLE_PROPERTY);
 	}
 	
 	/**
@@ -165,7 +175,7 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getDcTestCode() {
-		return getValue(APP_DC_TEST_PROPERTY, "not found");
+		return getValue(APP_DC_TEST_PROPERTY);
 	}
 	
 	/**
@@ -173,11 +183,11 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getStartupHelpURL() {
-		return getHelpRepositoryURL() + getValue(APP_STARTUP_HELP_PROPERTY, "not found");
+		return getHelpRepositoryURL() + getValue(APP_STARTUP_HELP_PROPERTY);
 	}
 	
 	public static String getHelpRepositoryURL() {
-		return getValue(APP_HELP_REPOSITORY_PROPERTY, "not found") + "/";
+		return getValue(APP_HELP_REPOSITORY_PROPERTY) + "/";
 	}
 	
 	/**
@@ -185,12 +195,12 @@ public class PropertiesReader {
 	 * @return
 	 */
 	public static String getAppIcon() {
-		return getValue(APP_ICON_PROPERTY, "not found");
+		return getValue(APP_ICON_PROPERTY);
 	}
 	
 	public static int getDataCollectionStartingYear() {
 		
-		String year = getValue(APP_DC_STARTING_YEAR, "not found");
+		String year = getValue(APP_DC_STARTING_YEAR);
 		
 		try {
 			return Integer.valueOf(year);
@@ -207,7 +217,7 @@ public class PropertiesReader {
 	 * @param property
 	 * @return
 	 */
-	private static String getValue(String property, String defaultValue) {
+	private static String getValue(String property) {
 		
 		// use cache if possible
 		String cachedValue = cache.get(property);
@@ -217,7 +227,7 @@ public class PropertiesReader {
 		Properties prop = PropertiesReader.getProperties(AppPaths.APP_CONFIG_FILE);
 		
 		if ( prop == null )
-			return defaultValue;
+			return "!" + property + "!";
 		
 		String value = prop.getProperty(property);
 		

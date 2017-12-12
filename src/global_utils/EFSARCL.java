@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import app_config.AppPaths;
 import table_database.Database;
+import table_database.DatabaseVersionException;
 
 /**
  * Component which initialises the EFSA Report Creator Library
@@ -19,8 +20,9 @@ public class EFSARCL {
 	 * and will update the database if needed.
 	 * @throws IOException
 	 * @throws SQLException
+	 * @throws DatabaseVersionException 
 	 */
-	public static void init() throws IOException, SQLException {
+	public static void init() throws IOException, SQLException, DatabaseVersionException {
 		
 		// create folders if they do not exist
 		FileUtils.createFolder(AppPaths.CONFIG_FOLDER);

@@ -169,12 +169,14 @@ public class ReportAckManager {
 					switch(error) {
 					case NOT_EXISTING_DC:
 						message = Messages.get("dc.not.valid", 
-								PropertiesReader.getDataCollectionCode());
+								PropertiesReader.getDataCollectionCode(),
+								PropertiesReader.getSupportEmail());
 						errorOccurred = true;
 						break;
 					case USER_NOT_AUTHORIZED:
 						message = Messages.get("account.unauthorized", 
-								PropertiesReader.getDataCollectionCode());
+								PropertiesReader.getDataCollectionCode(),
+								PropertiesReader.getSupportEmail());
 						errorOccurred = true;
 						break;
 					default:
@@ -279,7 +281,8 @@ public class ReportAckManager {
 				default:
 
 					title = Messages.get("error.title");
-					message = Messages.get("refresh.error", newStatus.getLabel());
+					message = Messages.get("refresh.error", newStatus.getLabel(), 
+							PropertiesReader.getSupportEmail());
 					style = SWT.ICON_ERROR;
 
 					break;
@@ -296,7 +299,7 @@ public class ReportAckManager {
 		} catch (ReportException e) {
 			e.printStackTrace();
 			title = Messages.get("error.title");
-			message = Messages.get("refresh.failed.no.senderId", e.getMessage());
+			message = Messages.get("refresh.failed.no.senderId", PropertiesReader.getSupportEmail(), e.getMessage());
 			style = SWT.ERROR;
 		}
 		finally {

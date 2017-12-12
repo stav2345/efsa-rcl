@@ -10,9 +10,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.xml.sax.SAXException;
 
-import app_config.AppPaths;
 import app_config.PropertiesReader;
-import global_utils.Warnings;
 import i18n_messages.Messages;
 import message.SendMessageException;
 import progress.ProgressBarDialog;
@@ -29,9 +27,11 @@ import webservice.MySOAPException;
  * @author avonva
  *
  */
-public class ReportActions {	
+public abstract class ReportActions {	
 	
-	private enum ReportAction {
+	public enum ReportAction {
+		SEND,
+		AMEND,
 		REJECT,
 		SUBMIT
 	}
@@ -52,12 +52,10 @@ public class ReportActions {
 	 */
 	public Report amend() {
 		
-		int val = Warnings.warnUser(shell, Messages.get("warning.title"), 
-				Messages.get("amend.confirm"), 
-				SWT.ICON_WARNING | SWT.YES | SWT.NO);
 		
-		// go on only if yes
-		if (val == SWT.NO)
+		boolean confirm = askConfirmation(ReportAction.AMEND);
+		
+		if (!confirm)
 			return null;
 		
 		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
@@ -78,11 +76,9 @@ public class ReportActions {
 	 */
 	public void reject(Listener listener) {
 		
-		int val = Warnings.warnUser(shell, Messages.get("warning.title"), Messages.get("reject.confirm"),
-				SWT.ICON_WARNING | SWT.YES | SWT.NO);
+		boolean confirm = askConfirmation(ReportAction.REJECT);
 		
-		// go on only if yes
-		if (val == SWT.NO)
+		if (!confirm)
 			return;
 		
 		performAction(ReportAction.REJECT, listener);
@@ -94,12 +90,10 @@ public class ReportActions {
 	 */
 	public void submit(Listener listener) {
 		
-		int val = Warnings.warnUser(shell, Messages.get("warning.title"), 
-				Messages.get("submit.confirm"),
-				SWT.ICON_WARNING | SWT.YES | SWT.NO);
 		
-		// go on only if yes
-		if (val == SWT.NO)
+		boolean confirm = askConfirmation(ReportAction.SUBMIT);
+		
+		if (!confirm)
 			return;
 		
 		performAction(ReportAction.SUBMIT, listener);
@@ -112,69 +106,39 @@ public class ReportActions {
 	 */
 	private void performAction(ReportAction action, Listener listener) {
 		
-		String title;
-		String message;
-		int style = SWT.ERROR;
+		Exception exceptionOccurred = null;
 		
 		try {
+			
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 			
 			switch(action) {
 			case REJECT:
 				report.reject();
-				title = Messages.get("success.title");
-				message = Messages.get("reject.success");
-				style = SWT.ICON_INFORMATION;
 				break;
 			case SUBMIT:
 				report.submit();
-				title = Messages.get("success.title");
-				message = Messages.get("submit.success");
-				style = SWT.ICON_INFORMATION;
 				break;
-			default:
-				title = Messages.get("error.title");
-				message = Messages.get("report.unsupported.action");
+			default:  // unsupported
+				break;
 			}
-			
 
 			listener.handleEvent(null);
 			
-		} catch (IOException | ParserConfigurationException | SAXException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			title = Messages.get("error.title");
-			message = Messages.get("report.io.error");
-		} catch (SendMessageException e) {
-			e.printStackTrace();
-			title = Messages.get("error.title");
-			message = Messages.get("send.message.failed", e.getErrorMessage());
-		} catch (MySOAPException e) {
-			e.printStackTrace();
-			String[] warning = Warnings.getSOAPWarning(e);
-			title = warning[0];
-			message = warning[1];
-		} catch (ReportException e) {
-			e.printStackTrace();
-			title = Messages.get("error.title");
-			message = Messages.get("report.unsupported.action");
-		}
-		catch (Exception e) {
-			StringBuilder sb = new StringBuilder();
-			for (StackTraceElement ste : e.getStackTrace()) {
-		        sb.append("\n\tat ");
-		        sb.append(ste);
-		    }
-		    String trace = sb.toString();
-		    message = Messages.get("generic.error", trace);
-			
-			title = Messages.get("error.title");
+			exceptionOccurred = e;
 		}
 		finally {
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		}
 		
-		if (message != null) {
-			Warnings.warnUser(shell, title, message, style);
+		// if an exception occurred call manage exception
+		if (exceptionOccurred == null) {
+			end(action);
+		}
+		else {
+			manageException(exceptionOccurred, action);
 		}
 	}
 	
@@ -191,28 +155,18 @@ public class ReportActions {
 	 */
 	public void send(Listener listener) {
 		
-		int val = Warnings.warnUser(shell, Messages.get("warning.title"), Messages.get("send.confirm"), 
-				SWT.ICON_WARNING | SWT.YES | SWT.NO);
+		boolean confirm = askConfirmation(ReportAction.SEND);
 		
-		if (val == SWT.NO)
+		if (!confirm)
 			return;
 		
-		// if invalid report
-		if (!report.isValid()) {
-			Warnings.warnUser(shell, Messages.get("error.title"), 
-					Messages.get("send.report.check"));
-			return;
-		}
 		
 		// if test data collection ask confirmation
 		if (PropertiesReader.isTestDataCollection(report.getYear())) {
 			
-			String dc = PropertiesReader.getDataCollectionCode(report.getYear());
-			int val2 = Warnings.warnUser(shell, Messages.get("warning.title"), 
-					Messages.get("send.confirm.dc", dc),
-					SWT.ICON_WARNING | SWT.YES | SWT.NO);
+			boolean confirm2 = askTestDataCollectionConfirmation(report);
 			
-			if (val2 == SWT.NO)
+			if (!confirm2)
 				return;
 		}
 		
@@ -232,17 +186,23 @@ public class ReportActions {
 					@Override
 					public void run() {
 						
-						boolean goOn = showExportWarning(shell, opType);
-						
-						if (goOn) {
-							sender.confirmSend();
-						}
-						else {
+						try {
+							boolean goOn = showSendWarning(shell, opType);
 							
-							sender.stopSend();
+							if (goOn) {
+								sender.confirmSend();
+							}
+							else {
+								
+								sender.stopSend();
+								
+								// close the progress bar
+								progressBarDialog.close();
+							}
 							
-							// close the progress bar
-							progressBarDialog.close();
+						} catch (UnsupportedReportActionException e) {
+							e.printStackTrace();
+							manageException(e, ReportAction.SEND);
 						}
 					}
 				});
@@ -267,11 +227,7 @@ public class ReportActions {
 						if (listener != null)
 							listener.handleEvent(null);
 						
-						String title = Messages.get("success.title");
-						String message = Messages.get("send.success");
-						int icon = SWT.ICON_INFORMATION;
-						
-						Warnings.warnUser(shell, title, message, icon);
+						end(ReportAction.SEND);
 					}
 				});
 			}
@@ -291,81 +247,7 @@ public class ReportActions {
 						
 						progressBarDialog.close();
 						
-						String title = "";
-						String message = "";
-						int icon = SWT.ICON_ERROR;
-						
-						if (e instanceof IOException) {
-							
-							title = Messages.get("error.title");
-							message = Messages.get("report.io.error", e.getMessage());
-							icon = SWT.ICON_ERROR;
-						}
-						else if (e instanceof MySOAPException) {
-							
-							String[] warnings = Warnings.getSOAPWarning(((MySOAPException) e));
-							title = warnings[0];
-							message = warnings[1];
-							icon = SWT.ICON_ERROR;
-							
-						}
-						else if (e instanceof SAXException || e instanceof ParserConfigurationException) {
-							
-							title = Messages.get("error.title");
-							message = Messages.get("gde2.missing", AppPaths.MESSAGE_GDE2_XSD, e.getMessage());
-							icon = SWT.ICON_ERROR;
-							
-						}
-						else if (e instanceof SendMessageException) {
-							
-							SendMessageException sendE = (SendMessageException) e;
-							
-							switch(sendE.getResponse().getErrorType()) {
-							case NON_DP_USER:
-								
-								title = Messages.get("error.title");
-								message = Messages.get("account.incomplete");
-								icon = SWT.ICON_ERROR;
-
-								break;
-								
-							case USER_WITHOUT_ORG:
-								
-								title = Messages.get("error.title");
-								message = Messages.get("account.incorrect");
-								icon = SWT.ICON_ERROR;
-								
-								break;
-								
-							default:
-								
-								title = Messages.get("error.title");
-								message = Messages.get("send.message.failed", sendE.getErrorMessage());
-								icon = SWT.ICON_ERROR;
-								break;
-							}
-							
-						}
-						else if (e instanceof ReportException) {
-							
-							title = Messages.get("error.title");
-							message = Messages.get("send.failed.no.senderId", e.getMessage());
-							icon = SWT.ICON_ERROR;
-						}
-						else {
-							StringBuilder sb = new StringBuilder();
-							for (StackTraceElement ste : e.getStackTrace()) {
-						        sb.append("\n\tat ");
-						        sb.append(ste);
-						    }
-						    String trace = sb.toString();
-						    
-						    message = Messages.get("generic.error", trace);
-							
-							title = Messages.get("error.title");
-						}
-						
-						Warnings.warnUser(shell, title, message, icon);
+						manageException(e, ReportAction.SEND);
 					}
 				});
 			}
@@ -379,46 +261,28 @@ public class ReportActions {
 	 * @param shell
 	 * @param operation
 	 * @return
+	 * @throws UnsupportedReportActionException 
 	 */
-	public boolean showExportWarning(Shell shell, ReportSendOperation operation) {
+	public boolean showSendWarning(Shell shell, ReportSendOperation operation) 
+			throws UnsupportedReportActionException {
 		
 		boolean goOn = true;
-		
-		String title = null;
-		String message = null;
-		int style = SWT.ICON_ERROR;
-		boolean needConfirmation = false;
 		
 		// new dataset
 		if (operation.getStatus() == null)
 			return true;
-		
-		String datasetId = operation.getDataset().getId();
-		
+
 		switch(operation.getStatus()) {
 		case ACCEPTED_DWH:
-			title = Messages.get("error.title");
-			message = Messages.get("send.warning.acc.dwh", datasetId);
-			goOn = false;
-			break;
 		case SUBMITTED:
-			title = Messages.get("error.title");
-			message = Messages.get("send.warning.submitted", datasetId);
-			goOn = false;
-			break;
 		case PROCESSING:
-			title = Messages.get("error.title");
-			message = Messages.get("send.warning.processing", datasetId);
-			goOn = false;
-			break;
+			throw new UnsupportedReportActionException(operation);
+
 		case REJECTED_EDITABLE:
 		case VALID:
 		case VALID_WITH_WARNINGS:
-			
-			title = Messages.get("warning.title");
-			message = Messages.get("send.warning.replace", datasetId, operation.getStatus().getLabel());
-			style = SWT.YES | SWT.NO | SWT.ICON_WARNING;
-			needConfirmation = true;
+			// replace
+			goOn = askReplaceConfirmation(operation);
 			break;
 		case REJECTED:
 		case DELETED:
@@ -427,24 +291,43 @@ public class ReportActions {
 
 			break;
 		default:
-			title = Messages.get("error.title");
-			message = Messages.get("send.error.acc.dcf");
-			goOn = false;
-			break;
-		}
-		
-		if (title != null && message != null) {
-			
-			int val = Warnings.warnUser(shell, title, message, style);
-			
-			// if the caller need confirmation
-			if (needConfirmation) {
-				
-				goOn = val == SWT.YES;
-			}
+			throw new UnsupportedReportActionException(operation);
 		}
 		
 		// default answer is no
 		return goOn;
 	}
+	
+	/**
+	 * Ask to the user confirmation for a generic action.
+	 * @param action
+	 * @return
+	 */
+	public abstract boolean askConfirmation(ReportAction action);
+	
+	/**
+	 * Ask confirmation for sending to the test data collection
+	 * @return
+	 */
+	public abstract boolean askTestDataCollectionConfirmation(Report report);
+	
+	/**
+	 * Ask confirmation for replacing an existing dataset with a send operation
+	 * @param sendOp
+	 * @return
+	 */
+	public abstract boolean askReplaceConfirmation(ReportSendOperation sendOp);
+	
+	/**
+	 * Called if an exception occurred
+	 * @param e
+	 * @param action
+	 */
+	public abstract void manageException(Exception e, ReportAction action);
+	
+	/**
+	 * Called if a process is finished
+	 * @param opType
+	 */
+	public abstract void end(ReportAction action);
 }

@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.io.FileUtils;
+
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import xlsx_reader.TableSchema;
@@ -63,15 +65,15 @@ public class Database {
 	 * Update the database with the last version available
 	 * @throws IOException
 	 * @throws SQLException
+	 * @throws DatabaseVersionException 
 	 */
-	public void update() throws IOException, SQLException {
+	public void update() throws IOException, SQLException, DatabaseVersionException {
 		
 		// get db version
 		String dbVersion = this.getVersion();
 
 		if (dbVersion == null) {
-			System.err.println("No database version found. Cannot check updates.");
-			return;
+			throw new DatabaseVersionException("No database version found. Cannot check updates.");
 		}
 
 		// get min required db version
@@ -196,6 +198,16 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Delete the database folder
+	 * @throws IOException
+	 */
+	public void delete() throws IOException {
+		this.shutdown();
+		File dir = new File(AppPaths.DB_FOLDER);
+		FileUtils.deleteDirectory(dir);
+	}
+	
 	/**
 	 * Shutdown the database
 	 * @throws SQLException
