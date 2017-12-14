@@ -2,16 +2,16 @@ package formula;
 
 public class AttributeElement {
 
-	private String name;
+	private String id;
 	private String value;
 	
-	public AttributeElement(String name, String value) {
-		this.name = name;
+	public AttributeElement(String id, String value) {
+		this.id = id;
 		this.value = value;
 	}
 	
-	public String getName() {
-		return name;
+	public String getId() {
+		return id;
 	}
 	public String getValue() {
 		return value;
@@ -19,6 +19,6 @@ public class AttributeElement {
 	
 	@Override
 	public String toString() {
-		return name + "=" + value;
+		return id + "=" + value;
 	}
 }

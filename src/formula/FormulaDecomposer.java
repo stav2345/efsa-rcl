@@ -1,11 +1,10 @@
 package formula;
 
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 /**
  * This class is used to decompose a compound field into its
@@ -25,343 +24,157 @@ import java.util.regex.Pattern;
  *
  */
 public class FormulaDecomposer {
-
-	private String formula;
-	private String value;
 	
-	public FormulaDecomposer(String formula, String value) {
-		newValue(formula, value);
-	}
-	
-	public void newValue(String formula, String value) {
-		this.formula = normalizeFormula(formula);
-		this.value = value;
-	}
-	
-	public enum CompoundType {
-		
-		FOODEX_CODE,
-		SIMPLE;
-		
-		private String separator;
-		private boolean attributes;
-		
-		public void setSeparator(String separator) {
-			this.separator = separator;
-		}
-		public String getSeparator() {
-			return separator;
-		}
-		public void setAttributes(boolean attributes) {
-			this.attributes = attributes;
-		}
-		public boolean isAttributes() {
-			return attributes;
-		}
-	}
-	
-	private String normalizeFormula(String formula) {
-		return formula.replace("|", "");
+	public enum AttributeIdentifier {
+		NAME_VALUE,
+		FACET_HEADER
 	}
 	
 	/**
-	 * Split a text a foodex code
-	 * @param text
+	 * get the base term of a foodex field
+	 * @param field
 	 * @return
+	 * @throws ParseException
 	 */
-	private List<AttributeElement> splitAsFoodex(String text, boolean attributes) {
+	public String getBaseTerm(String value) throws ParseException {
 		
-		List<AttributeElement> elements = new ArrayList<>();
+		String[] split = value.split("#");
+		String baseTerm = split[0];
+		return baseTerm;
+	}
+	
+	
+	/**
+	 * Split a foodex code
+	 * @param value the entire foodex code
+	 * @param identifier how the facets are identified (by attribute name or by facet header)
+	 * @return
+	 * @throws ParseException 
+	 */
+	public FoodexElement splitFoodex(String value, AttributeIdentifier identifier) throws ParseException {
 		
-		String[] split = text.split("#");
+		String[] split = value.split("#");
 		
-		AttributeElement baseTerm =  new AttributeElement(split[0], split[0]);
-		elements.add(baseTerm);
-
-		// if no facets are present return
-		if (split.length != 2) {
-			return elements;
+		// if single element, we have only the base term
+		if (split.length == 1) {
+			return new FoodexElement(value, new ArrayList<>());
 		}
 		
-		String facets = split[1];
-
-		// add also all the facets codes
-		elements.addAll(splitAsSimple(facets, "$", attributes));
+		String baseTerm = split[0];
+		String rawFacetList = split[1];
 		
-		return elements;
+		Collection<AttributeElement> facets = new ArrayList<>();
+		
+		if (identifier == AttributeIdentifier.NAME_VALUE)
+			facets = split(rawFacetList);
+		else
+			facets = splitFacetsByHeader(rawFacetList);
+		
+		return new FoodexElement(baseTerm, facets);
 	}
 	
 	/**
-	 * Split a text by a separator
-	 * @param text
+	 * Split a list of facets into facet header > facet code list
+	 * @param rawFacetList
+	 * @return
+	 * @throws ParseException 
+	 */
+	private Collection<AttributeElement> splitFacetsByHeader(String rawFacetList) throws ParseException {
+		
+		Collection<AttributeElement> out = new ArrayList<>();
+		
+		Collection<String> facets = splitList(rawFacetList, "$");
+	
+		for (String facet : facets) {
+			
+			String[] split = facet.split("\\.");
+			if (split.length != 2) {
+				throw new ParseException(facet, -1);
+			}
+			
+			String facetHeader = split[0];
+			String facetCode = split[1];
+			
+			// create a new facet attribute and return it
+			AttributeElement f = new AttributeElement(facetHeader, facetCode);
+			out.add(f);
+		}
+		
+		return out;
+	}
+	
+	
+	/**
+	 * Split a simple repeatable attribute field
+	 * as a=value1$b=value2$c=value3.
+	 * @param value
+	 * @return collection of attribute elements
+	 * @throws ParseException 
+	 */
+	public Collection<AttributeElement> split(String value) throws ParseException {
+		
+		Collection<AttributeElement> out = new ArrayList<>();
+		
+		Collection<String> attributes = splitList(value, "$");
+		
+		for (String attribute : attributes) {
+			
+			String[] split = attribute.split("=");
+			
+			if (split.length != 2) {
+				throw new ParseException(attribute, -1);
+			}
+			
+			// save attribute and value
+			out.add(new AttributeElement(split[0], split[1]));
+		}
+		
+		return out;
+	}
+	
+	
+	/**
+	 * Split a list of elements separated by a separator
+	 * @param value
 	 * @param separator
 	 * @return
 	 */
-	private List<AttributeElement> splitAsSimple(String text, String separator, boolean attributes) {
+	private Collection<String> splitList(String value, String separator) {
 		
-		List<AttributeElement> elements = new ArrayList<>();
+		Collection<String> out = new ArrayList<>();
 		
-		// add also the facets
-		StringTokenizer st = new StringTokenizer(text, "$");
+		StringTokenizer st = new StringTokenizer(value, separator);
+		
 		while (st.hasMoreTokens()) {
-			
-			String name;
-			String element = st.nextToken();
-
-			// if we have the attributes (name=value)
-			if (attributes) {
-				
-				String[] split = element.split("=");
-				
-				if (split.length != 2) {
-					System.err.println("Wrong simple split with attributes: " + element);
-					continue;
-				}
-				
-				name = split[0];
-				// get only the part after the =
-				element = split[1];
-			}
-			else {
-				name = element;
-			}
-			
-			elements.add(new AttributeElement(name, element));
+			out.add(st.nextToken());
 		}
 		
-		return elements;
-	}
-	
-	/**
-	 * Decompose a foodex code.
-	 * @param attributes if true it parses: baseTerm#attr1=facet1$attr2=facet2$... otherwise: baseTerm#facet1$facet2$...
-	 * @return
-	 * @throws FormulaException 
-	 */
-	public HashMap<String, String> decomposeFoodexCode(boolean attributes) throws FormulaException {
-		CompoundType type = CompoundType.FOODEX_CODE;
-		type.setAttributes(attributes);
-		return decompose(type);
-	}
-	
-	/**
-	 * Decompose a simple field separated by a separator
-	 * @param separator the separator between the fields
-	 * @param attributes if true it parses: attr1=value1$attr2=value2$... otherwise: value1$value2$...
-	 * @return
-	 * @throws FormulaException 
-	 */
-	public HashMap<String, String> decomposeSimpleField(String separator, boolean attributes) throws FormulaException {
-		CompoundType type = CompoundType.SIMPLE;
-		type.setSeparator(separator);
-		type.setAttributes(attributes);
-		return decompose(type);
-	}
-	
-	/**
-	 * Search the fields in a formula with relations
-	 * @param separator
-	 * @return
-	 * @throws FormulaException
-	 */
-	public HashMap<String, String> decomposeRelationFieldAsFoodex() throws FormulaException {
-		
-		HashMap<String, String> decomposedValues = new HashMap<>();
-		
-		// find all the attributes names
-		List<AttributeElement> elements = splitAsFoodex(value, false);
-		elements.remove(0);  // remove base term TODO fix this
-		
-		// search the relation that is related to the current element
-		String pattern = "";
-		
-		pattern = pattern + FormulaFinder.RELATION_REGEX;
-		
-		Pattern p = Pattern.compile(pattern);
-		Matcher m = p.matcher(formula);
-		
-		for (AttributeElement elem : elements) {
-			
-			if (m.find()) {
-
-				// get the match
-				String match = m.group();
-				
-				// get the relation formula
-				FormulaList list = FormulaFinder.findRelationFormulas(match);
-				
-				if (list.isEmpty()) {
-					continue;
-				}
-				
-				// get the relation formula
-				RelationFormula relF = (RelationFormula) list.get(0);
-				
-				// save in the parent column id the value of the element
-				decomposedValues.put(relF.getParentColumnId(), elem.getValue());
-			}
-		}
-		
-		return decomposedValues;
-	}
-	
-	/**
-	 * Search the fields in a formula with relations
-	 * @param separator
-	 * @return
-	 * @throws FormulaException
-	 */
-	public HashMap<String, String> decomposeRelationField(String separator, boolean attributes) throws FormulaException {
-		
-		HashMap<String, String> decomposedValues = new HashMap<>();
-		
-		// find all the attributes names
-		List<AttributeElement> elements = splitAsSimple(value, "$", attributes);
-		
-		for (AttributeElement elem : elements) {
-			
-			// search the relation that is related to the current element
-			String pattern = "";
-			
-			// if we have attributes search for the correct name
-			// otherwise use the normal order
-			if (attributes) {
-				pattern = elem.getName() + "\\s*=\\s*";
-			}
-			
-			pattern = pattern + FormulaFinder.RELATION_REGEX;
-			
-			Pattern p = Pattern.compile(pattern);
-			Matcher m = p.matcher(formula);
-
-			if (m.find()) {
-
-				// get the match
-				String match = m.group();
-				
-				// get the relation formula
-				FormulaList list = FormulaFinder.findRelationFormulas(match);
-				
-				if (list.isEmpty()) {
-					continue;
-				}
-				
-				// get the relation formula
-				RelationFormula relF = (RelationFormula) list.get(0);
-				
-				// save in the parent column id the value of the element
-				decomposedValues.put(relF.getParentColumnId(), elem.getValue());
-			}
-		}
-		
-		return decomposedValues;
-	}
-	
-	private HashMap<String, String> decompose(CompoundType type) throws FormulaException {
-		
-		if (type == CompoundType.SIMPLE && type.getSeparator() == null) {
-			System.err.println("No separator was found for CompoundType " 
-					+ CompoundType.SIMPLE + ". Aborting operation.");
-			return null;
-		}
-		
-		List<AttributeElement> formulaElements = new ArrayList<>();
-		List<AttributeElement> valueElements = new ArrayList<>();
-		switch (type) {
-		case FOODEX_CODE:
-			
-			// no need of formula if we have attributes
-			if (!type.isAttributes())
-				formulaElements = splitAsFoodex(formula, type.isAttributes());
-			
-			valueElements = splitAsFoodex(value, type.isAttributes());
-			break;
-		case SIMPLE:
-			
-			// no need of formula if we have attributes
-			if (!type.isAttributes())
-				formulaElements = splitAsSimple(formula, type.getSeparator(), type.isAttributes());
-			
-			valueElements = splitAsSimple(value, type.getSeparator(), type.isAttributes());
-			break;
-		default:
-			System.err.println("CompoundType not recognized " + type);
-			break;
-		}
-
-		// if we do not have attributes we need the same size for formulas and value elements
-		// otherwise we do not know which variable is related to which value
-		if(!type.isAttributes() && valueElements.size() != formulaElements.size()) {
-			throw new FormulaException("Cannot parse code: " 
-					+ value 
-					+ "; since it has a different number of elements than the formula: " 
-					+ formula);
-		}
-		
-		HashMap<String, String> decomposedValues = new HashMap<>();
-		
-		// for each value
-		for (int i = 0; i < valueElements.size(); ++i) {
-			
-			String columnId = null;
-			
-			// if no attributes, we need the formula to know which
-			// variable is where
-			if (!type.isAttributes()) {
-				// get the value formula
-				String currentFormula = formulaElements.get(i).getValue();
-				
-				// get the column id of the column formula (if it is that)
-				columnId = getColumnId(currentFormula);
-			}
-			else {
-				// if we have the attributes, simply get the value from the
-				// value string (we have the variables names there!)
-				columnId = valueElements.get(i).getName();
-			}
-			
-			// if we have a column id as formula
-			if (columnId != null) {
-				
-				// save the value in the current column id
-				String currentVal = valueElements.get(i).getValue();
-				decomposedValues.put(columnId, currentVal);
-			}
-		}
-		
-		return decomposedValues;
-	}
-	
-	/**
-	 * Get the column id of a column formula
-	 * @param text
-	 * @return
-	 */
-	private String getColumnId(String text) {
-		
-		try {
-			
-			FormulaList list = FormulaFinder.findColumnFormulas(text);
-			
-			if (list.isEmpty())
-				return null;
-			
-			ColumnFormula formula = (ColumnFormula) list.get(0);
-			
-			return formula.getColumnId();
-			
-		} catch (FormulaException e) {
-			e.printStackTrace();
-		}
-		
-		return null;
+		return out;
 	}
 
 	
-	public static void main(String[] args) throws FormulaException {
-		String formula2 = "A04MQ#RELATION{SummarizedInformation,source.code}$RELATION{CasesInformation,part.code}$RELATION{SummarizedInformation,prod.code}$RELATION{SummarizedInformation,animage.code}";
-		String value2 = "A04MQ#F01.A057B$F02.A06AM$F21.A07RV$F31.A16NK";
-		FormulaDecomposer d = new FormulaDecomposer(formula2, value2);
-		System.out.println(d.decomposeRelationFieldAsFoodex());
+	public static void main(String[] args) throws ParseException {
+		
+		
+		
+		String value = "A04MQ#F01.A057B$F02.A06AM$F21.A07RV$F31.A16NK";
+		
+		System.out.println("Foodex code with facet headers: " + value);
+		
+		FormulaDecomposer d = new FormulaDecomposer();
+		FoodexElement a = d.splitFoodex(value, AttributeIdentifier.FACET_HEADER);
+		System.out.println("BASETERM: " + a.getBaseTerm());
+		System.out.println("FACETS: " + a.getFacetList());
+		
+		value = "a=fjaijd$b=iajhiaj";
+		System.out.println("Simple attribute name/value: " + value);
+		System.out.println("ATTRIBUTES: " + d.split(value));
+
+		value = "A04MQ#allele1=A057B$allele2=19KMO8";
+		System.out.println("Foodex code with attributes: " + value);
+		
+		FoodexElement code = d.splitFoodex(value, AttributeIdentifier.NAME_VALUE);
+		System.out.println("BASETERM: " + code.getBaseTerm());
+		System.out.println("FACETS: " + code.getFacetList());
 	}
 }

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,8 +102,10 @@ public abstract class ReportImporter {
 	 * @throws IOException
 	 * @throws FormulaException 
 	 * @throws NoAttachmentException 
+	 * @throws ParseException 
 	 */
-	public void importReport() throws MySOAPException, XMLStreamException, IOException, FormulaException, NoAttachmentException {
+	public void importReport() throws MySOAPException, XMLStreamException, IOException, 
+		FormulaException, NoAttachmentException, ParseException {
 		
 		System.out.println("Report downloader started");
 		
@@ -257,8 +260,9 @@ public abstract class ReportImporter {
 	 * @throws IOException 
 	 * @throws XMLStreamException 
 	 * @throws FormulaException 
+	 * @throws ParseException 
 	 */
-	private void createLocalReport() throws XMLStreamException, IOException, FormulaException {
+	private void createLocalReport() throws XMLStreamException, IOException, FormulaException, ParseException {
 		
 		DatasetComparisonDao dao = new DatasetComparisonDao();
 		List<DatasetComparison> list = dao.getAll();
@@ -341,5 +345,5 @@ public abstract class ReportImporter {
 	 * Import into the local database the row (depends on the data collection)
 	 * @param row
 	 */
-	public abstract void importDatasetRows(List<TableRow> row) throws FormulaException;
+	public abstract void importDatasetRows(List<TableRow> row) throws FormulaException, ParseException;
 }

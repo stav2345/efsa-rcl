@@ -99,7 +99,7 @@ public class DialogBuilder {
 		while (!stack.isEmpty()) {
 			
 			Control widget = stack.pop();
-			
+
 			Object widgetCode = widget.getData("code");
 			
 			if (widgetCode != null && widgetCode.equals(code)) {
@@ -197,6 +197,14 @@ public class DialogBuilder {
 		return addCompositeToComposite(code, null, layout, data);
 	}
 	
+	/**
+	 * 
+	 * @param code
+	 * @param compositeCode
+	 * @param layout
+	 * @param data
+	 * @return
+	 */
 	public DialogBuilder addCompositeToComposite(String code, String compositeCode, Layout layout, LayoutData data) {
 		
 		Composite parent;
@@ -287,7 +295,13 @@ public class DialogBuilder {
 	 * @param enabled
 	 */
 	public void setEnabled(String code, boolean enabled) {
-		getWidget(code).setEnabled(enabled);
+		
+		Control widget = getWidget(code);
+		
+		if (widget == null)
+			return;
+		
+		widget.setEnabled(enabled);
 	}
 	
 	/**

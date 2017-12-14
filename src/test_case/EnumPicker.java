@@ -1,9 +1,12 @@
 package test_case;
 
+import java.util.EnumSet;
+
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -12,28 +15,32 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Shell;
 
-import message_creator.OperationType;
-
 /**
  * Allow selecting an operation type
  * @author avonva
  *
  */
-public class ExportTypeDialog {
+public class EnumPicker<E extends Enum<E>> {
 
 	private Shell parent;
 	private Shell dialog;
-	private OperationType opType;
+	private Enum<E> selectedEnum;
+	private Enum<E> defaultValue;
+	private Class<E> enumerator;
 	
-	public ExportTypeDialog(Shell parent) {
+	public EnumPicker(Shell parent, Class<E> enumerator) {
 		this.parent = parent;
-		create();
+		this.enumerator = enumerator;
+	}
+	
+	public void setDefaultValue(Enum<E> defaultValue) {
+		this.defaultValue = defaultValue;
 	}
 	
 	private void create() {
 
 		this.dialog = new Shell(parent);
-		dialog.setText("Select operation type");
+		dialog.setText("Select value");
 		dialog.setLayout(new GridLayout(1,false));
 		
 		final ComboViewer c = new ComboViewer(dialog, SWT.READ_ONLY);
@@ -45,28 +52,36 @@ public class ExportTypeDialog {
 			@Override
 			public void dispose() {}
 			
+			@SuppressWarnings("unchecked")
 			@Override
 			public Object[] getElements(Object arg0) {
-				return (OperationType[]) arg0;
+				return ((EnumSet<E>) arg0).toArray();
 			}
 		});
 		
 		c.setLabelProvider(new LabelProvider() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public String getText(Object element) {
-				OperationType op = (OperationType) element;
-				return super.getText(op.getInternalOpType());
+				Enum<E> op = (Enum<E>) element;
+				return op.toString();
 			}
 		});
 		
-	    c.setInput(OperationType.values());
-	    c.getCombo().select(0);
+	    c.setInput(java.util.EnumSet.allOf(enumerator));
+	    
+	    // select the default value if set
+	    if (defaultValue != null)
+	    	c.setSelection(new StructuredSelection(defaultValue));
+	    else
+	    	c.getCombo().select(0);
 	    
 	    Button button = new Button(dialog, SWT.PUSH);
-	    button.setText("Export");
+	    button.setText("OK");
 	    
 	    button.addSelectionListener(new SelectionListener() {
 			
+			@SuppressWarnings("unchecked")
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				
@@ -74,7 +89,7 @@ public class ExportTypeDialog {
 					return;
 				
 				// get the operation type selected
-				opType = (OperationType) ((IStructuredSelection) c.getSelection()).getFirstElement();
+				selectedEnum = (Enum<E>) ((IStructuredSelection) c.getSelection()).getFirstElement();
 				
 				dialog.close();
 			}
@@ -88,6 +103,8 @@ public class ExportTypeDialog {
 	
 	public void open() {
 		
+		create();
+		
 		dialog.open();
 		
 		// Event loop
@@ -97,7 +114,7 @@ public class ExportTypeDialog {
 		}
 	}
 	
-	public OperationType getSelectedOp() {
-		return this.opType;
+	public Enum<E> getSelection() {
+		return this.selectedEnum;
 	}
 }
