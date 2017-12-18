@@ -174,8 +174,8 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			break;
 		default:
 			opType = OperationType.NOT_SUPPORTED;
-			throw new ReportException("No send operation for status " 
-					+ status + " is supported");
+			//throw new ReportException("No send operation for status " 
+			//		+ status + " is supported");
 		}
 		
 		ReportSendOperation operation = new ReportSendOperation(dataset, opType);
@@ -196,23 +196,19 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		// check if the Report is in the DCF
 		GetDatasetList request = new GetDatasetList(PropertiesReader
 				.getDataCollectionCode(this.getYear()));
-
-		String senderDatasetId = this.getSenderId();
 		
-		// add also the version to match correctly the dataset sender id
-		// but if we have the baseline use just the sender id
-		if (senderDatasetId != null && !this.getVersion().isEmpty()) {
-			senderDatasetId = TableVersion.mergeNameAndVersion(senderDatasetId, 
-					this.getVersion());
-		}
+		String senderDatasetId = this.getSenderId();
 		
 		if (senderDatasetId == null) {
 			throw new ReportException("Cannot retrieve the report sender id for " + this);
 		}
 
 		DatasetList<Dataset> datasets = request.getList();
+		
+		System.out.println(datasets);
+		System.out.println("Filtering by " + senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
 
-		return datasets.filterBySenderId(senderDatasetId);
+		return datasets.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
 	}
 	
 	/**
@@ -227,11 +223,13 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 
 		DatasetList<Dataset> datasets = getDatasets();
 
+		System.out.println(datasets);
+		
+		datasets = datasets.filterOldVersions();
+		
 		if(datasets.isEmpty())
 			return null;
-		
-		//System.err.println("DEBUG return instead the first dataset encountered");
-		//return datasets.filterByDatasetId("10447").get(0);
+
 		return datasets.get(0);
 	}
 	
@@ -436,34 +434,28 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		// get the dataset related to the report from the
 		// GetDatasetList request
 		Dataset dataset = this.getDataset();
-
+		
 		// if not dataset is retrieved
 		if (dataset == null) {
 			return this.getStatus();
 		}
-		
+
 		// if equal, ok
 		if (dataset.getStatus() == this.getStatus())
 			return this.getStatus();
 		
 		// if the report is submitted
-		if (this.getStatus() == DatasetStatus.SUBMITTED) {
+		if (this.getStatus() == DatasetStatus.SUBMITTED 
+				&& (dataset.getStatus() == DatasetStatus.ACCEPTED_DWH 
+					|| dataset.getStatus() == DatasetStatus.REJECTED_EDITABLE)) {
 			
-			// and dataset is accepted dwh or rejected editable
-			switch(dataset.getStatus()) {
-			case ACCEPTED_DWH:
-			case REJECTED_EDITABLE:
-				// update local report status with the dcf status
-				this.setStatus(dataset.getStatus());
-				break;
-			default:
-				break;
-			}
+			this.setStatus(dataset.getStatus());
+			this.update();
+
 		}
 		else {
-			
+	
 			// if not in status submitted
-			
 			switch(dataset.getStatus()) {
 			// if deleted/rejected then make the report editable
 			case DELETED:
@@ -471,12 +463,14 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 				
 				// put the report in draft (status automatically changed)
 				this.makeEditable();
-				break;
+				return dataset.getStatus();
+				//break;
 				
 			// otherwise inconsistent status
 			default:
 				break;
 			}
+			return dataset.getStatus();
 		}
 		
 		return this.getStatus();
@@ -487,6 +481,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 */
 	public void makeEditable() {
 		this.setStatus(DatasetStatus.DRAFT);
+		this.update();
 	}
 	
 	/**

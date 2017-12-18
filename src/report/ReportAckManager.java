@@ -235,7 +235,7 @@ public class ReportAckManager {
 
 			DatasetStatus oldStatus = report.getStatus();
 			DatasetStatus newStatus = report.alignStatusWithDCF();
-
+			
 			// if we have the same status then ok stop
 			// we have the report updated
 			if (oldStatus == newStatus) {
@@ -246,20 +246,13 @@ public class ReportAckManager {
 
 			// if the report was in status submitted
 			// and in dcf ACCEPTED_DWH or REJECTED_EDITABLE
-			else if (oldStatus == DatasetStatus.SUBMITTED) {
+			else if (oldStatus == DatasetStatus.SUBMITTED && 
+					(newStatus == DatasetStatus.ACCEPTED_DWH 
+						|| newStatus == DatasetStatus.REJECTED_EDITABLE)) {
 
-				// and dataset is accepted dwh or rejected editable
-				switch(newStatus) {
-				case ACCEPTED_DWH:
-				case REJECTED_EDITABLE:
-
-					title = Messages.get("success.title");
-					message = Messages.get("refresh.status.success", newStatus.getLabel());
-					style = SWT.ICON_INFORMATION;
-					break;
-				default:
-					break;
-				}
+				title = Messages.get("success.title");
+				message = Messages.get("refresh.status.success", newStatus.getLabel());
+				style = SWT.ICON_INFORMATION;
 			}
 			else {
 

@@ -111,7 +111,7 @@ public class DatabaseUpdater {
 				// the constraint in the database
 				if (oldCol.isForeignKey()) {
 					
-					System.out.println("Removing foreing key constraint " + oldCol.getId());
+					System.out.println("Removing foreign key constraint " + oldCol.getId());
 					
 					// delete foreign key constraint
 					removeForeignKey(oldTable, oldCol);
@@ -155,7 +155,7 @@ public class DatabaseUpdater {
 
 		// if a foreign key was removed, remove it from the db
 		if (oldCol.isForeignKey() && !newCol.isForeignKey()) {
-			System.out.println("Removing foreing key constraint " + oldCol.getId());
+			System.out.println("Removing foreign key constraint " + oldCol.getId());
 			removeForeignKey(table, oldCol);
 		}
 		

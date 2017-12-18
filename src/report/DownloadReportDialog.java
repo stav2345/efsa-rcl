@@ -94,7 +94,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 			try {
 				
 				DatasetList<Dataset> datasets = req.getList();
-
+				
 				allDatasets.addAll(datasets.getDownloadableDatasets(validSenderIdPattern));
 				downloadableDatasets.addAll(
 						datasets.getDownloadableDatasetsLatestVersions(validSenderIdPattern));

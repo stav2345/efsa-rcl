@@ -187,6 +187,7 @@ public abstract class ReportActions {
 					public void run() {
 						
 						try {
+
 							boolean goOn = showSendWarning(shell, opType);
 							
 							if (goOn) {
@@ -267,7 +268,7 @@ public abstract class ReportActions {
 			throws UnsupportedReportActionException {
 		
 		boolean goOn = true;
-		
+
 		// new dataset
 		if (operation.getStatus() == null)
 			return true;
