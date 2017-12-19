@@ -30,7 +30,7 @@ public class AppPaths {
 	public static final String MESSAGE_CONFIG_INTERNAL_OP_TYPE = "internalOpType";
 	
 	// the catalogue of months
-	public static final String YEARS_LIST = "yearsList";
+	public static final String YEARS_LIST = "reportYearsList";
 	public static final String MONTHS_LIST = "monthsList";
 	
 	public static final String CHILDREN_CONTAIN_ERRORS_COL = "childrenContainErrors";
