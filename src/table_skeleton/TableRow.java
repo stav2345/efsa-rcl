@@ -336,20 +336,23 @@ public class TableRow implements Checkable {
 			return;
 		
 		TableColumnValue sel = new TableColumnValue();
-
 		FormulaSolver solver = new FormulaSolver(this);
-		Formula code = null;
+
 		try {
-			code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
-			sel.setCode(code.getSolvedFormula());
+			Formula label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
+			sel.setLabel(label.getSolvedFormula());
 		} catch (FormulaException e) {
 			e.printStackTrace();
 		}
-		
-		Formula label = null;
+
 		try {
-			label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
-			sel.setLabel(label.getSolvedFormula());
+			Formula code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
+			
+			if (col.getPicklistKey() == null || col.getPicklistKey().isEmpty())
+				sel.setCode(code.getSolvedFormula());
+			else
+				sel = getTableColumnValue(code.getSolvedFormula(), col.getPicklistKey());
+			
 		} catch (FormulaException e) {
 			e.printStackTrace();
 		}
@@ -483,6 +486,12 @@ public class TableRow implements Checkable {
 		return status;
 	}
 	
+	/**
+	 * 
+	 * @param code
+	 * @param picklistKey
+	 * @return
+	 */
 	public TableColumnValue getTableColumnValue(String code, String picklistKey) {
 		
 		Selection sel = XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code);
