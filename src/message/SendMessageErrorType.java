@@ -1,9 +1,10 @@
 package message;
 
 public enum SendMessageErrorType {
-	NONE(""),
+	NONE("------NONE------"),  // not put an empty string, otherwise the contains will match every string with this
 	NON_DP_USER("No valid Account found for user with id"),
-	USER_WITHOUT_ORG("java.lang.NullPointerException");
+	USER_WRONG_ORG("The user is not granted to transmit data on behalf of the specified senderOrgCode:"),
+	USER_WRONG_PROFILE("java.lang.NullPointerException");
 	
 	private String errorMessage;
 	
@@ -34,13 +35,13 @@ public enum SendMessageErrorType {
 		if (text == null)
 			return NONE;
 		
-		text = text.toLowerCase();
+		String loweredText = text.toLowerCase();
 		
 		for (SendMessageErrorType b : SendMessageErrorType.values()) {
-			if (b.errorMessage.toLowerCase().contains(text)) {
+			if (loweredText.contains(b.errorMessage.toLowerCase())) {
 				return b;
 			}
 		}
-		return null;
+		return NONE;
 	}
 }

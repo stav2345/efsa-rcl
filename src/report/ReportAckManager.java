@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Shell;
 
 import acknowledge.Ack;
 import acknowledge.AckLog;
-import acknowledge.OpResError;
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import dataset.DatasetStatus;
@@ -61,24 +60,44 @@ public class ReportAckManager {
 
 		// if ack is ready then check if the report status
 		// is the same as the one in the get dataset list
-		if (ack.isReady() && ack.getLog().isOk()) {
+		if (ack.isReady()) {
 			
 			AckLog log = ack.getLog();
+			
+			// if TRXOK
+			if (log.isOk()) {
 
-			// if no dataset retrieved for the current report
-			if (!log.getDatasetStatus().existsInDCF()) {
+				// if no dataset retrieved for the current report
+				if (!log.getDatasetStatus().existsInDCF()) {
 
-				// warn the user, the ack cannot be retrieved yet
-				String title = Messages.get("success.title");
-				String message = Messages.get("ack.invalid", 
-						log.getDatasetStatus().getLabel());
-				int style = SWT.ICON_ERROR;
-				Warnings.warnUser(shell, title, message, style);
+					// warn the user, the ack cannot be retrieved yet
+					String title = Messages.get("success.title");
+					String message = Messages.get("ack.invalid", 
+							log.getDatasetStatus().getLabel());
+					int style = SWT.ICON_ERROR;
+					Warnings.warnUser(shell, title, message, style);
 
-				return;
+					return;
+				}
+
+				alignReportStatusWithDCF(listener);
 			}
-
-			alignReportStatusWithDCF(listener);
+			else {
+			
+				// errors
+				if (log.hasErrors()) {
+					
+					System.err.println(log.getOpResError());
+					System.err.println(log.getOpResLog());
+					
+					String[] warning = Warnings.getAckOperationWarning(log.getOpResError());
+					Warnings.warnUser(shell, warning[0], warning[1]);
+				}
+				else {
+					// not reachable
+					System.err.println("Wrong ack structure. The log is TRXKO but no errors found!");
+				}
+			}
 		}
 		else {
 
@@ -165,29 +184,33 @@ public class ReportAckManager {
 			else {
 
 				if (ack.getLog() != null) {
-					OpResError error = ack.getLog().getOpResError();
-					switch(error) {
-					case NOT_EXISTING_DC:
-						message = Messages.get("dc.not.valid", 
-								PropertiesReader.getDataCollectionCode(),
-								PropertiesReader.getSupportEmail());
-						errorOccurred = true;
-						break;
-					case USER_NOT_AUTHORIZED:
-						message = Messages.get("account.unauthorized", 
-								PropertiesReader.getDataCollectionCode(),
-								PropertiesReader.getSupportEmail());
-						errorOccurred = true;
-						break;
-					default:
-						break;
+					
+					AckLog log = ack.getLog();
+					
+					if (!log.isOk()) {
+						// errors
+						if (log.hasErrors()) {
+							
+							System.err.println(log.getOpResError());
+							System.err.println(log.getOpResLog());
+							
+							String[] warning = Warnings.getAckOperationWarning(log.getOpResError());
+							title = warning[0];
+							message = warning[1];
+							errorOccurred = true;
+						}
+						else {
+							// not reachable
+							System.err.println("Wrong ack structure. The log is TRXKO but no errors found!");
+							errorOccurred = true;
+						}
 					}
 				}
 			}
 			
 			// update the report status if required
 			if(!errorOccurred && updateReportStatus) {
-				report.updateStatusWithAck();
+				report.updateStatusWithAck(ack);
 			}
 
 			// update the ui accordingly

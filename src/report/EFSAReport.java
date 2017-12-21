@@ -94,7 +94,7 @@ public interface EFSAReport extends IDataset {
 	 * @return
 	 * @throws MySOAPException
 	 */
-	public DatasetStatus updateStatusWithAck() throws MySOAPException;
+	public DatasetStatus updateStatusWithAck(Ack ack) throws MySOAPException;
 	
 	/**
 	 * Get all the datasets related to this report

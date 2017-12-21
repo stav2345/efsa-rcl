@@ -53,7 +53,9 @@ public class DatabaseStructureCreator {
 	 */
 	public String getAddNewColumnQuery(String tableName, TableColumn column) {
 
-		String colType = column.getType() == ColumnType.FOREIGNKEY ? "integer not null" : "varchar(1000)";
+		// cannot say not null, since if other rows are already inserted 
+		// they will get null as value and thus throwing an error
+		String colType = column.getType() == ColumnType.FOREIGNKEY ? "integer" : "varchar(1000)";
 		
 		String query = "ALTER TABLE APP." + tableName + " ADD " 
 				+ column.getId() + " " + colType + " ;";

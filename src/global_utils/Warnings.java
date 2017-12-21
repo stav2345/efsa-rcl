@@ -4,6 +4,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import acknowledge.OpResError;
+import app_config.PropertiesReader;
 import i18n_messages.Messages;
 import webservice.MySOAPException;
 import webservice.SOAPError;
@@ -44,6 +46,32 @@ public class Warnings {
 	    String trace = message + " " + sb.toString();
 	    
 	    return trace;
+	}
+	
+	public static String[] getAckOperationWarning(OpResError error) {
+
+		String title = Messages.get("error.title");
+		String message = null;
+		
+		switch(error) {
+		case NOT_EXISTING_DC:
+			message = Messages.get("dc.not.valid", 
+					PropertiesReader.getDataCollectionCode(),
+					PropertiesReader.getSupportEmail());
+			break;
+		case USER_NOT_AUTHORIZED:
+			message = Messages.get("account.unauthorized", 
+					PropertiesReader.getDataCollectionCode(),
+					PropertiesReader.getSupportEmail());
+			break;
+		default:
+			message = Messages.get("ack.general.error", 
+					error.toString(),
+					PropertiesReader.getSupportEmail());
+			break;
+		}
+			
+		return new String[] {title, message};
 	}
 	
 	public static String[] getSOAPWarning(MySOAPException e) {

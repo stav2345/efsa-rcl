@@ -332,9 +332,9 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		return ack;
 	}
 
-	public DatasetStatus updateStatusWithAck() throws MySOAPException {
+	public DatasetStatus updateStatusWithAck(Ack ack) throws MySOAPException {
 		
-		Ack ack = this.getAck();
+		//Ack ack = this.getAck();
 		
 		// if we have something in the ack
 		if (ack.isReady() && ack.getLog().isOk()) {

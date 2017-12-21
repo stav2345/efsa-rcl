@@ -97,10 +97,6 @@ public class SendMessage extends SOAPRequest {
 		TrxCode trxCode = extractTrxState(soapResponse);
 		String trxErr = extractTrxError(soapResponse);
 		
-		if (messageId == null || trxCode == null) {
-			throw new SOAPException("SendMessage: no messageId or trxCode was found");
-		}
-		
 		// create the response
 		MessageResponse messageResponse = new MessageResponse(messageId, trxCode, trxErr);
 		

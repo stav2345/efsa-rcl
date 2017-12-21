@@ -1,6 +1,8 @@
 package acknowledge;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -75,8 +77,12 @@ public class AckLog {
 	 * is {@link OkCode#KO}.
 	 * @return
 	 */
-	public String getOpResLog() {
-		return getFirstNodeText("opResLog");
+	public Collection<String> getOpResLog() {
+		return getNodesText("opResLog");
+	}
+	
+	public boolean hasErrors() {
+		return !getOpResLog().isEmpty();
 	}
 	
 	/**
@@ -85,12 +91,19 @@ public class AckLog {
 	 */
 	public OpResError getOpResError() {
 		
-		String error = getOpResLog();
+		Collection<String> errors = getOpResLog();
 		
-		if (error == null)
-			return OpResError.NONE;
+		OpResError error = OpResError.NONE;
 		
-		return OpResError.fromString(error);
+		for (String errorText : errors) {
+			
+			OpResError current = OpResError.fromString(errorText);
+			
+			if (current.priorTo(error))
+				error = current;
+		}
+		
+		return error;
 	}
 	
 	/**
@@ -113,6 +126,25 @@ public class AckLog {
 			return null;
 		
 		return DatasetStatus.fromString(code);
+	}
+	
+	/**
+	 * Get the text of the first encountered node with name
+	 * equal to {@code nodeName}.
+	 * @param nodeName
+	 * @return
+	 */
+	public Collection<String> getNodesText(String nodeName) {
+		
+		Collection<String> text = new ArrayList<>();
+		
+		NodeList nodes = log.getElementsByTagName(nodeName);
+		
+		for (int i = 0; i < nodes.getLength(); ++i) {
+			text.add(nodes.item(i).getTextContent());
+		}
+
+		return text;
 	}
 	
 	/**
