@@ -332,26 +332,35 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		return ack;
 	}
 
-	public DatasetStatus updateStatusWithAck(Ack ack) throws MySOAPException {
-		
-		//Ack ack = this.getAck();
+	public DatasetStatus updateStatusWithAck(Ack ack) {
 		
 		// if we have something in the ack
-		if (ack.isReady() && ack.getLog().isOk()) {
-
-			// save id
-			String datasetId = ack.getLog().getDatasetId();
-			this.setDatasetId(datasetId);
+		if (ack.isReady()) {
 			
-			// save status
-			DatasetStatus status = ack.getLog().getDatasetStatus();
-			this.setStatus(status);
-			
-			// permanently save data
-			this.update();
-			
-			System.out.println("Ack successful for message id " + this.getMessageId() + ". Retrieved datasetId=" 
-					+ datasetId + " with status=" + this.getStatus());
+			if (ack.getLog().isOk()) {
+				
+				// save id
+				String datasetId = ack.getLog().getDatasetId();
+				this.setDatasetId(datasetId);
+				
+				// save status
+				DatasetStatus status = ack.getLog().getDatasetStatus();
+				this.setStatus(status);
+				
+				// permanently save data
+				this.update();
+				
+				System.out.println("Ack successful for message id " + this.getMessageId() + ". Retrieved datasetId=" 
+						+ datasetId + " with status=" + this.getStatus());
+			}
+			else {
+				
+				// Reset the status with the previous if possible
+				if(this.getPreviousStatus() != null) {
+					this.setStatus(this.getPreviousStatus());
+					this.update();
+				}
+			}
 		}
 		
 		return this.getStatus();
@@ -403,11 +412,25 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	}
 	
 	public void setStatus(String status) {
+		this.put(AppPaths.REPORT_PREVIOUS_STATUS, this.getStatus().getLabel());
 		this.put(AppPaths.REPORT_STATUS, status);
 	}
 	
+	/**
+	 * Get the previous status of the dataset
+	 * @return
+	 */
+	public DatasetStatus getPreviousStatus() {
+		String status = getCode(AppPaths.REPORT_PREVIOUS_STATUS);
+		
+		if (status.isEmpty())
+			return null;
+		
+		return DatasetStatus.fromString(status);
+	}
+	
 	public void setStatus(DatasetStatus status) {
-		this.put(AppPaths.REPORT_STATUS, status.getStatus());
+		this.setStatus(status.getStatus());
 	}
 	
 	public String getYear() {

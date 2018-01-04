@@ -34,6 +34,17 @@ public class AckLog {
 	}
 	
 	/**
+	 * Get the data collection used for this message
+	 * @return
+	 */
+	public String getDCCode() {
+		
+		String code = getFirstNodeText("dcCode");
+
+		return code;
+	}
+	
+	/**
 	 * Get the message val res code
 	 * @return
 	 */

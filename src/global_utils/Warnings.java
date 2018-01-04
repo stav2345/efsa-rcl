@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import acknowledge.AckLog;
 import acknowledge.OpResError;
 import app_config.PropertiesReader;
 import i18n_messages.Messages;
@@ -48,20 +49,22 @@ public class Warnings {
 	    return trace;
 	}
 	
-	public static String[] getAckOperationWarning(OpResError error) {
+	public static String[] getAckOperationWarning(AckLog log) {
 
+		OpResError error = log.getOpResError();
+		
 		String title = Messages.get("error.title");
 		String message = null;
 		
 		switch(error) {
 		case NOT_EXISTING_DC:
 			message = Messages.get("dc.not.valid", 
-					PropertiesReader.getDataCollectionCode(),
+					log.getDCCode(),
 					PropertiesReader.getSupportEmail());
 			break;
 		case USER_NOT_AUTHORIZED:
 			message = Messages.get("account.unauthorized", 
-					PropertiesReader.getDataCollectionCode(),
+					log.getDCCode(),
 					PropertiesReader.getSupportEmail());
 			break;
 		default:

@@ -52,11 +52,25 @@ public class ReportAckManager {
 
 		// else if local status UPLOADED, SUBMISSION_SENT, REJECTION_SENT
 
-		// get the ack of the dataset
-		Ack ack = this.getAck(true, listener);
-
-		if (ack == null)  // error occurred
+		// if no connection return
+		Ack ack = null;
+		try {
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
+			ack = report.getAck();
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+		} catch (MySOAPException e) {
+			e.printStackTrace();
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+			Warnings.showSOAPWarning(shell, e);
 			return;
+		}
+
+		// if no ack return
+		if (ack == null) {
+			String message = Messages.get("ack.not.available");
+			Warnings.warnUser(shell, Messages.get("error.title"), message);
+			return;
+		}
 
 		// if ack is ready then check if the report status
 		// is the same as the one in the get dataset list
@@ -66,7 +80,14 @@ public class ReportAckManager {
 			
 			// if TRXOK
 			if (log.isOk()) {
-
+				
+				// update the report status if required
+				report.updateStatusWithAck(ack);
+				
+				// update the ui accordingly
+				if (listener != null)
+					listener.handleEvent(null);
+				
 				// if no dataset retrieved for the current report
 				if (!log.getDatasetStatus().existsInDCF()) {
 
@@ -90,7 +111,7 @@ public class ReportAckManager {
 					System.err.println(log.getOpResError());
 					System.err.println(log.getOpResLog());
 					
-					String[] warning = Warnings.getAckOperationWarning(log.getOpResError());
+					String[] warning = Warnings.getAckOperationWarning(log);
 					Warnings.warnUser(shell, warning[0], warning[1]);
 				}
 				else {
@@ -125,10 +146,25 @@ public class ReportAckManager {
 			return;
 		}
 		
-		Ack ack = this.getAck(false, null);
-		
-		if (ack == null || ack.getLog() == null)
+		// if no connection return
+		Ack ack = null;
+		try {
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
+			ack = report.getAck();
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+		} catch (MySOAPException e) {
+			e.printStackTrace();
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+			Warnings.showSOAPWarning(shell, e);
 			return;
+		}
+
+		// if no ack return
+		if (ack == null) {
+			String message = Messages.get("ack.not.available");
+			Warnings.warnUser(shell, Messages.get("error.title"), message);
+			return;
+		}
 		
 		// get the raw log to send the .xml to the browser
 		InputStream rawLog = ack.getLog().getRawLog();
@@ -155,88 +191,6 @@ public class ReportAckManager {
 		HtmlViewer viewer = new HtmlViewer();
 		viewer.open(targetFile);
 	}
-
-	/**
-	 * Get an acknowledge of the report
-	 * @param shell
-	 * @param report
-	 * @return
-	 */
-	public Ack getAck(boolean updateReportStatus, Listener updateListener) {
-
-		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-
-		boolean errorOccurred = false;
-		String title = Messages.get("error.title");
-		String message = null;
-		int style = SWT.ERROR;
-
-		Ack ack = null;
-
-		try {
-
-			ack = report.getAck();
-
-			if (ack == null) {
-				message = Messages.get("ack.not.available");
-				errorOccurred = true;
-			}
-			else {
-
-				if (ack.getLog() != null) {
-					
-					AckLog log = ack.getLog();
-					
-					if (!log.isOk()) {
-						// errors
-						if (log.hasErrors()) {
-							
-							System.err.println(log.getOpResError());
-							System.err.println(log.getOpResLog());
-							
-							String[] warning = Warnings.getAckOperationWarning(log.getOpResError());
-							title = warning[0];
-							message = warning[1];
-							errorOccurred = true;
-						}
-						else {
-							// not reachable
-							System.err.println("Wrong ack structure. The log is TRXKO but no errors found!");
-							errorOccurred = true;
-						}
-					}
-				}
-			}
-			
-			// update the report status if required
-			if(!errorOccurred && updateReportStatus) {
-				report.updateStatusWithAck(ack);
-			}
-
-			// update the ui accordingly
-			if (!errorOccurred && updateListener != null)
-				updateListener.handleEvent(null);
-
-		} catch (MySOAPException e) {
-			e.printStackTrace();
-			String[] warning = Warnings.getSOAPWarning(e);
-			title = warning[0];
-			message = warning[1];
-			style = SWT.ERROR;
-		}
-		finally {
-			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-		}
-
-		// if a message needs to be shown
-		if (message != null) {
-			Warnings.warnUser(shell, title, message, style);
-			return null;
-		}
-
-		return ack;
-	}
-
 
 	/**
 	 * Update the report status with the dataset contained in the DCF
