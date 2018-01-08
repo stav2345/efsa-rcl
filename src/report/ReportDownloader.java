@@ -6,8 +6,8 @@ import amend_manager.ReportImporter;
 import dataset.Dataset;
 import dataset.DatasetList;
 import i18n_messages.Messages;
-import progress.ProgressBarDialog;
-import progress.ProgressListener;
+import progress_bar.FormProgressBar;
+import progress_bar.ProgressListener;
 
 /**
  * Download a report into the database
@@ -54,13 +54,14 @@ public abstract class ReportDownloader {
 		// import report
 		
 		// get all the versions of the dataset that are present in the DCF
-		DatasetList<Dataset> allVersions = dialog.getSelectedDatasetVersions();
+		DatasetList allVersions = dialog.getSelectedDatasetVersions();
 
 		// download and import the dataset
 		ReportImporter downloader = this.getImporter(allVersions);
 		ReportImporterThread thread = new ReportImporterThread(downloader);
 		
-		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, Messages.get("download.progress.title"));
+		FormProgressBar progressBarDialog = new FormProgressBar(shell, 
+				Messages.get("download.progress.title"));
 		progressBarDialog.open();
 		
 		thread.setProgressListener(new ProgressListener() {
@@ -88,7 +89,10 @@ public abstract class ReportDownloader {
 			}
 
 			@Override
-			public void exceptionThrown(Exception e) {
+			public void progressChanged(double currentProgress, double maxProgress) {}
+
+			@Override
+			public void progressStopped(Exception e) {
 
 				// show warning
 				shell.getDisplay().syncExec(new Runnable() {
@@ -115,7 +119,7 @@ public abstract class ReportDownloader {
 	 * amendments using all the report versions)
 	 * @param allVersions
 	 */
-	public abstract ReportImporter getImporter(DatasetList<Dataset> allVersions);
+	public abstract ReportImporter getImporter(DatasetList allVersions);
 	
 	/**
 	 * Get the dialog which should be shown to select the dataset to download.

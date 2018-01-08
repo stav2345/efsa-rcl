@@ -8,32 +8,31 @@ import javax.xml.soap.SOAPException;
 
 import org.xml.sax.SAXException;
 
-import acknowledge.Ack;
+import ack.DcfAck;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import dataset.Dataset;
 import dataset.DatasetList;
-import dataset.DatasetStatus;
-import dataset.IDataset;
+import dataset.RCLDatasetStatus;
 import message.MessageConfigBuilder;
 import message.MessageResponse;
 import message.SendMessageException;
 import message_creator.OperationType;
-import progress.ProgressListener;
+import progress_bar.ProgressListener;
+import soap.GetAck;
+import soap.GetDatasetList;
+import soap.MySOAPException;
+import soap.SendMessage;
 import table_database.TableDao;
 import table_relations.Relation;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
-import webservice.GetAck;
-import webservice.GetDatasetList;
-import webservice.MySOAPException;
-import webservice.SendMessage;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
-public abstract class Report extends TableRow implements EFSAReport, IDataset {
+public abstract class Report extends TableRow implements EFSAReport {
 
 	public Report(TableRow row) {
 		super(row);
@@ -103,17 +102,17 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			this.setMessageId(response.getMessageId());
 			
 			// update report status based on the request operation type
-			DatasetStatus newStatus;
+			RCLDatasetStatus newStatus;
 			switch(opType) {
 			case INSERT:
 			case REPLACE:
-				newStatus = DatasetStatus.UPLOADED;
+				newStatus = RCLDatasetStatus.UPLOADED;
 				break;
 			case REJECT:
-				newStatus = DatasetStatus.REJECTION_SENT;
+				newStatus = RCLDatasetStatus.REJECTION_SENT;
 				break;
 			case SUBMIT:
-				newStatus = DatasetStatus.SUBMISSION_SENT;
+				newStatus = RCLDatasetStatus.SUBMISSION_SENT;
 				break;
 			default:
 				newStatus = null;
@@ -128,7 +127,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		else {
 
 			// set upload failed status if message is not valid
-			this.setStatus(DatasetStatus.UPLOAD_FAILED);
+			this.setStatus(RCLDatasetStatus.UPLOAD_FAILED);
 			this.update();
 
 			throw new SendMessageException(response);
@@ -158,7 +157,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		}
 		
 		// otherwise we check the dataset status
-		DatasetStatus status = dataset.getStatus();
+		RCLDatasetStatus status = dataset.getRCLStatus();
 		
 		System.out.println("Found dataset in DCF in status " + status);
 		
@@ -191,11 +190,13 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * @throws SOAPException
 	 * @throws ReportException 
 	 */
-	public DatasetList<Dataset> getDatasets() throws MySOAPException, ReportException {
+	public DatasetList getDatasets() throws MySOAPException, ReportException {
+		
+		DatasetList output = new DatasetList();
 		
 		// check if the Report is in the DCF
 		GetDatasetList request = new GetDatasetList(PropertiesReader
-				.getDataCollectionCode(this.getYear()));
+				.getDataCollectionCode(this.getYear()), output);
 		
 		String senderDatasetId = this.getSenderId();
 		
@@ -203,12 +204,12 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			throw new ReportException("Cannot retrieve the report sender id for " + this);
 		}
 
-		DatasetList<Dataset> datasets = request.getList();
+		request.getList();
 		
-		System.out.println(datasets);
+		System.out.println(output);
 		System.out.println("Filtering by " + senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
 
-		return datasets.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
+		return output.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
 	}
 	
 	/**
@@ -216,21 +217,19 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * be returned. If you need all the datasets related to this report use
 	 * {@link #getDatasets()}.
 	 * @return
-	 * @throws MySOAPException
 	 * @throws ReportException
+	 * @throws MySOAPException 
 	 */
-	public Dataset getDataset() throws MySOAPException, ReportException {
+	public Dataset getDataset() throws ReportException, MySOAPException {
 
-		DatasetList<Dataset> datasets = getDatasets();
-
-		System.out.println(datasets);
+		DatasetList datasets = getDatasets();
 		
 		datasets = datasets.filterOldVersions();
 		
 		if(datasets.isEmpty())
 			return null;
 
-		return datasets.get(0);
+		return (Dataset) datasets.get(0);
 	}
 	
 	public File export(MessageConfigBuilder messageConfig) 
@@ -314,7 +313,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * @return
 	 * @throws SOAPException
 	 */
-	public Ack getAck() throws MySOAPException {
+	public DcfAck getAck() throws MySOAPException {
 
 		// make get ack request
 		String messageId = this.getMessageId();
@@ -327,13 +326,13 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		GetAck req = new GetAck(messageId);
 		
 		// get state
-		Ack ack = req.getAck();
+		DcfAck ack = req.getAck();
 		
 		return ack;
 	}
 
-	public DatasetStatus updateStatusWithAck(Ack ack) {
-		
+	public RCLDatasetStatus updateStatusWithAck(DcfAck ack) {
+
 		// if we have something in the ack
 		if (ack.isReady()) {
 			
@@ -344,14 +343,16 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 				this.setDatasetId(datasetId);
 				
 				// save status
-				DatasetStatus status = ack.getLog().getDatasetStatus();
+				RCLDatasetStatus status = RCLDatasetStatus.fromDcfStatus(
+						ack.getLog().getDatasetStatus());
+				
 				this.setStatus(status);
 				
 				// permanently save data
 				this.update();
 				
 				System.out.println("Ack successful for message id " + this.getMessageId() + ". Retrieved datasetId=" 
-						+ datasetId + " with status=" + this.getStatus());
+						+ datasetId + " with status=" + this.getRCLStatus());
 			}
 			else {
 				
@@ -363,7 +364,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 			}
 		}
 		
-		return this.getStatus();
+		return this.getRCLStatus();
 	}
 
 	public String getMessageId() {
@@ -406,13 +407,13 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * Get the status of the dataset attached to the report
 	 * @return
 	 */
-	public DatasetStatus getStatus() {
+	public RCLDatasetStatus getRCLStatus() {
 		String status = getCode(AppPaths.REPORT_STATUS);
-		return DatasetStatus.fromString(status);
+		return RCLDatasetStatus.fromString(status);
 	}
 	
 	public void setStatus(String status) {
-		this.put(AppPaths.REPORT_PREVIOUS_STATUS, this.getStatus().getLabel());
+		this.put(AppPaths.REPORT_PREVIOUS_STATUS, this.getRCLStatus().getLabel());
 		this.put(AppPaths.REPORT_STATUS, status);
 	}
 	
@@ -420,16 +421,16 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * Get the previous status of the dataset
 	 * @return
 	 */
-	public DatasetStatus getPreviousStatus() {
+	public RCLDatasetStatus getPreviousStatus() {
 		String status = getCode(AppPaths.REPORT_PREVIOUS_STATUS);
 		
 		if (status.isEmpty())
 			return null;
 		
-		return DatasetStatus.fromString(status);
+		return RCLDatasetStatus.fromString(status);
 	}
 	
-	public void setStatus(DatasetStatus status) {
+	public void setStatus(RCLDatasetStatus status) {
 		this.setStatus(status.getStatus());
 	}
 	
@@ -452,7 +453,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	}
 	
 	@Override
-	public DatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException {
+	public RCLDatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException {
 		
 		// get the dataset related to the report from the
 		// GetDatasetList request
@@ -460,50 +461,50 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 		
 		// if not dataset is retrieved
 		if (dataset == null) {
-			return this.getStatus();
+			return this.getRCLStatus();
 		}
 
 		// if equal, ok
-		if (dataset.getStatus() == this.getStatus())
-			return this.getStatus();
+		if (dataset.getRCLStatus() == this.getRCLStatus())
+			return this.getRCLStatus();
 		
 		// if the report is submitted
-		if (this.getStatus() == DatasetStatus.SUBMITTED 
-				&& (dataset.getStatus() == DatasetStatus.ACCEPTED_DWH 
-					|| dataset.getStatus() == DatasetStatus.REJECTED_EDITABLE)) {
+		if (this.getRCLStatus() == RCLDatasetStatus.SUBMITTED 
+				&& (dataset.getRCLStatus() == RCLDatasetStatus.ACCEPTED_DWH 
+					|| dataset.getRCLStatus() == RCLDatasetStatus.REJECTED_EDITABLE)) {
 			
-			this.setStatus(dataset.getStatus());
+			this.setStatus(dataset.getRCLStatus());
 			this.update();
 
 		}
 		else {
 	
 			// if not in status submitted
-			switch(dataset.getStatus()) {
+			switch(dataset.getRCLStatus()) {
 			// if deleted/rejected then make the report editable
 			case DELETED:
 			case REJECTED:
 				
 				// put the report in draft (status automatically changed)
 				this.makeEditable();
-				return dataset.getStatus();
+				return dataset.getRCLStatus();
 				//break;
 				
 			// otherwise inconsistent status
 			default:
 				break;
 			}
-			return dataset.getStatus();
+			return dataset.getRCLStatus();
 		}
 		
-		return this.getStatus();
+		return this.getRCLStatus();
 	}
 	
 	/**
 	 * Force the report to be editable
 	 */
 	public void makeEditable() {
-		this.setStatus(DatasetStatus.DRAFT);
+		this.setStatus(RCLDatasetStatus.DRAFT);
 		this.update();
 	}
 	
@@ -512,7 +513,7 @@ public abstract class Report extends TableRow implements EFSAReport, IDataset {
 	 * @return
 	 */
 	public boolean isEditable() {
-		return getStatus().isEditable();
+		return getRCLStatus().isEditable();
 	}
 	
 	/**

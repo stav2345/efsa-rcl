@@ -7,8 +7,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import message.SendMessageException;
-import progress.ProgressListener;
-import webservice.MySOAPException;
+import progress_bar.ProgressListener;
+import soap.MySOAPException;
 
 public class ReportSender extends Thread {
 
@@ -53,7 +53,7 @@ public class ReportSender extends Thread {
 			e.printStackTrace();
 			
 			if (progressListener != null)
-				this.progressListener.exceptionThrown(e);
+				this.progressListener.progressStopped(e);
 		}
 	}
 	

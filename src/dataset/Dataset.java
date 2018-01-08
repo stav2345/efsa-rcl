@@ -7,11 +7,11 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import soap.GetDataset;
+import soap.GetDatasetList;
+import soap.MySOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
-import webservice.GetDataset;
-import webservice.GetDatasetList;
-import webservice.MySOAPException;
 
 /**
  * Dcf dataset that is downloaded using the {@link GetDatasetList}
@@ -20,7 +20,7 @@ import webservice.MySOAPException;
  *
  */
 
-public class Dataset implements IDataset {
+public class Dataset extends DcfDataset implements IDataset {
 	
 	private File datasetFile; // cache
 	
@@ -30,7 +30,7 @@ public class Dataset implements IDataset {
 	
 	private String id;
 	private String senderId;
-	private DatasetStatus status;
+	private RCLDatasetStatus status;
 	
 	public Dataset() {
 		this.rows = new ArrayList<>();
@@ -161,16 +161,8 @@ public class Dataset implements IDataset {
 	 * Set the dataset status
 	 * @param status
 	 */
-	public void setStatus(DatasetStatus status) {
+	public void setStatus(RCLDatasetStatus status) {
 		this.status = status;
-	}
-	
-	/**
-	 * Get the dataset id
-	 * @return
-	 */
-	public String getId() {
-		return id;
 	}
 	
 	/**
@@ -190,7 +182,7 @@ public class Dataset implements IDataset {
 	 * Get the dataset status
 	 * @return
 	 */
-	public DatasetStatus getStatus() {
+	public RCLDatasetStatus getRCLStatus() {
 		return status;
 	}
 
@@ -226,7 +218,7 @@ public class Dataset implements IDataset {
 	}
 
 	@Override
-	public String getDatasetId() {
+	public String getId() {
 		if (operation != null && operation.getDatasetId() != null) {
 			return operation.getDatasetId();
 		}

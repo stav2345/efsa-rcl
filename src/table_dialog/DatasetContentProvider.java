@@ -18,8 +18,7 @@ public class DatasetContentProvider implements IStructuredContentProvider {
 	public Object[] getElements(Object arg0) {
 		
 		if (arg0 instanceof DatasetList) {
-			@SuppressWarnings("unchecked")
-			DatasetList<Dataset> list = (DatasetList<Dataset>) arg0;
+			DatasetList list = (DatasetList) arg0;
 			return list.toArray();
 		}
 		

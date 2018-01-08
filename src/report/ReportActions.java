@@ -13,10 +13,10 @@ import org.xml.sax.SAXException;
 import app_config.PropertiesReader;
 import i18n_messages.Messages;
 import message.SendMessageException;
-import progress.ProgressBarDialog;
-import progress.ProgressListener;
+import progress_bar.FormProgressBar;
+import progress_bar.ProgressListener;
 import report.ReportSender.ReportSenderListener;
-import webservice.MySOAPException;
+import soap.MySOAPException;
 
 /**
  * Bridge between the user interface and the programmatic part.
@@ -170,7 +170,7 @@ public abstract class ReportActions {
 				return;
 		}
 		
-		ProgressBarDialog progressBarDialog = new ProgressBarDialog(shell, Messages.get("send.progress.title"));
+		FormProgressBar progressBarDialog = new FormProgressBar(shell, Messages.get("send.progress.title"));
 		progressBarDialog.open();
 		
 		// start the sender thread
@@ -237,10 +237,12 @@ public abstract class ReportActions {
 			public void progressChanged(double progressPercentage) {
 				progressBarDialog.addProgress(progressPercentage);
 			}
-			
+
 			@Override
-			public void exceptionThrown(Exception e) {
-				
+			public void progressChanged(double currentProgress, double maxProgress) {}
+
+			@Override
+			public void progressStopped(Exception e) {
 				shell.getDisplay().syncExec(new Runnable() {
 					
 					@Override

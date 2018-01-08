@@ -1,9 +1,7 @@
 package dataset;
 
-public interface IDataset {
-	public String getDatasetId();
-	public String getSenderId();
+public interface IDataset extends IDcfDataset {
 	public String getVersion();
 	public String getDecomposedSenderId();
-	public DatasetStatus getStatus();
+	public RCLDatasetStatus getRCLStatus();
 }

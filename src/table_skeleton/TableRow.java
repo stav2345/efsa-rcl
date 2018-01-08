@@ -108,7 +108,7 @@ public class TableRow implements Checkable {
 	 * otherwise return -1
 	 * @return
 	 */
-	public int getId() {
+	public int getDatabaseId() {
 		
 		int id = -1;
 		
@@ -156,7 +156,8 @@ public class TableRow implements Checkable {
 		String parentTable = this.getSchema().getSheetName();
 		
 		// get the rows of the children related to the parent
-		Collection<TableRow> children = dao.getByParentId(parentTable, this.getId());
+		Collection<TableRow> children = dao.getByParentId(parentTable, 
+				this.getDatabaseId());
 		
 		return children;
 	}
@@ -461,7 +462,7 @@ public class TableRow implements Checkable {
 	 */
 	public void delete() {
 		TableDao dao = new TableDao(this.schema);
-		dao.delete(this.getId());
+		dao.delete(this.getDatabaseId());
 	}
 
 	/**
@@ -677,7 +678,7 @@ public class TableRow implements Checkable {
 			
 			TableRow other = (TableRow) arg0;
 			boolean sameSchema = this.schema.equals(other.schema);
-			boolean sameId = this.getId() == other.getId();
+			boolean sameId = this.getDatabaseId() == other.getDatabaseId();
 			return sameSchema && sameId;
 		}
 		else 
@@ -689,7 +690,7 @@ public class TableRow implements Checkable {
 		
 		StringBuilder print = new StringBuilder();
 		
-		print.append("ID: " + getId() + "\n");
+		print.append("ID: " + getDatabaseId() + "\n");
 		
 		for (String key : this.values.keySet()) {
 			

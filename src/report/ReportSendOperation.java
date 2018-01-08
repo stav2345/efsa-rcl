@@ -1,7 +1,7 @@
 package report;
 
 import dataset.Dataset;
-import dataset.DatasetStatus;
+import dataset.RCLDatasetStatus;
 import message_creator.OperationType;
 
 public class ReportSendOperation {
@@ -27,10 +27,10 @@ public class ReportSendOperation {
 	public OperationType getOpType() {
 		return opType;
 	}
-	public DatasetStatus getStatus() {
+	public RCLDatasetStatus getStatus() {
 		
 		if (dataset != null)
-			return dataset.getStatus();
+			return dataset.getRCLStatus();
 		
 		return null;
 	}

@@ -49,7 +49,7 @@ public class TableRowList extends ArrayList<TableRow> {
 	public TableRow getElementById(int id) {
 		
 		for (TableRow row : this) {
-			if (row.getId() == id) {
+			if (row.getDatabaseId() == id) {
 				return row;
 			}
 		}

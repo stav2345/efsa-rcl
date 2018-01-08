@@ -13,8 +13,8 @@ import app_config.PropertiesReader;
 import dataset.Dataset;
 import dataset.DatasetList;
 import i18n_messages.Messages;
+import soap.GetDatasetList;
 import table_dialog.DatasetListDialog;
-import webservice.GetDatasetList;
 
 /**
  * Show the list of dcf datasets. A {@link GetDatasetList} is performed
@@ -24,8 +24,8 @@ import webservice.GetDatasetList;
  */
 public class DownloadReportDialog extends DatasetListDialog {
 	
-	private DatasetList<Dataset> allDatasets;
-	private DatasetList<Dataset> downloadableDatasets;
+	private DatasetList allDatasets;
+	private DatasetList downloadableDatasets;
 	private String validSenderIdPattern;
 	
 	/**
@@ -39,8 +39,8 @@ public class DownloadReportDialog extends DatasetListDialog {
 		
 		super(parent, Messages.get("download.title"), Messages.get("download.button"));
 		this.validSenderIdPattern = validSenderIdPattern;
-		this.allDatasets = new DatasetList<>();
-		this.downloadableDatasets = new DatasetList<>();
+		this.allDatasets = new DatasetList();
+		this.downloadableDatasets = new DatasetList();
 	}
 	
 	public void loadDatasets() {
@@ -86,18 +86,21 @@ public class DownloadReportDialog extends DatasetListDialog {
 			}
 		}
 
+		
 		// for each data collection get the datasets
 		for (String dcCode : dcCodes) {
 			
-			GetDatasetList req = new GetDatasetList(dcCode);
+			DatasetList output = new DatasetList();
+			
+			GetDatasetList req = new GetDatasetList(dcCode, output);
 			
 			try {
 				
-				DatasetList<Dataset> datasets = req.getList();
+				req.getList();
 				
-				allDatasets.addAll(datasets.getDownloadableDatasets(validSenderIdPattern));
+				allDatasets.addAll(output.getDownloadableDatasets(validSenderIdPattern));
 				downloadableDatasets.addAll(
-						datasets.getDownloadableDatasetsLatestVersions(validSenderIdPattern));
+						output.getDownloadableDatasetsLatestVersions(validSenderIdPattern));
 				
 			} catch (SOAPException e) {
 				e.printStackTrace();
@@ -109,7 +112,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 	 * Get all the versions of the dataset
 	 * @return
 	 */
-	public DatasetList<Dataset> getSelectedDatasetVersions() {
+	public DatasetList getSelectedDatasetVersions() {
 
 		Dataset dataset = getSelectedDataset();
 		

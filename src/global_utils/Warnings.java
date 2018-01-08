@@ -4,12 +4,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import acknowledge.AckLog;
-import acknowledge.OpResError;
+import ack.DcfAckLog;
+import ack.OpResError;
 import app_config.PropertiesReader;
 import i18n_messages.Messages;
-import webservice.MySOAPException;
-import webservice.SOAPError;
+import soap.MySOAPException;
+import soap.SOAPError;
 
 public class Warnings {
 
@@ -49,7 +49,7 @@ public class Warnings {
 	    return trace;
 	}
 	
-	public static String[] getAckOperationWarning(AckLog log) {
+	public static String[] getAckOperationWarning(DcfAckLog log) {
 
 		OpResError error = log.getOpResError();
 		

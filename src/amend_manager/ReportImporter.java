@@ -13,14 +13,15 @@ import javax.xml.stream.XMLStreamException;
 
 import dataset.Dataset;
 import dataset.DatasetList;
+import dataset.IDataset;
 import dataset.NoAttachmentException;
 import formula.FormulaException;
-import progress.ProgressListener;
+import progress_bar.ProgressListener;
 import report.Report;
+import soap.MySOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
-import webservice.MySOAPException;
 
 public abstract class ReportImporter {
 
@@ -28,7 +29,7 @@ public abstract class ReportImporter {
 	
 	private TableRowList newVersions;
 	private TableRowList oldVersions;
-	private DatasetList<Dataset> datasetVersions;
+	private DatasetList datasetVersions;
 	private String senderDatasetId;
 	private String rowIdField;
 	private String versionField;
@@ -43,7 +44,7 @@ public abstract class ReportImporter {
 	 * @param versionField name of the field which contains the dataset version
 	 * using the format value.version, as FR1704.01 (senderDatasetId.version)
 	 */
-	public ReportImporter(DatasetList<Dataset> datasetVersions, 
+	public ReportImporter(DatasetList datasetVersions, 
 			String rowIdField, String versionField) {
 		
 		this.processedDatasets = 1;
@@ -127,14 +128,16 @@ public abstract class ReportImporter {
 		datasetVersions.sortAsc();
 		
 		// in order, import the datasets processing the amendments if needed
-		for (Dataset dataset : datasetVersions) {
+		for (IDataset data : datasetVersions) {
+			
+			Dataset dataset = (Dataset) data;
 			
 			setProgress(processedDatasets / datasetVersions.size() * 25);
 			
 			System.out.println("importSingleVersion of " + dataset);
 			
 			// import the single dataset into db
-			importSingleVersion(dataset);
+			importSingleVersion((Dataset) dataset);
 			
 			setProgress(processedDatasets / datasetVersions.size() * 100);
 			processedDatasets++;
@@ -306,7 +309,8 @@ public abstract class ReportImporter {
 	 * @return
 	 */
 	private int getLastAcceptedVersion() {
-		Dataset lastAccepted = datasetVersions.getLastAcceptedVersion(senderDatasetId);
+		Dataset lastAccepted = (Dataset) datasetVersions
+				.getLastAcceptedVersion(senderDatasetId);
 		
 		if (lastAccepted == null)
 			return 0;
@@ -319,7 +323,8 @@ public abstract class ReportImporter {
 	 * @return
 	 */
 	private int getLastExistingVersion() {
-		Dataset lastExisting = datasetVersions.getLastExistingVersion(senderDatasetId);
+		Dataset lastExisting = (Dataset) datasetVersions
+				.getLastExistingVersion(senderDatasetId);
 		
 		if (lastExisting == null)
 			return 0;

@@ -572,7 +572,8 @@ public abstract class TableDialog {
 			return dao.getAll();
 
 		// otherwise filter by id
-		rows = dao.getByParentId(parentFilter.getSchema().getSheetName(), parentFilter.getId());
+		rows = dao.getByParentId(parentFilter.getSchema().getSheetName(), 
+				parentFilter.getDatabaseId());
 
 		return rows;
 	}

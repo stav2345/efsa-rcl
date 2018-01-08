@@ -149,7 +149,7 @@ public class Relation {
 		
 		Integer lastUsedId = lastIds.get(tablename);
 		
-		if (lastUsedId != null && lastUsedId == parentValue.getId()) {
+		if (lastUsedId != null && lastUsedId == parentValue.getDatabaseId()) {
 			parentValueCache.put(tablename, parentValue);
 		}
 	}

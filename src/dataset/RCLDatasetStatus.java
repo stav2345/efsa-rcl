@@ -7,7 +7,7 @@ import i18n_messages.Messages;
  * @author avonva
  *
  */
-public enum DatasetStatus {
+public enum RCLDatasetStatus {
 	
 	DRAFT("DRAFT", Messages.get("draft")),  // local status, if message was never sent
 	LOCALLY_VALIDATED("LOCALLY_VALIDATED", Messages.get("validated")),
@@ -30,7 +30,7 @@ public enum DatasetStatus {
 	private String label;
 	private String step;
 	
-	private DatasetStatus(String status, String label) {
+	private RCLDatasetStatus(String status, String label) {
 		this.status = status;
 		this.label = label;
 	}
@@ -156,7 +156,7 @@ public enum DatasetStatus {
 	 * @return
 	 */
 	public boolean canGetAck() {
-		return this == DatasetStatus.UPLOADED || this == SUBMISSION_SENT
+		return this == RCLDatasetStatus.UPLOADED || this == SUBMISSION_SENT
 				|| this == REJECTION_SENT;
 	}
 
@@ -179,11 +179,11 @@ public enum DatasetStatus {
 	 * @param text
 	 * @return
 	 */
-	public static DatasetStatus fromString(String text) {
+	public static RCLDatasetStatus fromString(String text) {
 		
 		String myStatus = text.toLowerCase().replaceAll(" ", "").replaceAll("_", "");
 		
-		for (DatasetStatus b : DatasetStatus.values()) {
+		for (RCLDatasetStatus b : RCLDatasetStatus.values()) {
 			
 			String otherStatus = b.status.toLowerCase().replaceAll(" ", "").replaceAll("_", "");
 			
@@ -193,6 +193,47 @@ public enum DatasetStatus {
 		}
 		
 		return OTHER;
+	}
+	
+	public static RCLDatasetStatus fromDcfStatus(DcfDatasetStatus status) {
+		
+		RCLDatasetStatus newStatus;
+		
+		switch(status) {
+		case ACCEPTED_DWH:
+			newStatus = ACCEPTED_DWH;
+			break;
+		case DELETED:
+			newStatus = DELETED;
+			break;
+		case PROCESSING:
+			newStatus = PROCESSING;
+			break;
+		case SUBMITTED:
+			newStatus = SUBMITTED;
+			break;
+		case REJECTED:
+			newStatus = REJECTED;
+			break;
+		case REJECTED_EDITABLE:
+			newStatus = REJECTED_EDITABLE;
+			break;
+		case VALID:
+			newStatus = VALID;
+			break;
+		case VALID_WITH_WARNINGS:
+			newStatus = VALID_WITH_WARNINGS;
+			break;
+		case UPDATED_BY_DATA_RECEIVER:
+			newStatus = UPDATED_BY_DATA_RECEIVER;
+			break;
+		case OTHER:
+		default:
+			newStatus = OTHER;
+			break;
+		}
+		
+		return newStatus;
 	}
 	
 	@Override

@@ -10,7 +10,7 @@ import org.xml.sax.SAXException;
 
 import message.MessageConfigBuilder;
 import message_creator.MessageXmlBuilder;
-import progress.ProgressListener;
+import progress_bar.ProgressListener;
 import report.EFSAReport;
 import report.ReportException;
 import table_skeleton.TableRow;

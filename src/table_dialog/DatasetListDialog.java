@@ -33,7 +33,7 @@ public class DatasetListDialog {
 		create();
 	}
 	
-	public void setList(DatasetList<Dataset> list) {
+	public void setList(DatasetList list) {
 		table.setInput(list);
 	}
 	

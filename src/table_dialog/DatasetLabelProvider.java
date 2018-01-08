@@ -53,7 +53,7 @@ public class DatasetLabelProvider extends ColumnLabelProvider {
 			text = dataset.getDecomposedSenderId();
 			break;
 		case "status":
-			text = dataset.getStatus().getStatus();
+			text = dataset.getRCLStatus().getStatus();
 			break;
 		case "revision":
 			text = dataset.getVersion();

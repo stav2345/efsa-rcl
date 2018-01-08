@@ -1,7 +1,7 @@
 package report;
 
 import amend_manager.ReportImporter;
-import progress.ProgressListener;
+import progress_bar.ProgressListener;
 
 /**
  * Thread to import a report
@@ -36,7 +36,7 @@ public class ReportImporterThread extends Thread {
 			this.importer.abort();
 			
 			if (progressListener != null)
-				this.progressListener.exceptionThrown(e);
+				this.progressListener.progressStopped(e);
 		}
 	}
 }

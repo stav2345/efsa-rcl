@@ -32,7 +32,7 @@ public class RowKeywordFormula implements IFormula {
 		
 		switch(formula) {
 		case ROW_ID_KEYWORD:  // replace row id statement with the actual row id
-			solvedFormula = formula.replace(ROW_ID_KEYWORD, String.valueOf(row.getId()));
+			solvedFormula = formula.replace(ROW_ID_KEYWORD, String.valueOf(row.getDatabaseId()));
 			break;
 		default:
 			throw new FormulaException("Keyword " + formula + " not recognized");

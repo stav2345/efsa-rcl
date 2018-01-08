@@ -9,15 +9,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
-import acknowledge.Ack;
-import acknowledge.AckLog;
+import ack.DcfAck;
+import ack.DcfAckLog;
 import app_config.AppPaths;
 import app_config.PropertiesReader;
-import dataset.DatasetStatus;
+import dataset.RCLDatasetStatus;
 import global_utils.Warnings;
 import html_viewer.HtmlViewer;
 import i18n_messages.Messages;
-import webservice.MySOAPException;
+import soap.MySOAPException;
 
 public class ReportAckManager {
 
@@ -45,7 +45,7 @@ public class ReportAckManager {
 		// if the report status is not able of
 		// getting an ack, then simply align its status
 		// with the one in dcf
-		if (!report.getStatus().canGetAck()) {
+		if (!report.getRCLStatus().canGetAck()) {
 			alignReportStatusWithDCF(listener);
 			return;
 		}
@@ -53,7 +53,7 @@ public class ReportAckManager {
 		// else if local status UPLOADED, SUBMISSION_SENT, REJECTION_SENT
 
 		// if no connection return
-		Ack ack = null;
+		DcfAck ack = null;
 		try {
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 			ack = report.getAck();
@@ -76,7 +76,7 @@ public class ReportAckManager {
 		// is the same as the one in the get dataset list
 		if (ack.isReady()) {
 			
-			AckLog log = ack.getLog();
+			DcfAckLog log = ack.getLog();
 			
 			// if TRXOK
 			if (log.isOk()) {
@@ -88,13 +88,16 @@ public class ReportAckManager {
 				if (listener != null)
 					listener.handleEvent(null);
 				
+				RCLDatasetStatus status = RCLDatasetStatus
+						.fromDcfStatus(log.getDatasetStatus());
+				
 				// if no dataset retrieved for the current report
-				if (!log.getDatasetStatus().existsInDCF()) {
+				if (!status.existsInDCF()) {
 
 					// warn the user, the ack cannot be retrieved yet
 					String title = Messages.get("success.title");
 					String message = Messages.get("ack.invalid", 
-							log.getDatasetStatus().getLabel());
+							status.getLabel());
 					int style = SWT.ICON_ERROR;
 					Warnings.warnUser(shell, title, message, style);
 
@@ -147,7 +150,7 @@ public class ReportAckManager {
 		}
 		
 		// if no connection return
-		Ack ack = null;
+		DcfAck ack = null;
 		try {
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 			ack = report.getAck();
@@ -210,8 +213,8 @@ public class ReportAckManager {
 
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 
-			DatasetStatus oldStatus = report.getStatus();
-			DatasetStatus newStatus = report.alignStatusWithDCF();
+			RCLDatasetStatus oldStatus = report.getRCLStatus();
+			RCLDatasetStatus newStatus = report.alignStatusWithDCF();
 			
 			// if we have the same status then ok stop
 			// we have the report updated
@@ -223,9 +226,9 @@ public class ReportAckManager {
 
 			// if the report was in status submitted
 			// and in dcf ACCEPTED_DWH or REJECTED_EDITABLE
-			else if (oldStatus == DatasetStatus.SUBMITTED && 
-					(newStatus == DatasetStatus.ACCEPTED_DWH 
-						|| newStatus == DatasetStatus.REJECTED_EDITABLE)) {
+			else if (oldStatus == RCLDatasetStatus.SUBMITTED && 
+					(newStatus == RCLDatasetStatus.ACCEPTED_DWH 
+						|| newStatus == RCLDatasetStatus.REJECTED_EDITABLE)) {
 
 				title = Messages.get("success.title");
 				message = Messages.get("refresh.status.success", newStatus.getLabel());
@@ -241,7 +244,7 @@ public class ReportAckManager {
 
 					title = Messages.get("warning.title");
 					message = Messages.get("refresh.auto.draft", 
-							newStatus.getLabel(), DatasetStatus.DRAFT.getLabel());
+							newStatus.getLabel(), RCLDatasetStatus.DRAFT.getLabel());
 
 					style = SWT.ICON_WARNING;
 

@@ -281,7 +281,7 @@ public class TableView {
 
 		TableRow lightRow = (TableRow) selection.getFirstElement();
 		
-		return this.tableElements.getElementById(lightRow.getId());
+		return this.tableElements.getElementById(lightRow.getDatabaseId());
 	}
 	
 	/**
@@ -303,7 +303,7 @@ public class TableView {
 			
 			TableRow lightRow = (TableRow) iter.next();
 			
-			TableRow completeRow = this.tableElements.getElementById(lightRow.getId());
+			TableRow completeRow = this.tableElements.getElementById(lightRow.getDatabaseId());
 			
 			if (completeRow != null)
 				list.add(completeRow);
@@ -498,11 +498,11 @@ public class TableView {
 	 */
 	public void refreshAndSave(TableRow row) {
 
-		TableRow oldRow = this.tableElements.getElementById(row.getId());
+		TableRow oldRow = this.tableElements.getElementById(row.getDatabaseId());
 		
 		if (oldRow == null) {
 			System.err.println("Cannot refresh row " 
-					+ row.getId() + " since it is not present in the table.");
+					+ row.getDatabaseId() + " since it is not present in the table.");
 			return;
 		}
 

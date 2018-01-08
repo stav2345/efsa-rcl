@@ -9,18 +9,17 @@ import javax.xml.soap.SOAPException;
 
 import org.xml.sax.SAXException;
 
-import acknowledge.Ack;
+import ack.DcfAck;
 import amend_manager.ReportXmlBuilder;
-import dataset.Dataset;
 import dataset.DatasetList;
-import dataset.DatasetStatus;
 import dataset.IDataset;
+import dataset.RCLDatasetStatus;
 import message.MessageConfigBuilder;
 import message.SendMessageException;
 import message_creator.OperationType;
-import progress.ProgressListener;
+import progress_bar.ProgressListener;
+import soap.MySOAPException;
 import table_skeleton.TableRow;
-import webservice.MySOAPException;
 
 /**
  * Generic EFSA report which contains the basic functionalities
@@ -87,14 +86,14 @@ public interface EFSAReport extends IDataset {
 	 * @return
 	 * @throws MySOAPException
 	 */
-	public Ack getAck() throws MySOAPException;
+	public DcfAck getAck() throws MySOAPException;
 	
 	/**
 	 * Update the status of the report with the one contained in the ack
 	 * @return
 	 * @throws MySOAPException
 	 */
-	public DatasetStatus updateStatusWithAck(Ack ack);
+	public RCLDatasetStatus updateStatusWithAck(DcfAck ack);
 	
 	/**
 	 * Get all the datasets related to this report
@@ -102,7 +101,7 @@ public interface EFSAReport extends IDataset {
 	 * @throws MySOAPException
 	 * @throws ReportException
 	 */
-	public DatasetList<Dataset> getDatasets() throws MySOAPException, ReportException;
+	public DatasetList getDatasets() throws MySOAPException, ReportException;
 	
 	/**
 	 * get the last dataset related to this report
@@ -183,7 +182,7 @@ public interface EFSAReport extends IDataset {
 	 * Get the current local status of the report
 	 * @return
 	 */
-	public DatasetStatus getStatus();
+	public RCLDatasetStatus getRCLStatus();
 	
 	/**
 	 * Update the dataset status
@@ -195,14 +194,14 @@ public interface EFSAReport extends IDataset {
 	 * Update the dataset status
 	 * @param status
 	 */
-	public void setStatus(DatasetStatus status);
+	public void setStatus(RCLDatasetStatus status);
 	
 	/**
 	 * Align the report status with the one in the DCF
 	 * if possible
 	 * @return the new status
 	 */
-	public DatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException;
+	public RCLDatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException;
 	
 	/**
 	 * Get the sender dataset id related to the report.

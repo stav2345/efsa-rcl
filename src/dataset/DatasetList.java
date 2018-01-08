@@ -5,14 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 
 import report.VersionComparator;
-import webservice.GetDatasetList;
+import soap.GetDatasetList;
 
 /**
  * List of dataset received by calling {@link GetDatasetList}
  * @author avonva
  *
  */
-public class DatasetList<T extends IDataset> extends ArrayList<T> {
+public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetList {
 
 	/**
 	 * 
@@ -34,13 +34,13 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * @param regex
 	 * @return
 	 */
-	public DatasetList<T> filterByDatasetId(String regex) {
+	public DatasetList filterByDatasetId(String regex) {
 		
-		DatasetList<T> filteredList = new DatasetList<T>();
+		DatasetList filteredList = new DatasetList();
 		
-		for (T dataset : this) {
+		for (IDataset dataset : this) {
 			
-			String datasetId = dataset.getDatasetId();
+			String datasetId = dataset.getId();
 			
 			// avoid null senderId
 			if (datasetId == null)
@@ -58,11 +58,11 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * @param regex
 	 * @return
 	 */
-	public DatasetList<T> filterBySenderId(String regex) {
+	public DatasetList filterBySenderId(String regex) {
 		
-		DatasetList<T> filteredList = new DatasetList<T>();
+		DatasetList filteredList = new DatasetList();
 		
-		for (T dataset : this) {
+		for (IDataset dataset : this) {
 			
 			String senderId = dataset.getSenderId();
 			
@@ -83,11 +83,11 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * @param regex
 	 * @return
 	 */
-	public DatasetList<T> filterByDecomposedSenderId(String regex) {
+	public DatasetList filterByDecomposedSenderId(String regex) {
 		
-		DatasetList<T> filteredList = new DatasetList<>();
+		DatasetList filteredList = new DatasetList();
 		
-		for (T dataset : this) {
+		for (IDataset dataset : this) {
 			
 			String senderId = dataset.getDecomposedSenderId();
 			
@@ -107,7 +107,7 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * @param statusFilter
 	 * @return
 	 */
-	public DatasetList<T> filterByStatus(Collection<DatasetStatus> statusFilter) {
+	public DatasetList filterByStatus(Collection<RCLDatasetStatus> statusFilter) {
 		return filterByStatus(statusFilter, false);
 	}
 	
@@ -116,12 +116,12 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * @param statusFilter
 	 * @return
 	 */
-	public DatasetList<T> filterByStatus(Collection<DatasetStatus> statusFilter, boolean exclude) {
+	public DatasetList filterByStatus(Collection<RCLDatasetStatus> statusFilter, boolean exclude) {
 		
-		DatasetList<T> filteredList = new DatasetList<>();
-		for (T d: this) {
+		DatasetList filteredList = new DatasetList();
+		for (IDataset d: this) {
 			
-			boolean contained = statusFilter.contains(d.getStatus());
+			boolean contained = statusFilter.contains(d.getRCLStatus());
 			
 			// if contained and we filter by inclusion
 			// of if not contained and we filter by exclusion add it
@@ -135,26 +135,26 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 		return filteredList;
 	}
 	
-	public DatasetList<T> filterByStatus(DatasetStatus statusFilter, boolean exclude) {
+	public DatasetList filterByStatus(RCLDatasetStatus statusFilter, boolean exclude) {
 		
-		Collection<DatasetStatus> status = new ArrayList<>();
+		Collection<RCLDatasetStatus> status = new ArrayList<>();
 		status.add(statusFilter);
 		
 		return filterByStatus(status, exclude);
 	}
 	
-	public DatasetList<T> filterByStatus(DatasetStatus statusFilter) {		
+	public DatasetList filterByStatus(RCLDatasetStatus statusFilter) {		
 		return filterByStatus(statusFilter, false);
 	}
 	
 	/**
-	 * Get the last version in status {@link DatasetStatus#ACCEPTED_DWH}
+	 * Get the last version in status {@link RCLDatasetStatus#ACCEPTED_DWH}
 	 * @return
 	 */
-	public T getLastAcceptedVersion(String senderId) {
+	public IDataset getLastAcceptedVersion(String senderId) {
 		
 		// get only accepted datasets
-		DatasetList<T> datasets = this.filterByStatus(DatasetStatus.ACCEPTED_DWH);
+		DatasetList datasets = this.filterByStatus(RCLDatasetStatus.ACCEPTED_DWH);
 		
 		// get the last
 		return datasets.getLastVersion(senderId);
@@ -162,19 +162,19 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	
 	/**
 	 * Get the last version of a dataset with status
-	 * which is not {@link DatasetStatus#DELETED}
-	 * or {@link DatasetStatus#REJECTED}
+	 * which is not {@link RCLDatasetStatus#DELETED}
+	 * or {@link RCLDatasetStatus#REJECTED}
 	 * @param senderId
 	 * @return
 	 */
-	public T getLastExistingVersion(String senderId) {
+	public IDataset getLastExistingVersion(String senderId) {
 		
-		Collection<DatasetStatus> statusFilter = new ArrayList<>();
-		statusFilter.add(DatasetStatus.DELETED);
-		statusFilter.add(DatasetStatus.REJECTED);
+		Collection<RCLDatasetStatus> statusFilter = new ArrayList<>();
+		statusFilter.add(RCLDatasetStatus.DELETED);
+		statusFilter.add(RCLDatasetStatus.REJECTED);
 		
 		// get only datasets that exist in DCF
-		DatasetList<T> datasets = this.filterByStatus(statusFilter, true);
+		DatasetList datasets = this.filterByStatus(statusFilter, true);
 		
 		// get the last
 		return datasets.getLastVersion(senderId);
@@ -186,17 +186,17 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * @param senderId
 	 * @return
 	 */
-	public T getLastVersion(String senderId) {
+	public IDataset getLastVersion(String senderId) {
 		
 		// get only related datasets
-		DatasetList<T> datasets = this.filterByDecomposedSenderId(senderId);
+		DatasetList datasets = this.filterByDecomposedSenderId(senderId);
 		
 		if (datasets.isEmpty())
 			return null;
 		
-		T last = datasets.get(0);
+		IDataset last = datasets.get(0);
 		
-		for (T d: datasets) {
+		for (IDataset d: datasets) {
 			
 			VersionComparator comparator = new VersionComparator();
 			int compare = comparator.compare(d, last);
@@ -226,10 +226,10 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * Filter all the old versions of datasets
 	 * @return
 	 */
-	public DatasetList<T> filterOldVersions() {
+	public DatasetList filterOldVersions() {
 		
-		DatasetList<T> lasts = new DatasetList<>();
-		for (T d: this) {
+		DatasetList lasts = new DatasetList();
+		for (IDataset d: this) {
 			
 			String senderId = d.getDecomposedSenderId();
 			
@@ -237,7 +237,7 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 				continue;
 			
 			// get last version of the dataset
-			T last = this.getLastVersion(senderId);
+			IDataset last = this.getLastVersion(senderId);
 
 			// if not already added, put it in the list of lasts
 			if (!lasts.contains(last)) {
@@ -252,7 +252,7 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * Get the list of dataset that can be downloaded from the tool
 	 * @return
 	 */
-	public DatasetList<T> getDownloadableDatasetsLatestVersions(String validSenderIdPattern) {
+	public DatasetList getDownloadableDatasetsLatestVersions(String validSenderIdPattern) {
 		return getDownloadableDatasets(validSenderIdPattern)
 				.filterOldVersions();
 	}
@@ -261,13 +261,13 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 	 * Get the list of dataset that can be downloaded from the tool
 	 * @return
 	 */
-	public DatasetList<T> getDownloadableDatasets(String validSenderIdPattern) {
+	public DatasetList getDownloadableDatasets(String validSenderIdPattern) {
 		
-		Collection<DatasetStatus> statusFilter = new ArrayList<>();
-		statusFilter.add(DatasetStatus.REJECTED_EDITABLE);
-		statusFilter.add(DatasetStatus.REJECTED);
-		statusFilter.add(DatasetStatus.PROCESSING);
-		statusFilter.add(DatasetStatus.DELETED);
+		Collection<RCLDatasetStatus> statusFilter = new ArrayList<>();
+		statusFilter.add(RCLDatasetStatus.REJECTED_EDITABLE);
+		statusFilter.add(RCLDatasetStatus.REJECTED);
+		statusFilter.add(RCLDatasetStatus.PROCESSING);
+		statusFilter.add(RCLDatasetStatus.DELETED);
 		
 		// filter also by the sender id, which should 
 		// be in the format country year(2) month(2) with
@@ -276,5 +276,20 @@ public class DatasetList<T extends IDataset> extends ArrayList<T> {
 		
 		return filterByStatus(statusFilter, true)
 				.filterBySenderId(validSenderIdPattern);
+	}
+
+	@Override
+	public boolean addElem(IDcfDataset dataset) {
+		
+		// we know its a dataset instance
+		Dataset d = (Dataset) dataset;
+		d.setStatus(RCLDatasetStatus.fromDcfStatus(dataset.getStatus()));
+		
+		return super.add(d);
+	}
+
+	@Override
+	public IDcfDataset create() {
+		return new Dataset();
 	}
 }

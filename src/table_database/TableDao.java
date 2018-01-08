@@ -185,7 +185,7 @@ public class TableDao {
 		
 		// set also the id of the row
 		if (setWhereId) {
-			stmt.setInt(currentIndex, row.getId());
+			stmt.setInt(currentIndex, row.getDatabaseId());
 		}
 	}
 
@@ -256,7 +256,7 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			System.out.println("Row " + row.getId() + " successfully updated in " + tableName);
+			System.out.println("Row " + row.getDatabaseId() + " successfully updated in " + tableName);
 		}
 		else {
 			System.err.println("Errors in updating " + row + " for " + tableName);
@@ -552,7 +552,7 @@ public class TableDao {
 				PreparedStatement stmt = con.prepareStatement(query);) {
 			
 			for (TableRow row : list) {
-				stmt.setInt(1, row.getId());
+				stmt.setInt(1, row.getDatabaseId());
 
 				stmt.addBatch();
 			}
