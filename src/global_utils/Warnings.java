@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Shell;
 import ack.DcfAckLog;
 import ack.OpResError;
 import app_config.PropertiesReader;
+import exception_manager.ExceptionConverter;
 import i18n_messages.Messages;
 import soap.MySOAPException;
 import soap.SOAPError;
@@ -36,16 +37,7 @@ public class Warnings {
 	}
 	
 	public static String getStackTrace(Exception e) {
-		
-		String message = e.getMessage();
-		
-		StringBuilder sb = new StringBuilder();
-		for (StackTraceElement ste : e.getStackTrace()) {
-	        sb.append("\n\tat ");
-	        sb.append(ste);
-	    }
-	    String trace = message + " " + sb.toString();
-	    
+		String trace = ExceptionConverter.getStackTrace(e);
 	    return trace;
 	}
 	
