@@ -5,14 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 
 import report.VersionComparator;
-import soap.GetDatasetList;
+import soap.GetDatasetsList;
 
 /**
- * List of dataset received by calling {@link GetDatasetList}
+ * List of dataset received by calling {@link GetDatasetsList}
  * @author avonva
  *
  */
-public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetList {
+public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList {
 
 	/**
 	 * 

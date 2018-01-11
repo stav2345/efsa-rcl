@@ -9,14 +9,14 @@ import javax.xml.stream.XMLStreamException;
 
 import duplicates_detector.Checkable;
 import soap.GetDataset;
-import soap.GetDatasetList;
+import soap.GetDatasetsList;
 import soap.MySOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
 import user.User;
 
 /**
- * Dcf dataset that is downloaded using the {@link GetDatasetList}
+ * Dcf dataset that is downloaded using the {@link GetDatasetsList}
  * request.
  * @author avonva
  *

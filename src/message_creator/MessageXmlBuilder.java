@@ -27,7 +27,7 @@ import table_skeleton.TableRow;
  * @author avonva
  *
  */
-public class MessageXmlBuilder {
+public class MessageXmlBuilder implements AutoCloseable {
 
 	private int rowCounter;       // number of processed rows	
 
@@ -254,5 +254,10 @@ public class MessageXmlBuilder {
 			.append(">");
 		
 		return node.toString();
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.writer.close();
 	}
 }

@@ -15,7 +15,7 @@ import report.EFSAReport;
 import report.ReportException;
 import table_skeleton.TableRow;
 
-public class ReportXmlBuilder {
+public class ReportXmlBuilder implements AutoCloseable {
 
 	private EFSAReport report;
 	private MessageConfigBuilder messageConfig;
@@ -62,8 +62,12 @@ public class ReportXmlBuilder {
 	 */
 	public static File createEmptyReport(MessageConfigBuilder messageConfig) 
 			throws ParserConfigurationException, SAXException, IOException {
-		MessageXmlBuilder creator = new MessageXmlBuilder(messageConfig.getOut(), messageConfig);
-		return creator.exportEmpty();
+		
+		try(MessageXmlBuilder creator = new MessageXmlBuilder(
+				messageConfig.getOut(), messageConfig);) {
+			
+			return creator.exportEmpty();
+		}
 	}
 	
 	private void clearTable() {
@@ -175,8 +179,11 @@ public class ReportXmlBuilder {
 		Collection<DatasetComparison> comps = dao.getAll();
 		
 		// export the xml file
-		MessageXmlBuilder creator = new MessageXmlBuilder(messageConfig.getOut(), this.messageConfig);
-		return creator.export(comps);
+		try(MessageXmlBuilder creator = new MessageXmlBuilder(
+				messageConfig.getOut(), this.messageConfig);) {
+			
+			return creator.export(comps);
+		}
 	}
 	
 	/**
@@ -276,5 +283,11 @@ public class ReportXmlBuilder {
 		
 		DatasetComparisonDao dao = new DatasetComparisonDao();
 		dao.executeQuery(query.toString());
+	}
+
+	@Override
+	public void close() {
+		// clear the temporary table
+		clearTable();
 	}
 }

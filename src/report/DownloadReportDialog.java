@@ -18,12 +18,12 @@ import dataset.DatasetList;
 import dataset.IDataset;
 import global_utils.Warnings;
 import i18n_messages.Messages;
-import soap.GetDatasetList;
+import soap.GetDatasetsList;
 import table_dialog.DatasetListDialog;
 import user.User;
 
 /**
- * Show the list of dcf datasets. A {@link GetDatasetList} is performed
+ * Show the list of dcf datasets. A {@link GetDatasetsList} is performed
  * for each data collection year considered.
  * @author avonva
  *
@@ -99,7 +99,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 		// and save them in the output
 		for (String dcCode : dcCodes) {
 			
-			GetDatasetList req = new GetDatasetList(User.getInstance(), dcCode, datasetsList);
+			GetDatasetsList req = new GetDatasetsList(User.getInstance(), dcCode, datasetsList);
 			try {
 				
 				req.getList();

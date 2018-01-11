@@ -21,7 +21,7 @@ import message.SendMessageException;
 import message_creator.OperationType;
 import progress_bar.ProgressListener;
 import soap.GetAck;
-import soap.GetDatasetList;
+import soap.GetDatasetsList;
 import soap.MySOAPException;
 import soap.SendMessage;
 import table_database.TableDao;
@@ -196,7 +196,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 		DatasetList output = new DatasetList();
 		
 		// check if the Report is in the DCF
-		GetDatasetList request = new GetDatasetList(User.getInstance(), PropertiesReader
+		GetDatasetsList request = new GetDatasetsList(User.getInstance(), PropertiesReader
 				.getDataCollectionCode(this.getYear()), output);
 		
 		String senderDatasetId = this.getSenderId();
@@ -254,11 +254,15 @@ public abstract class Report extends TableRow implements EFSAReport {
 		else {
 			
 			Relation.emptyCache();
-			
+
 			// get the previous report version to process amendments
-			ReportXmlBuilder creator = new ReportXmlBuilder(this, messageConfig, getRowIdFieldName());
-			creator.setProgressListener(progressListener);
-			return creator.exportReport();
+			try(ReportXmlBuilder creator = new ReportXmlBuilder(this, 
+					messageConfig, getRowIdFieldName());) {
+				
+				creator.setProgressListener(progressListener);
+				
+				return creator.exportReport();
+			}
 		}
 	}
 	
