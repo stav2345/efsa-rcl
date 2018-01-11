@@ -12,3 +12,11 @@ Thereafter, right-click your project element in the package explorer and then se
 Then open the _**Project**_ tab and click the _**Add**_ button and select the EFSA Report Creator Library project which was just imported.
 
 Now your project is able to use the EFSA Report Creator Library methods to create a customized tool for a specific data collection.
+
+# Dependencies
+The project needs the following projects to work properly:
+* https://github.com/openefsa/zip-manager
+* https://github.com/openefsa/version-manager
+* https://github.com/openefsa/Dcf-webservice-framework
+* https://github.com/openefsa/Progress-bar
+* https://github.com/openefsa/http-manager
