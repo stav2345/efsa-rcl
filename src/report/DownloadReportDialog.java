@@ -3,6 +3,9 @@ package report;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.xml.soap.SOAPException;
 
@@ -12,9 +15,12 @@ import org.eclipse.swt.widgets.Shell;
 import app_config.PropertiesReader;
 import dataset.Dataset;
 import dataset.DatasetList;
+import dataset.IDataset;
+import global_utils.Warnings;
 import i18n_messages.Messages;
 import soap.GetDatasetList;
 import table_dialog.DatasetListDialog;
+import user.User;
 
 /**
  * Show the list of dcf datasets. A {@link GetDatasetList} is performed
@@ -24,6 +30,7 @@ import table_dialog.DatasetListDialog;
  */
 public class DownloadReportDialog extends DatasetListDialog {
 	
+	private DatasetList datasetsList;
 	private DatasetList allDatasets;
 	private DatasetList downloadableDatasets;
 	private String validSenderIdPattern;
@@ -85,27 +92,39 @@ public class DownloadReportDialog extends DatasetListDialog {
 				dcCodes.add(PropertiesReader.getDataCollectionCode(String.valueOf(i)));
 			}
 		}
-
+		
+		datasetsList = new DatasetList();
 		
 		// for each data collection get the datasets
+		// and save them in the output
 		for (String dcCode : dcCodes) {
 			
-			DatasetList output = new DatasetList();
-			
-			GetDatasetList req = new GetDatasetList(dcCode, output);
-			
+			GetDatasetList req = new GetDatasetList(User.getInstance(), dcCode, datasetsList);
 			try {
 				
 				req.getList();
-				
-				allDatasets.addAll(output.getDownloadableDatasets(validSenderIdPattern));
-				downloadableDatasets.addAll(
-						output.getDownloadableDatasetsLatestVersions(validSenderIdPattern));
 				
 			} catch (SOAPException e) {
 				e.printStackTrace();
 			}
 		}
+
+		allDatasets.addAll(datasetsList.getDownloadableDatasets(validSenderIdPattern));
+		downloadableDatasets.addAll(
+				datasetsList.getDownloadableDatasetsLatestVersions(validSenderIdPattern));
+	}
+	
+	public boolean isDuplicated(Dataset d, DatasetList datasets) {
+		
+		// we are not considering deleted datasets
+		List<IDataset> filtered = datasets.stream().filter(new Predicate<IDataset>() {
+			@Override
+			public boolean test(IDataset arg0) {
+				return d.getSenderId().equals(arg0.getSenderId());
+			};
+		}).collect(Collectors.toList());
+		
+		return filtered.size() > 1;
 	}
 	
 	/**
@@ -118,6 +137,16 @@ public class DownloadReportDialog extends DatasetListDialog {
 		
 		if (dataset == null) {
 			return null;
+		}
+		
+		if (isDuplicated(dataset, datasetsList)) {
+			int val = Warnings.warnUser(getParent(), Messages.get("error.title"), 
+					Messages.get("download.duplicate.sender.id", 
+							PropertiesReader.getSupportEmail()), 
+					SWT.YES | SWT.NO | SWT.ICON_ERROR);
+			
+			if (val == SWT.NO)
+				return null;
 		}
 		
 		String senderId = dataset.getDecomposedSenderId();

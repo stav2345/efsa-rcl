@@ -50,7 +50,8 @@ public class Message {
 		int minSize = Math.min(placeholders.size(), values.length);
 		for (int i = 0; i < minSize; ++i) {
 			String placeholder = placeholders.get(i);
-			this.message = this.message.replace(placeholder, values[i]);
+			if (values[i] != null)
+				this.message = this.message.replace(placeholder, values[i]);
 		}
 		
 		return this;

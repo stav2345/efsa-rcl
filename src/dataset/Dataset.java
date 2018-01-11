@@ -7,11 +7,13 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import duplicates_detector.Checkable;
 import soap.GetDataset;
 import soap.GetDatasetList;
 import soap.MySOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
+import user.User;
 
 /**
  * Dcf dataset that is downloaded using the {@link GetDatasetList}
@@ -20,7 +22,7 @@ import table_skeleton.TableVersion;
  *
  */
 
-public class Dataset extends DcfDataset implements IDataset {
+public class Dataset extends DcfDataset implements IDataset, Checkable {
 	
 	private File datasetFile; // cache
 	
@@ -84,7 +86,7 @@ public class Dataset extends DcfDataset implements IDataset {
 			return datasetFile;
 		}
 		
-		GetDataset req = new GetDataset(id);
+		GetDataset req = new GetDataset(User.getInstance(), id);
 		File file = req.getDatasetFile();
 		
 		if (file == null)
@@ -113,8 +115,10 @@ public class Dataset extends DcfDataset implements IDataset {
 		DatasetMetaDataParser parser = new DatasetMetaDataParser(file);
 		
 		Dataset dataset = parser.parse();
+		
 		dataset.setStatus(this.status);
 		dataset.setSenderId(this.senderId);
+		dataset.setId(dataset.getOperation().getDatasetId());
 		
 		parser.close();
 		
@@ -215,6 +219,18 @@ public class Dataset extends DcfDataset implements IDataset {
 		}
 		
 		return super.equals(arg0);
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.senderId.hashCode();
+	}
+	
+	@Override
+	public boolean sameAs(Object arg0) {
+		
+		Dataset a = (Dataset) arg0;
+		return this.senderId == a.senderId;
 	}
 
 	@Override

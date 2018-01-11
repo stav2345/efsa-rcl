@@ -36,7 +36,7 @@ public class DuplicatesDetector {
 				Checkable second = (Checkable) list.get(j);
 				// if they are equal
 				if (first.sameAs(second)) {
-					Duplicate<Checkable> dup = new Duplicate<Checkable>(first, second);
+					Duplicate<Checkable> dup = new Duplicate<>(first, second);
 					duplicates.add(dup);
 				}
 			}

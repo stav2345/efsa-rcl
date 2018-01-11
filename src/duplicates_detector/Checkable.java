@@ -7,5 +7,5 @@ public interface Checkable {
 	 * @param arg0
 	 * @return
 	 */
-	public boolean sameAs(Checkable arg0);
+	public boolean sameAs(Object arg0);
 }

@@ -93,10 +93,10 @@ public class ReportSender extends Thread {
 		// (Required if we are overwriting an existing report)
 		if (opType.getDataset() != null) {
 
-			System.out.println("Overwriting dataset id: " + report.getDatasetId() 
+			System.out.println("Overwriting dataset id: " + report.getId() 
 				+ " with " + opType.getDataset().getId());
 			
-			report.setDatasetId(opType.getDataset().getId());
+			report.setId(opType.getDataset().getId());
 			report.update();
 		}
 		

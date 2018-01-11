@@ -37,6 +37,12 @@ public abstract class ReportDownloader {
 		
 		if (selectedDataset == null)  // user pressed cancel
 			return;
+
+		// get all the versions of the dataset that are present in the DCF
+		DatasetList allVersions = dialog.getSelectedDatasetVersions();
+		
+		if (allVersions == null)
+			return;
 		
 		// extract the senderId from the composed field (senderId.version)
 		String senderId = selectedDataset.getDecomposedSenderId();
@@ -50,11 +56,6 @@ public abstract class ReportDownloader {
 			if (!confirm)
 				return;
 		}
-		
-		// import report
-		
-		// get all the versions of the dataset that are present in the DCF
-		DatasetList allVersions = dialog.getSelectedDatasetVersions();
 
 		// download and import the dataset
 		ReportImporter downloader = this.getImporter(allVersions);

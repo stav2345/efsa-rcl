@@ -109,7 +109,7 @@ public interface EFSAReport extends IDataset {
 	 * @throws MySOAPException
 	 * @throws ReportException
 	 */
-	public IDataset getDataset() throws MySOAPException, ReportException;
+	public IDataset getLatestDataset() throws MySOAPException, ReportException;
 	
 	/**
 	 * Force the report to be editable
@@ -132,13 +132,13 @@ public interface EFSAReport extends IDataset {
 	 * Get the dataset id related to the report if present
 	 * @return
 	 */
-	public String getDatasetId();
+	public String getId();
 	
 	/**
 	 * Set the dataset id of the dataset related to the report
 	 * @param id
 	 */
-	public void setDatasetId(String id);
+	public void setId(String id);
 	
 	/**
 	 * Get the default configuration used to export the report

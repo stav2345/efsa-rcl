@@ -159,6 +159,8 @@ public abstract class ReportImporter {
 				// populate the dataset with metadata (operation/header)
 				Dataset popDataset = dataset.populateMetadata();
 				
+				System.out.println("popu data " + popDataset);
+				
 				// process the dataset header/operation
 				TableRow newReport = importDatasetMetadata(popDataset);
 				if (this.newVersions == null) {

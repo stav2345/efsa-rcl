@@ -103,6 +103,25 @@ public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetList 
 	}
 	
 	/**
+	 * Get the most recent dataset of the list
+	 * @return
+	 */
+	public IDataset getMostRecentDataset() {
+		
+		if (this.isEmpty())
+			return null;
+		
+		IDataset max = this.get(0);
+		
+		for (IDataset d : this) {
+			if (d.getId().compareTo(max.getId()) > 0)
+				max = d;
+		}
+		
+		return max;
+	}
+	
+	/**
 	 * Filter by inclusion
 	 * @param statusFilter
 	 * @return

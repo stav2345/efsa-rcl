@@ -539,7 +539,7 @@ public class TableRow implements Checkable {
 	/**
 	 * Check if equal
 	 */
-	public boolean sameAs(Checkable arg0) {
+	public boolean sameAs(Object arg0) {
 		
 		if (!(arg0 instanceof TableRow))
 			return false;

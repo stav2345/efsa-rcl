@@ -29,6 +29,7 @@ import table_relations.Relation;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
+import user.User;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
@@ -91,7 +92,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	public void send(File file, OperationType opType) throws SOAPException, SendMessageException {
 
 		// send the report and get the response to the message
-		SendMessage req = new SendMessage(file);
+		SendMessage req = new SendMessage(User.getInstance(), file);
 		MessageResponse response = req.send();
 
 		// if correct response then save the message id
@@ -148,7 +149,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 		
 		OperationType opType = OperationType.NOT_SUPPORTED;
 		
-		Dataset dataset = this.getDataset();
+		Dataset dataset = this.getLatestDataset();
 		
 		// if no dataset is present => we do an insert
 		if (dataset == null) {
@@ -195,7 +196,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 		DatasetList output = new DatasetList();
 		
 		// check if the Report is in the DCF
-		GetDatasetList request = new GetDatasetList(PropertiesReader
+		GetDatasetList request = new GetDatasetList(User.getInstance(), PropertiesReader
 				.getDataCollectionCode(this.getYear()), output);
 		
 		String senderDatasetId = this.getSenderId();
@@ -213,23 +214,30 @@ public abstract class Report extends TableRow implements EFSAReport {
 	}
 	
 	/**
-	 * Get the dataset related to this report (only metadata!). Note that only the newer one will
+	 * Get the dataset related to this report (only metadata!). 
+	 * Note that only the newer one will
 	 * be returned. If you need all the datasets related to this report use
 	 * {@link #getDatasets()}.
 	 * @return
 	 * @throws ReportException
 	 * @throws MySOAPException 
 	 */
-	public Dataset getDataset() throws ReportException, MySOAPException {
+	public Dataset getLatestDataset() throws ReportException, MySOAPException {
 
 		DatasetList datasets = getDatasets();
 		
-		datasets = datasets.filterOldVersions();
+		// use the dataset id if we have it
+		if (this.getId() != null && !this.getId().isEmpty()) {
+			datasets = datasets.filterByDatasetId(this.getId());
+		}
+		else {
+			
+			// otherwise use the sender dataset id to filter
+			// the old versions and get the last one
+			datasets = datasets.filterOldVersions();
+		}
 		
-		if(datasets.isEmpty())
-			return null;
-
-		return (Dataset) datasets.get(0);
+		return (Dataset) datasets.getMostRecentDataset();
 	}
 	
 	public File export(MessageConfigBuilder messageConfig) 
@@ -323,7 +331,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 			return null;
 		}
 		
-		GetAck req = new GetAck(messageId);
+		GetAck req = new GetAck(User.getInstance(), messageId);
 		
 		// get state
 		DcfAck ack = req.getAck();
@@ -340,7 +348,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 				
 				// save id
 				String datasetId = ack.getLog().getDatasetId();
-				this.setDatasetId(datasetId);
+				this.setId(datasetId);
 				
 				// save status
 				RCLDatasetStatus status = RCLDatasetStatus.fromDcfStatus(
@@ -375,11 +383,11 @@ public abstract class Report extends TableRow implements EFSAReport {
 		this.put(AppPaths.REPORT_MESSAGE_ID, id);
 	}
 	
-	public String getDatasetId() {
+	public String getId() {
 		return this.getCode(AppPaths.REPORT_DATASET_ID);
 	}
 	
-	public void setDatasetId(String id) {
+	public void setId(String id) {
 		this.put(AppPaths.REPORT_DATASET_ID, id);
 	}
 	
@@ -457,7 +465,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 		
 		// get the dataset related to the report from the
 		// GetDatasetList request
-		Dataset dataset = this.getDataset();
+		Dataset dataset = this.getLatestDataset();
 		
 		// if not dataset is retrieved
 		if (dataset == null) {
