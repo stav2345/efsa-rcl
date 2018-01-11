@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 
 import app_config.AppPaths;
 import app_config.PropertiesReader;
+import version_manager.VersionComparator;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
@@ -83,9 +84,13 @@ public class Database {
 			throw new IOException("Cannot retrieve the minimum database version needed to run the tool properly. Check the configuration file.");
 		}
 
+		VersionComparator versionComparator = new VersionComparator();
+		
+		int compare = versionComparator.compare(minRequiredVersion, dbVersion);
+		
 		// if updates are needed, check schemas differences
 		// and apply them to the database
-		if (minRequiredVersion.compareTo(dbVersion) > 0) {
+		if (compare > 0) {
 
 			System.out.println("Database structure needs update");
 
