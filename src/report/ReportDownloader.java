@@ -1,13 +1,24 @@
 package report;
 
+import java.util.Collection;
+
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import amend_manager.ReportImporter;
+import data_collection.DataCollectionsListDialog;
+import data_collection.DcfDataCollectionsList;
+import data_collection.GetAvailableDataCollections;
+import data_collection.IDcfDataCollection;
+import data_collection.IDcfDataCollectionsList;
 import dataset.Dataset;
 import dataset.DatasetList;
 import i18n_messages.Messages;
 import progress_bar.FormProgressBar;
 import progress_bar.ProgressListener;
+import soap.GetDataCollectionsList;
+import soap.MySOAPException;
+import user.User;
 
 /**
  * Download a report into the database
@@ -21,14 +32,56 @@ public abstract class ReportDownloader {
 	public ReportDownloader(Shell shell) {
 		this.shell = shell;
 	}
+
+	/**
+	 * Get only the available data collections for which the user is registered
+	 * @return
+	 * @throws MySOAPException
+	 */
+	private IDcfDataCollectionsList<IDcfDataCollection> getAvailableDcList() throws MySOAPException {
+		
+		IDcfDataCollectionsList<IDcfDataCollection> output = new DcfDataCollectionsList();
+		GetDataCollectionsList<IDcfDataCollection> req = new GetDataCollectionsList<>(User.getInstance(), output);
+		
+		req.getList();
+		
+		Collection<String> validDcs = GetAvailableDataCollections.getCodes();
+		
+		IDcfDataCollectionsList<IDcfDataCollection> filteredOutput = new DcfDataCollectionsList();
+		
+		for(IDcfDataCollection dc : output) {
+			// remove not valid data collection
+			if (validDcs.contains(dc.getCode())) {
+				filteredOutput.add(dc);
+			}
+		}
+		
+		return filteredOutput;
+	}
 	
 	/**
 	 * Download a dataset from the dcf
 	 * @param validSenderId
+	 * @throws MySOAPException 
 	 */
-	public void download() {
+	public void download() throws MySOAPException {
+
+		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 		
-		DownloadReportDialog dialog = getDialog();
+		// select the data collection
+		IDcfDataCollectionsList<IDcfDataCollection> list = getAvailableDcList();
+		
+		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+		
+		DataCollectionsListDialog dcDialog = new DataCollectionsListDialog(list, shell);
+		
+		IDcfDataCollection selectedDc = dcDialog.open();
+		
+		if (selectedDc == null)
+			return;
+		
+		// open the list of datasets related to that data collection
+		DownloadReportDialog dialog = getDownloadDialog(selectedDc);
 		
 		dialog.open();
 		
@@ -127,7 +180,7 @@ public abstract class ReportDownloader {
 	 * Here it is possible to customize the columns that should be shown.
 	 * @return
 	 */
-	public abstract DownloadReportDialog getDialog();
+	public abstract DownloadReportDialog getDownloadDialog(IDcfDataCollection dataCollection);
 	
 	
 	public abstract boolean askConfirmation();

@@ -1,12 +1,11 @@
-package table_dialog;
+package data_collection;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import dataset.Dataset;
-import dataset.DatasetList;
+import data_collection.DcfDataCollectionsList;
 
-public class DatasetContentProvider implements IStructuredContentProvider {
+public class DataCollectionContentProvider implements IStructuredContentProvider {
 
 	@Override
 	public void dispose() {}
@@ -17,13 +16,9 @@ public class DatasetContentProvider implements IStructuredContentProvider {
 	@Override
 	public Object[] getElements(Object arg0) {
 		
-		if (arg0 instanceof DatasetList) {
-			DatasetList list = (DatasetList) arg0;
+		if (arg0 instanceof DcfDataCollectionsList) {
+			DcfDataCollectionsList list = (DcfDataCollectionsList) arg0;
 			return list.toArray();
-		}
-		
-		if (arg0 instanceof Dataset) {
-			return new Object[] {arg0};
 		}
 		
 		return null;

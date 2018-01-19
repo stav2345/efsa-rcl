@@ -111,8 +111,6 @@ public class DatasetListDialog {
 	
 	public void open() {
 		
-		dialog.pack();
-		this.dialog.setSize(dialog.getSize().x, 500);
 		dialog.open();
 
 		// Event loop

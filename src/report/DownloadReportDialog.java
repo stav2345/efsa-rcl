@@ -1,8 +1,5 @@
 package report;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -13,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import app_config.PropertiesReader;
+import data_collection.IDcfDataCollection;
 import dataset.Dataset;
 import dataset.DatasetList;
 import dataset.IDataset;
@@ -34,6 +32,7 @@ public class DownloadReportDialog extends DatasetListDialog {
 	private DatasetList allDatasets;
 	private DatasetList downloadableDatasets;
 	private String validSenderIdPattern;
+	private IDcfDataCollection dc;
 	
 	/**
 	 * 
@@ -42,19 +41,15 @@ public class DownloadReportDialog extends DatasetListDialog {
 	 * dataset must follow to be considered downloadable (used to filter
 	 * the datasets)
 	 */
-	public DownloadReportDialog(Shell parent, String validSenderIdPattern) {
-		
+	public DownloadReportDialog(IDcfDataCollection dc, Shell parent, String validSenderIdPattern) {
 		super(parent, Messages.get("download.title"), Messages.get("download.button"));
+		this.dc = dc;
 		this.validSenderIdPattern = validSenderIdPattern;
 		this.allDatasets = new DatasetList();
 		this.downloadableDatasets = new DatasetList();
 	}
 	
 	public void loadDatasets() {
-		
-		Shell parent = getParent();
-		
-		parent.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 		
 		// prepare downloadableDatasets and allDatasets lists
 		initDatasets(validSenderIdPattern);
@@ -63,8 +58,6 @@ public class DownloadReportDialog extends DatasetListDialog {
 		this.downloadableDatasets.sort();
 		
 		this.setList(downloadableDatasets);
-		
-		parent.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 	}
 
 	/**
@@ -77,36 +70,15 @@ public class DownloadReportDialog extends DatasetListDialog {
 	 */
 	private void initDatasets(String validSenderIdPattern) {
 		
-		Collection<String> dcCodes = new ArrayList<>();
-		dcCodes.add(PropertiesReader.getTestDataCollectionCode()); // add test dc
-		
-		Calendar today = Calendar.getInstance();
-		int currentYear = today.get(Calendar.YEAR);
-		int startingYear = PropertiesReader.getDataCollectionStartingYear();
-		
-		// if other years are needed
-		if (currentYear >= startingYear) {
-			
-			// add also the other years
-			for (int i = currentYear; i >= startingYear; --i) {	
-				dcCodes.add(PropertiesReader.getDataCollectionCode(String.valueOf(i)));
-			}
-		}
-		
 		datasetsList = new DatasetList();
-		
-		// for each data collection get the datasets
-		// and save them in the output
-		for (String dcCode : dcCodes) {
+
+		GetDatasetsList<IDataset> req = new GetDatasetsList<>(User.getInstance(), dc.getCode(), datasetsList);
+		try {
 			
-			GetDatasetsList req = new GetDatasetsList(User.getInstance(), dcCode, datasetsList);
-			try {
-				
-				req.getList();
-				
-			} catch (SOAPException e) {
-				e.printStackTrace();
-			}
+			req.getList();
+			
+		} catch (SOAPException e) {
+			e.printStackTrace();
 		}
 
 		allDatasets.addAll(datasetsList.getDownloadableDatasets(validSenderIdPattern));

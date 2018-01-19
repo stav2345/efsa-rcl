@@ -14,6 +14,7 @@ import app_config.AppPaths;
 import app_config.PropertiesReader;
 import dataset.Dataset;
 import dataset.DatasetList;
+import dataset.IDataset;
 import dataset.RCLDatasetStatus;
 import message.MessageConfigBuilder;
 import message.MessageResponse;
@@ -196,7 +197,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 		DatasetList output = new DatasetList();
 		
 		// check if the Report is in the DCF
-		GetDatasetsList request = new GetDatasetsList(User.getInstance(), PropertiesReader
+		GetDatasetsList<IDataset> request = new GetDatasetsList<>(User.getInstance(), PropertiesReader
 				.getDataCollectionCode(this.getYear()), output);
 		
 		String senderDatasetId = this.getSenderId();

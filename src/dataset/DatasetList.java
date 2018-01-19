@@ -12,7 +12,7 @@ import soap.GetDatasetsList;
  * @author avonva
  *
  */
-public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList {
+public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList<IDataset> {
 
 	/**
 	 * 
@@ -298,7 +298,7 @@ public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList
 	}
 
 	@Override
-	public boolean addElem(IDcfDataset dataset) {
+	public boolean add(IDataset dataset) {
 		
 		// we know its a dataset instance
 		Dataset d = (Dataset) dataset;
@@ -308,7 +308,7 @@ public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList
 	}
 
 	@Override
-	public IDcfDataset create() {
+	public IDataset create() {
 		return new Dataset();
 	}
 }

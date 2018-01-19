@@ -117,7 +117,7 @@ public abstract class TableDialog {
 	/**
 	 * Create the interface
 	 */
-	protected void create() {
+	protected Shell create() {
 
 		// new shell if required
 		if (createPopUp) {
@@ -143,7 +143,7 @@ public abstract class TableDialog {
 		
 		if (!this.panel.isTableDefined()) {
 			System.err.println("Error. Cannot instantiate TableDialog without a table. Please check addWidgets().");
-			return;
+			return null;
 		}
 		
 		this.panel.setMenu(createMenu());
@@ -250,6 +250,8 @@ public abstract class TableDialog {
 		
 		// make dialog longer
 		dialog.setSize(dialog.getSize().x, dialog.getSize().y + 50);
+		
+		return dialog;
 	}
 	
 	
