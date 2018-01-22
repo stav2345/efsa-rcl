@@ -7,7 +7,7 @@ import org.eclipse.swt.widgets.Shell;
 import ack.DcfAckLog;
 import ack.OpResError;
 import app_config.PropertiesReader;
-import exception_manager.ExceptionConverter;
+import converter.ExceptionConverter;
 import i18n_messages.Messages;
 import soap.MySOAPException;
 import soap.SOAPError;
@@ -84,6 +84,10 @@ public class Warnings {
 		case FORBIDDEN:
 			title = Messages.get("error.title");
 			message = Messages.get("wrong.credentials");
+			break;
+		case MESSAGE_SEND_FAILED:
+			title = Messages.get("error.title");
+			message = Messages.get("send.message.failed");
 			break;
 		}
 		

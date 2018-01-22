@@ -6,6 +6,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import amend_manager.ReportImporter;
+import app_config.PropertiesReader;
 import data_collection.DataCollectionsListDialog;
 import data_collection.DcfDataCollectionsList;
 import data_collection.GetAvailableDataCollections;
@@ -13,6 +14,7 @@ import data_collection.IDcfDataCollection;
 import data_collection.IDcfDataCollectionsList;
 import dataset.Dataset;
 import dataset.DatasetList;
+import global_utils.Warnings;
 import i18n_messages.Messages;
 import progress_bar.FormProgressBar;
 import progress_bar.ProgressListener;
@@ -69,9 +71,25 @@ public abstract class ReportDownloader {
 		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 		
 		// select the data collection
-		IDcfDataCollectionsList<IDcfDataCollection> list = getAvailableDcList();
+		IDcfDataCollectionsList<IDcfDataCollection> list;
+		try {
+			list = getAvailableDcList();
+		} catch(MySOAPException e) {
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+			throw e;
+		}
 		
 		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+
+		// if no data collection was retrieved
+		if (list.isEmpty()) {
+			
+			Warnings.warnUser(shell, Messages.get("warning.title"), 
+					Messages.get("dc.no.element.found", PropertiesReader.getSupportEmail()), 
+					SWT.ICON_WARNING);
+			
+			return;
+		}
 		
 		DataCollectionsListDialog dcDialog = new DataCollectionsListDialog(list, shell);
 		
