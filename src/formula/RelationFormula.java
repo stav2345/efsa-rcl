@@ -2,7 +2,7 @@ package formula;
 
 import app_config.AppPaths;
 import table_relations.Relation;
-import table_skeleton.TableColumnValue;
+import table_skeleton.TableCell;
 import table_skeleton.TableRow;
 
 /**
@@ -84,7 +84,7 @@ public class RelationFormula implements IFormula {
 		}
 
 		// get the parent foreign key from the child row
-		TableColumnValue colVal = row.get(r.getForeignKey());
+		TableCell colVal = row.get(r.getForeignKey());
 
 		if (colVal == null) {
 			return "";
@@ -107,7 +107,7 @@ public class RelationFormula implements IFormula {
 		}
 
 		// get the required field and put it into the formula
-		TableColumnValue parentValue = parent.get(parentColumnId);
+		TableCell parentValue = parent.get(parentColumnId);
 
 		if (parentValue == null) {
 			throw new FormulaException("No parent data value found for " + parentColumnId 

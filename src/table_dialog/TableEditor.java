@@ -1,5 +1,8 @@
 package table_dialog;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxViewerCellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
@@ -15,15 +18,15 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 
+import table_skeleton.TableCell;
 import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
 import table_skeleton.TableRow;
 import xml_catalog_reader.Selection;
 import xml_catalog_reader.SelectionList;
 
 public class TableEditor extends EditingSupport {
 	
-	private EditorListener listener;
+	private Collection<EditorListener> listeners;
 	private TableColumn column;
 	private TableView viewer;
 
@@ -31,14 +34,15 @@ public class TableEditor extends EditingSupport {
 		super(viewer.getViewer());
 		this.column = column;
 		this.viewer = viewer;
+		this.listeners = new ArrayList<>();
 	}
 	
 	/**
 	 * Listener called when edit starts/ends
 	 * @param listener
 	 */
-	public void setListener(EditorListener listener) {
-		this.listener = listener;
+	public void addListener(EditorListener listener) {
+		this.listeners.add(listener);
 	}
 
 	@Override
@@ -150,7 +154,7 @@ public class TableEditor extends EditingSupport {
 			break;
 		}
 		
-		if (listener != null)
+		for(EditorListener listener : listeners)
 			listener.editStarted();
 		
 		return editor;
@@ -170,7 +174,7 @@ public class TableEditor extends EditingSupport {
 			
 		default:
 
-			TableColumnValue selection = row.get(column.getId());
+			TableCell selection = row.get(column.getId());
 
 			if (selection != null)
 				value = selection.getLabel();
@@ -191,7 +195,7 @@ public class TableEditor extends EditingSupport {
 		if (value == null || (oldValue != null && value.equals(oldValue))) {
 
 			// edit is ended
-			if (listener != null)
+			for(EditorListener listener : listeners)
 				listener.editEnded(null, column, false);
 
 			return;
@@ -228,7 +232,7 @@ public class TableEditor extends EditingSupport {
 		case PICKLIST:
 
 			Selection sel = (Selection) value;
-			TableColumnValue newSelection = new TableColumnValue(sel);
+			TableCell newSelection = new TableCell(sel);
 			row.put(column.getId(), newSelection);
 			break;
 
@@ -250,7 +254,7 @@ public class TableEditor extends EditingSupport {
 		setRowValue(arg0, value);
 		
 		// edit is ended
-		if (listener != null)
+		for(EditorListener listener : listeners)
 			listener.editEnded(row, column, true);
 	}
 	

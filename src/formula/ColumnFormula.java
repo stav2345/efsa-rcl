@@ -1,7 +1,7 @@
 package formula;
 
 import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
+import table_skeleton.TableCell;
 import table_skeleton.TableRow;
 
 /**
@@ -59,7 +59,7 @@ public class ColumnFormula implements IFormula {
 	public String solve(TableRow row) throws FormulaException {
 		
 		TableColumn colSchema = row.getSchema().getById(columnId);
-		TableColumnValue colValue = row.get(columnId);
+		TableCell colValue = row.get(columnId);
 		
 		if (colSchema == null) {
 			throw new FormulaException("No column found in the row schema for " + columnId);

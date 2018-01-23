@@ -300,11 +300,16 @@ public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList
 	@Override
 	public boolean add(IDataset dataset) {
 		
-		// we know its a dataset instance
-		Dataset d = (Dataset) dataset;
-		d.setStatus(RCLDatasetStatus.fromDcfStatus(dataset.getStatus()));
+		// if dataset
+		if (dataset instanceof Dataset) {
+			Dataset d = (Dataset) dataset;
+			d.setStatus(RCLDatasetStatus.fromDcfStatus(dataset.getStatus()));
+			
+			return super.add(d);
+		}
 		
-		return super.add(d);
+		// if report
+		return super.add(dataset);
 	}
 
 	@Override

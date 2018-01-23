@@ -3,7 +3,7 @@ package table_dialog;
 import java.util.Comparator;
 
 import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
+import table_skeleton.TableCell;
 import table_skeleton.TableRow;
 
 public class TableRowComparator implements Comparator<TableRow> {
@@ -29,8 +29,8 @@ public class TableRowComparator implements Comparator<TableRow> {
 		String value1 = null;
 		String value2 = null;
 		
-		TableColumnValue sel1 = row1.get(column.getId());
-		TableColumnValue sel2 = row2.get(column.getId());
+		TableCell sel1 = row1.get(column.getId());
+		TableCell sel2 = row2.get(column.getId());
 		
 		// get values
 		if (sel1 != null)

@@ -5,7 +5,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
 import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
+import table_skeleton.TableCell;
 import table_skeleton.TableRow;
 
 /**
@@ -16,8 +16,15 @@ import table_skeleton.TableRow;
 public class TableLabelProvider extends ColumnLabelProvider {
 
 	private String key;
+	private boolean showPwds;
+	
 	public TableLabelProvider(String key) {
 		this.key = key;
+		this.showPwds = false;
+	}
+	
+	public void setPasswordVisibility(boolean visible) {
+		this.showPwds = visible;
 	}
 	
 	@Override
@@ -43,14 +50,14 @@ public class TableLabelProvider extends ColumnLabelProvider {
 	public String getText(Object arg0) {
 
 		TableRow row = (TableRow) arg0;
-		TableColumnValue cell = row.get(key);
+		TableCell cell = row.get(key);
 
 		if (cell == null || cell.getLabel() == null)
 			return null;
 		
 		TableColumn col = row.getSchema().getById(key);
 		
-		if (col.isPassword()) {
+		if (col.isPassword() && !showPwds) {
 			// show as password with dots
 			String ECHARSTR = Character.toString((char)9679);
 			return cell.getLabel().replaceAll(".", ECHARSTR);

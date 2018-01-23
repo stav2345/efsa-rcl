@@ -252,7 +252,37 @@ public class DialogBuilder {
 	 * @return
 	 */
 	public DialogBuilder addButton(String code, String text, SelectionListener listener) {
-		return addButtonToComposite(code, null, text, listener);
+		return addButtonToComposite(code, null, text, listener, null);
+	}
+	
+	public DialogBuilder addButton(String code, String text, MouseListener listener) {
+		return addButtonToComposite(code, null, text, null, listener);
+	}
+	
+	/**
+	 * 
+	 * @param code
+	 * @param compositeCode
+	 * @param text
+	 * @param listener
+	 * @return
+	 */
+	public DialogBuilder addButtonToComposite(String code, String compositeCode, String text, 
+			SelectionListener listener) {
+		return addButtonToComposite(code, compositeCode, text, listener, null);
+	}
+	
+	/**
+	 * 
+	 * @param code
+	 * @param compositeCode
+	 * @param text
+	 * @param listener
+	 * @return
+	 */
+	public DialogBuilder addButtonToComposite(String code, String compositeCode, String text, 
+			MouseListener listener) {
+		return addButtonToComposite(code, compositeCode, text, null, listener);
 	}
 	
 	/**
@@ -261,7 +291,8 @@ public class DialogBuilder {
 	 * @param editable
 	 * @return
 	 */
-	public DialogBuilder addButtonToComposite(String code, String compositeCode, String text, SelectionListener listener) {
+	public DialogBuilder addButtonToComposite(String code, String compositeCode, String text, 
+			SelectionListener listener, MouseListener mouseListener) {
 		
 		Composite parent;
 		if (compositeCode != null)
@@ -272,9 +303,12 @@ public class DialogBuilder {
 		Button button = new Button(parent, SWT.PUSH);
 		button.setData("code", code);
 		button.setText(text);
-		
+
 		if (listener != null)
 			button.addSelectionListener(listener);
+		
+		if (mouseListener != null)
+			button.addMouseListener(mouseListener);
 		
 		return this;
 	}
@@ -284,9 +318,10 @@ public class DialogBuilder {
 	 * @param code
 	 * @param image
 	 */
-	public void addButtonImage(String code, Image image) {
+	public DialogBuilder addButtonImage(String code, Image image) {
 		Button button = (Button) getWidget(code);
 		button.setImage(image);
+		return this;
 	}
 	
 	/**
@@ -413,14 +448,45 @@ public class DialogBuilder {
 	}
 	
 	/**
+	 * Select a row of the table
+	 * @param index
+	 * @return
+	 */
+	public DialogBuilder selectRow(int index) {
+		
+		if (this.table == null)
+			return this;
+		
+		this.table.select(index);
+		
+		return this;
+	}
+	
+	/**
+	 * Show/hide a password column
+	 * @param colId id of the column to show/hide
+	 * @param visible true to show the password in plain text, false to show it as dots
+	 * @return
+	 */
+	public DialogBuilder setPasswordVisibility(String colId, boolean visible) {
+		
+		if (this.table == null)
+			return this;
+		
+		this.table.setPasswordVisibility(colId, visible);
+		
+		return this;
+	}
+	
+	/**
 	 * Add a listener to the editor of the table
 	 * @param editorListener
 	 */
-	public void setTableEditorListener(EditorListener editorListener) {
+	public void addTableEditorListener(EditorListener editorListener) {
 		if (this.table == null)
 			return;
 		
-		this.table.setEditorListener(editorListener);
+		this.table.addEditorListener(editorListener);
 	}
 	
 	/**

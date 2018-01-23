@@ -89,6 +89,7 @@ public abstract class TableDialog {
 	private String title;
 	private boolean createPopUp;
 	private boolean addSaveBtn;
+	private boolean autoSave; // if rows should be auto saved in the db
 	
 	private EditorListener editorListener;
 	
@@ -104,11 +105,16 @@ public abstract class TableDialog {
 	 * @param addSaveBtn true to create a button below the table
 	 */
 	public TableDialog(Shell parent, String title, boolean createPopUp, boolean addSaveBtn) {
+		this(parent, title, createPopUp, addSaveBtn, true);
+	}
+	
+	public TableDialog(Shell parent, String title, boolean createPopUp, boolean addSaveBtn, boolean autoSave) {
 
 		this.parent = parent;
 		this.title = title;
 		this.createPopUp = createPopUp;
 		this.addSaveBtn = addSaveBtn;
+		this.autoSave = autoSave;
 		
 		this.schema = TableSchemaList.getByName(getSchemaSheetName());
 		this.schema.sort();
@@ -169,7 +175,7 @@ public abstract class TableDialog {
 		});
 		
 		// avoid saving without applying changes
-		this.panel.setTableEditorListener(new EditorListener() {
+		this.panel.addTableEditorListener(new EditorListener() {
 			
 			@Override
 			public void editStarted() {
@@ -188,7 +194,10 @@ public abstract class TableDialog {
 					editorListener.editEnded(row, field, changed);
 				
 				if (changed) {
-					panel.getTable().refreshAndSave(row);
+					if (autoSave)
+						panel.getTable().refreshAndSave(row);
+					else
+						panel.getTable().refresh(row);
 				}
 				
 				if (saveButton != null)
@@ -271,6 +280,20 @@ public abstract class TableDialog {
 			if (!dialog.getDisplay().readAndDispatch())
 				dialog.getDisplay().sleep();
 		}
+	}
+	
+	/**
+	 * Save all the rows in the db
+	 * this will work only if {@code autoSave} is false
+	 * @param rows
+	 */
+	public void saveRows(TableRow... rows) {
+		
+		if (autoSave)
+			return;
+		
+		for (TableRow row : rows)
+			panel.refreshAndSave(row);
 	}
 	
 	/**

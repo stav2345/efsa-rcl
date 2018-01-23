@@ -8,20 +8,20 @@ import xml_catalog_reader.Selection;
  * @author avonva
  *
  */
-public class TableColumnValue {
+public class TableCell {
 	
 	private boolean changed;
 	
 	private String code;
 	private String label;
 	
-	public TableColumnValue() {
+	public TableCell() {
 		this.code = "";
 		this.label = "";
 		this.changed = true;
 	}
 	
-	public TableColumnValue(Selection sel) {
+	public TableCell(Selection sel) {
 		this.code = sel.getCode();
 		this.label = sel.getDescription();
 		this.changed = true;
@@ -76,10 +76,10 @@ public class TableColumnValue {
 	
 	@Override
 	public boolean equals(Object arg0) {
-		if (!(arg0 instanceof TableColumnValue))
+		if (!(arg0 instanceof TableCell))
 			return super.equals(arg0);
 		
-		TableColumnValue other = (TableColumnValue) arg0;
+		TableCell other = (TableCell) arg0;
 		
 		// check code and label
 		return (this.getCode().equals(other.getCode())

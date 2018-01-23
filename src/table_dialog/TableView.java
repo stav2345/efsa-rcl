@@ -9,6 +9,7 @@ import java.util.List;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
@@ -38,6 +39,8 @@ import xlsx_reader.TableSchemaList;
  */
 public class TableView {
 
+	private static final String TABLE_COLUMN_DATA_KEY = "schema";
+	
 	private Composite parent;                    // parent widget
 	private TableViewer tableViewer;             // main table
 	private List<TableViewerColumn> columns;     // columns of the table
@@ -45,7 +48,7 @@ public class TableView {
 	private TableRowList tableElements;   // cache of the table elements to do sorting by column
 	private boolean editable;                    // table is editable or not?
 	private Listener inputChangedListener;       // called when table data changes
-	private EditorListener editorListener;       // called when editor starts/ends
+	private Collection<EditorListener> editorListeners;       // called when editor starts/ends
 	private TableViewerColumn validator;         // data validator, only if needed
 
 	private Collection<TableRow> parents;        // parents of the table (tables from which this table was created)
@@ -61,6 +64,7 @@ public class TableView {
 		this.editable = editable;
 		this.parents = new ArrayList<>();
 		this.columns = new ArrayList<>();
+		this.editorListeners = new ArrayList<>();
 
 		this.schema = TableSchemaList.getByName(schemaSheetName);
 		this.tableElements = new TableRowList(schema);
@@ -172,7 +176,7 @@ public class TableView {
 		addColumnSorter(col, columnViewer);
 		
 		// add the column schema to the column viewer
-		columnViewer.getColumn().setData("schema", col);
+		columnViewer.getColumn().setData(TABLE_COLUMN_DATA_KEY, col);
 		
 		return columnViewer;
 	}
@@ -337,6 +341,27 @@ public class TableView {
 	}
 
 	/**
+	 * Show/hide a password field
+	 * @param colId
+	 * @param visible
+	 */
+	public void setPasswordVisibility(String colId, boolean visible) {
+		
+		for (TableViewerColumn colViewer : columns) {
+			
+			TableColumn column = (TableColumn) colViewer.getColumn().getData(TABLE_COLUMN_DATA_KEY);
+			
+			if (column.getId().equals(colId)) {
+				TableLabelProvider labelProvider = new TableLabelProvider(colId);
+				labelProvider.setPasswordVisibility(visible);
+				colViewer.setLabelProvider(labelProvider);
+				tableViewer.refresh();
+				break;
+			}
+		}
+	}
+	
+	/**
 	 * Set if the table can be edited or not
 	 * @param editable
 	 */
@@ -354,12 +379,12 @@ public class TableView {
 			
 			if (editable) {
 				
-				TableColumn columnSchema = (TableColumn) column.getColumn().getData("schema");
+				TableColumn columnSchema = (TableColumn) column.getColumn().getData(TABLE_COLUMN_DATA_KEY);
 				
 				editor = new TableEditor(this, columnSchema);
 				
-				if (editorListener != null)
-					editor.setListener(editorListener);
+				for(EditorListener listener : editorListeners)
+					editor.addListener(listener);
 			}
 			
 			// remove editor if editable is false
@@ -497,7 +522,7 @@ public class TableView {
 	 * @param row
 	 */
 	public void refreshAndSave(TableRow row) {
-
+		
 		TableRow oldRow = this.tableElements.getElementById(row.getDatabaseId());
 		
 		if (oldRow == null) {
@@ -523,6 +548,18 @@ public class TableView {
 			event.data = row;
 			inputChangedListener.handleEvent(event);
 		}
+	}
+	
+	/**
+	 * Select a row of the table
+	 * @param index
+	 */
+	public void select(int index) {
+
+		if (tableViewer.getTable().getItemCount() <= index)
+			return;
+
+		tableViewer.setSelection(new StructuredSelection(tableViewer.getElementAt(index)), true);
 	}
 	
 	public void refresh(TableRow row) {
@@ -574,8 +611,8 @@ public class TableView {
 	 * Set listener called when edit starts/ends
 	 * @param editorListener
 	 */
-	public void setEditorListener(EditorListener editorListener) {
-		this.editorListener = editorListener;
+	public void addEditorListener(EditorListener editorListener) {
+		this.editorListeners.add(editorListener);
 		
 		// refresh editor to add the listener
 		this.setEditable(this.editable);

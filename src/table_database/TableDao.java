@@ -11,7 +11,7 @@ import java.util.Iterator;
 import app_config.AppPaths;
 import table_relations.Relation;
 import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
+import table_skeleton.TableCell;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import xlsx_reader.TableSchema;
@@ -149,13 +149,13 @@ public class TableDao {
 			
 			TableColumn col = schema.get(i);
 			
-			TableColumnValue colValue = row.get(col.getId());
+			TableCell colValue = row.get(col.getId());
 			
 			if (colValue == null) {
 				System.err.println("Missing value for " + col.getId() 
 					+ " in table " + row.getSchema().getSheetName() + ". Putting an empty value.");
 				
-				colValue = new TableColumnValue();
+				colValue = new TableCell();
 			}
 
 			// save always the code
@@ -340,14 +340,14 @@ public class TableDao {
 		// put the id
 		int id = rs.getInt(schema.getTableIdField());
 		
-		TableColumnValue sel = new TableColumnValue();
+		TableCell sel = new TableCell();
 		sel.setCode(String.valueOf(id));
 		sel.setLabel(String.valueOf(id));
 		row.put(schema.getTableIdField(), sel);
 		
 		for (TableColumn column : schema) {
 			
-			TableColumnValue selection = null;
+			TableCell selection = null;
 			
 			// create foreign key if necessary
 			if (column.isForeignKey()) {
@@ -355,7 +355,7 @@ public class TableDao {
 				// the foreign key is an integer id
 				int value = rs.getInt(column.getId());
 				
-				selection = new TableColumnValue();
+				selection = new TableCell();
 				
 				// we don't need the description for foreign id
 				selection.setCode(String.valueOf(value));
@@ -387,7 +387,7 @@ public class TableDao {
 									+ " folder. Note that also the root node of the xml should have "
 									+ "the name " + column.getPicklistKey() + ". Putting an empty value.");
 							
-							selection = new TableColumnValue();
+							selection = new TableCell();
 						}
 						else if (contents.getElementByCode(code) == null) {
 							
@@ -396,20 +396,20 @@ public class TableDao {
 									+ " in the " + AppPaths.XML_FOLDER
 									+ " folder. Putting an empty value.");
 							
-							selection = new TableColumnValue();
+							selection = new TableCell();
 						}
 						else {
-							selection = new TableColumnValue(contents.getElementByCode(code));
+							selection = new TableCell(contents.getElementByCode(code));
 						}
 					}
 					else
-						selection = new TableColumnValue();
+						selection = new TableCell();
 				}
 				else {
 
 					// if simple element, then it is sufficient the
 					// description (which is the label)
-					selection = new TableColumnValue();
+					selection = new TableCell();
 					selection.setCode(String.valueOf(value));
 					selection.setLabel(String.valueOf(value));
 				}

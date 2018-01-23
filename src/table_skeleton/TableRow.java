@@ -33,7 +33,7 @@ public class TableRow implements Checkable {
 		ERROR
 	};
 
-	private HashMap<String, TableColumnValue> values;
+	private HashMap<String, TableCell> values;
 	private TableSchema schema;
 	
 	/**
@@ -53,7 +53,7 @@ public class TableRow implements Checkable {
 	/**
 	 * Careful use
 	 */
-	public TableRow(HashMap<String, TableColumnValue> values, TableSchema schema) {
+	public TableRow(HashMap<String, TableCell> values, TableSchema schema) {
 		this.schema = schema;
 		this.values = values;
 	}
@@ -82,7 +82,7 @@ public class TableRow implements Checkable {
 	 * @param initialColumnId
 	 * @param initialValue
 	 */
-	public TableRow(TableSchema schema, String initialColumnId, TableColumnValue initialValue) {
+	public TableRow(TableSchema schema, String initialColumnId, TableCell initialValue) {
 		this(schema);
 		this.put(initialColumnId, initialValue);
 	}
@@ -94,7 +94,7 @@ public class TableRow implements Checkable {
 	public void setId(int id) {
 		
 		String index = String.valueOf(id);
-		TableColumnValue idValue = new TableColumnValue();
+		TableCell idValue = new TableCell();
 		idValue.setCode(index);
 		idValue.setLabel(index);
 		
@@ -114,7 +114,7 @@ public class TableRow implements Checkable {
 		
 		try {
 			
-			TableColumnValue value = this.values.get(schema.getTableIdField());
+			TableCell value = this.values.get(schema.getTableIdField());
 			
 			if (value != null && value.getCode() != null)
 				id = Integer.valueOf(value.getCode());
@@ -168,7 +168,7 @@ public class TableRow implements Checkable {
 	 * @param key
 	 * @return
 	 */
-	public TableColumnValue get(String key) {
+	public TableCell get(String key) {
 		return values.get(key);
 	}
 	
@@ -222,7 +222,7 @@ public class TableRow implements Checkable {
 	
 	private String getField(String field, boolean label) {
 		
-		TableColumnValue value = this.get(field);
+		TableCell value = this.get(field);
 		
 		if (value == null || value.isEmpty())
 			return "";
@@ -240,7 +240,7 @@ public class TableRow implements Checkable {
 		this.put(AppPaths.CHILDREN_CONTAIN_ERRORS_COL, BooleanValue.getFalseValue());
 	}
 	public boolean hasChildrenError() {
-		TableColumnValue value = this.get(AppPaths.CHILDREN_CONTAIN_ERRORS_COL);
+		TableCell value = this.get(AppPaths.CHILDREN_CONTAIN_ERRORS_COL);
 		return value != null && value.getCode() != null && BooleanValue.isTrue(value.getCode());
 	}
 	
@@ -249,7 +249,7 @@ public class TableRow implements Checkable {
 	 * @param key
 	 * @param value
 	 */
-	public void put(String key, TableColumnValue value) {
+	public void put(String key, TableCell value) {
 		values.put(key, value);
 	}
 	
@@ -262,7 +262,7 @@ public class TableRow implements Checkable {
 	 */
 	public void put(String key, String value) {
 		
-		TableColumnValue row;
+		TableCell row;
 		
 		if (schema != null && schema.getById(key) != null && schema.getById(key).isPicklist()) {
 			
@@ -305,14 +305,14 @@ public class TableRow implements Checkable {
 					e.printStackTrace();
 				}
 				
-				row = new TableColumnValue();
+				row = new TableCell();
 			}
 			else {
-				row = new TableColumnValue(selection);
+				row = new TableCell(selection);
 			}
 		}
 		else {
-			row = new TableColumnValue();
+			row = new TableCell();
 			row.setCode(value);
 			row.setLabel(value);
 		}
@@ -336,7 +336,7 @@ public class TableRow implements Checkable {
 		if (col.isForeignKey())
 			return;
 		
-		TableColumnValue sel = new TableColumnValue();
+		TableCell sel = new TableCell();
 		FormulaSolver solver = new FormulaSolver(this);
 
 		try {
@@ -391,7 +391,7 @@ public class TableRow implements Checkable {
 		if (h == null)
 			return;
 		
-		TableColumnValue colVal = this.get(f.getColumn().getId());
+		TableCell colVal = this.get(f.getColumn().getId());
 
 		if (h == XlsxHeader.CODE_FORMULA && !f.getSolvedFormula().isEmpty()) {
 			colVal.setCode(f.getSolvedFormula());
@@ -493,17 +493,17 @@ public class TableRow implements Checkable {
 	 * @param picklistKey
 	 * @return
 	 */
-	public TableColumnValue getTableColumnValue(String code, String picklistKey) {
+	public TableCell getTableColumnValue(String code, String picklistKey) {
 		
 		Selection sel = XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code);
 		
 		if (sel == null) {
 			System.err.println("Cannot pick the value " + code + " from list " + picklistKey 
 					+ ". Either the list or the element do not exist. Empty element returned instead.");
-			return new TableColumnValue();
+			return new TableCell();
 		}
 		
-		return new TableColumnValue(sel);
+		return new TableCell(sel);
 	}
 	
 	/**
@@ -526,7 +526,7 @@ public class TableRow implements Checkable {
 			
 			if (column.isMandatory(this)) {
 				
-				TableColumnValue value = this.get(column.getId());
+				TableCell value = this.get(column.getId());
 				
 				if (value == null || value.isEmpty())
 					notFilled.add(column);
@@ -566,8 +566,8 @@ public class TableRow implements Checkable {
 				continue;
 			
 			// here we are comparing a part of the natural key
-			TableColumnValue value1 = this.get(key);
-			TableColumnValue value2 = other.get(key);
+			TableCell value1 = this.get(key);
+			TableCell value2 = other.get(key);
 			
 			// cannot compare two empty values (it would return
 			// equal but actually they simply have a missing value)

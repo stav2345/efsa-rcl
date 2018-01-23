@@ -2,7 +2,7 @@ package xml_catalog_reader;
 
 import java.util.HashMap;
 
-import table_skeleton.TableColumnValue;
+import table_skeleton.TableCell;
 
 /**
  * Class which models a single node of a configuration .xml file
@@ -61,8 +61,8 @@ public class Selection {
 			Selection other = (Selection) arg0;
 			return other.code.equals(code);
 		}
-		else if (arg0 instanceof TableColumnValue) {
-			TableColumnValue other = (TableColumnValue) arg0;
+		else if (arg0 instanceof TableCell) {
+			TableCell other = (TableCell) arg0;
 			return other.getCode().equals(code);
 		}
 		else

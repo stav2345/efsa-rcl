@@ -16,7 +16,7 @@ import amend_manager.DatasetComparison;
 import app_config.AppPaths;
 import message.MessageConfigBuilder;
 import table_skeleton.TableColumn;
-import table_skeleton.TableColumnValue;
+import table_skeleton.TableCell;
 import table_skeleton.TableRow;
 
 /**
@@ -175,7 +175,7 @@ public class MessageXmlBuilder implements AutoCloseable {
 
 			// get the configuration element
 			// using the xml node as match
-			TableColumnValue value = config.get(elementName);
+			TableCell value = config.get(elementName);
 
 			if (value == null || value.isEmpty()) {
 				System.err.println("No value found for " + elementName 
