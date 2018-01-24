@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.xml.sax.SAXException;
 
-import app_config.PropertiesReader;
 import i18n_messages.Messages;
 import message.SendMessageException;
 import progress_bar.FormProgressBar;
@@ -165,15 +164,11 @@ public abstract class ReportActions {
 		if (!confirm)
 			return;
 		
+		// data collection ask confirmation
+		boolean confirm2 = askDataCollectionConfirmation(report);
 		
-		// if test data collection ask confirmation
-		if (PropertiesReader.isTestDataCollection(report.getYear())) {
-			
-			boolean confirm2 = askTestDataCollectionConfirmation(report);
-			
-			if (!confirm2)
-				return;
-		}
+		if (!confirm2)
+			return;
 		
 		FormProgressBar progressBarDialog = new FormProgressBar(shell, Messages.get("send.progress.title"));
 		progressBarDialog.open();
@@ -318,7 +313,7 @@ public abstract class ReportActions {
 	 * Ask confirmation for sending to the test data collection
 	 * @return
 	 */
-	public abstract boolean askTestDataCollectionConfirmation(Report report);
+	public abstract boolean askDataCollectionConfirmation(Report report);
 	
 	/**
 	 * Ask confirmation for replacing an existing dataset with a send operation

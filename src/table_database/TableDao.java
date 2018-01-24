@@ -157,7 +157,7 @@ public class TableDao {
 			TableCell colValue = row.get(col.getId());
 			
 			if (colValue == null) {
-				LOGGER.warn("Missing value for " + col.getId() 
+				LOGGER.info("No value found for " + col.getId() 
 					+ " in table " + row.getSchema().getSheetName() + ". Putting an empty value.");
 				
 				colValue = new TableCell();

@@ -508,8 +508,12 @@ public class TableRow implements Checkable {
 		Selection sel = XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code);
 		
 		if (sel == null) {
-			LOGGER.warn("Cannot pick the value " + code + " from list " + picklistKey 
-					+ ". Either the list or the element do not exist. Empty element returned instead.");
+			
+			if (code != null) {
+				LOGGER.warn("Cannot pick the value " + code + " from list " + picklistKey 
+						+ ". Either the list or the element do not exist. Empty element returned instead.");
+			}
+			
 			return new TableCell();
 		}
 		
