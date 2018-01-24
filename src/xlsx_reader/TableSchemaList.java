@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import app_config.AppPaths;
@@ -12,6 +14,8 @@ import table_relations.RelationParser;
 
 public class TableSchemaList extends ArrayList<TableSchema> {
 
+	private static final Logger LOGGER = LogManager.getLogger(TableSchemaList.class);
+	
 	private static final long serialVersionUID = 1L;
 
 	private static HashMap<String, TableSchemaList> schemasCache;
@@ -86,6 +90,7 @@ public class TableSchemaList extends ArrayList<TableSchema> {
 			schemas = getAll(tablesSchemaFilename);
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get tables schemas from filename=" + tablesSchemaFilename + ". Returning null", e);
 			return null;
 		}
 

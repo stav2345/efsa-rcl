@@ -2,6 +2,9 @@ package table_skeleton;
 
 import java.util.Collection;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.BooleanValue;
 import formula.Formula;
 import formula.FormulaException;
@@ -21,6 +24,8 @@ import xml_catalog_reader.XmlLoader;
  *
  */
 public class TableColumn implements Comparable<TableColumn> {
+	
+	private static final Logger LOGGER = LogManager.getLogger(TableColumn.class);
 	
 	private String id;           // key which identifies the column
 	private String code;         // code of the column
@@ -285,6 +290,7 @@ public class TableColumn implements Comparable<TableColumn> {
 			return BooleanValue.isTrue(solvedFormula);
 		} catch (FormulaException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot solve formula", e);
 		}
 		
 		return false;
@@ -321,6 +327,7 @@ public class TableColumn implements Comparable<TableColumn> {
 			return solveFormula(row, XlsxHeader.PICKLIST_FILTER.getHeaderName());
 		} catch (FormulaException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot solve formula for picklist filter", e);
 		}
 		
 		return null;

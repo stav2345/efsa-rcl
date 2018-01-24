@@ -9,10 +9,15 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import table_database.Database;
 
 public class DatasetComparisonDao {
 
+	private static final Logger LOGGER = LogManager.getLogger(DatasetComparisonDao.class);
+	
 	/**
 	 * add an element to the table
 	 * @param comp
@@ -43,6 +48,7 @@ public class DatasetComparisonDao {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot add a new dataset comparison=" + comp, e);
 		}
 	}
 	
@@ -74,6 +80,7 @@ public class DatasetComparisonDao {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get all the dataset comparisons", e);
 		}
 		
 		return comparisons;
@@ -93,6 +100,7 @@ public class DatasetComparisonDao {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot delete all the dataset comparisons", e);
 		}
 	}
 	
@@ -109,6 +117,7 @@ public class DatasetComparisonDao {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot execute query=" + query, e);
 		}
 	}
 }

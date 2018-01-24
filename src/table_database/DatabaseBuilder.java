@@ -8,6 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import table_skeleton.TableColumn;
@@ -21,6 +24,8 @@ import xlsx_reader.TableSchemaList;
  *
  */
 public class DatabaseBuilder {
+	
+	private static final Logger LOGGER = LogManager.getLogger(DatabaseBuilder.class);
 	
 	private static final String DB_URL = "jdbc:derby:" + AppPaths.DB_FOLDER + ";create=true";
 
@@ -50,6 +55,7 @@ public class DatabaseBuilder {
 			
 		} catch ( IOException | SQLException e ) {
 			e.printStackTrace();
+			LOGGER.error("Cannot create database in folder=" + path, e);
 			return;
 		}
 	}

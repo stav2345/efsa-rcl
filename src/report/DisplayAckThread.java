@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 
 import ack.DcfAck;
@@ -17,6 +19,8 @@ import soap.MySOAPException;
 
 public class DisplayAckThread extends Thread {
 
+	private static final Logger LOGGER = LogManager.getLogger(DisplayAckThread.class);
+	
 	private Message result;
 	private EFSAReport report;
 	private ThreadFinishedListener listener;
@@ -63,6 +67,7 @@ public class DisplayAckThread extends Thread {
 			ack = report.getAck();
 		} catch (MySOAPException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get ack for report=" + report.getSenderId(), e);
 			return Warnings.createSOAPWarning(e);
 		}
 
@@ -89,6 +94,7 @@ public class DisplayAckThread extends Thread {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot copy the ack into local disk (for displaying the html with the browser)", e);
 			return Warnings.create(Messages.get("error.title"), 
 					Messages.get("ack.file.not.found"), SWT.ICON_ERROR);
 		}

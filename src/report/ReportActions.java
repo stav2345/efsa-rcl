@@ -5,6 +5,8 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
@@ -28,6 +30,8 @@ import soap.MySOAPException;
  *
  */
 public abstract class ReportActions {	
+	
+	private static final Logger LOGGER = LogManager.getLogger(ReportActions.class);
 	
 	public enum ReportAction {
 		SEND,
@@ -127,6 +131,7 @@ public abstract class ReportActions {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot perform operation=" + action + " for report=" + report.getSenderId(), e);
 			exceptionOccurred = e;
 		}
 		finally {
@@ -203,6 +208,7 @@ public abstract class ReportActions {
 							
 						} catch (UnsupportedReportActionException e) {
 							e.printStackTrace();
+							LOGGER.error("Cannot send report=" + report.getSenderId(), e);
 							manageException(e, ReportAction.SEND);
 						}
 					}

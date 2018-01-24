@@ -308,6 +308,7 @@ public class TableRow implements Checkable {
 				}
 				catch (IOException e) {
 					e.printStackTrace();
+					LOGGER.error("Cannot put key=" + key + ", value=" + value + " in row", e);
 				}
 				
 				row = new TableCell();
@@ -349,6 +350,7 @@ public class TableRow implements Checkable {
 			sel.setLabel(label.getSolvedFormula());
 		} catch (FormulaException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot solve formula for column=" + colId, e);
 		}
 
 		try {
@@ -361,6 +363,7 @@ public class TableRow implements Checkable {
 			
 		} catch (FormulaException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot solve formula for column=" + colId, e);
 		}
 
 		this.put(col.getId(), sel);
@@ -430,12 +433,14 @@ public class TableRow implements Checkable {
 			solver.solveAll(XlsxHeader.CODE_FORMULA.getHeaderName());
 		} catch (FormulaException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot solve row formulas", e);
 		}
 		
 		try {
 			solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
 		} catch (FormulaException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot solve row formulas", e);
 		}
 	}
 	

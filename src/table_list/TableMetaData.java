@@ -4,12 +4,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import html_viewer.HtmlViewer;
 
 public class TableMetaData {
 
+	private static final Logger LOGGER = LogManager.getLogger(TableMetaData.class);
+	
 	private static Collection<TableMetaData> tables;
 	
 	private String tableName;
@@ -67,6 +72,7 @@ public class TableMetaData {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get table with name=" + tableName, e);
 		}
 		
 		return table;

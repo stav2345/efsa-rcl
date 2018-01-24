@@ -211,6 +211,7 @@ public class PropertiesReader {
 		}
 		catch(NumberFormatException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get the data collection starting year. Expected number, found=" + year, e);
 			return -1;
 		}
 	}

@@ -6,11 +6,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import table_relations.Relation;
 import table_relations.RelationList;
 import table_skeleton.TableColumn;
 
 public class TableSchema extends ArrayList<TableColumn> {
+	
+	private static final Logger LOGGER = LogManager.getLogger(TableSchema.class);
 	
 	/**
 	 * 
@@ -32,6 +37,7 @@ public class TableSchema extends ArrayList<TableColumn> {
 			this.relations = getParentTables();
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get parent tables for sheetname=" + sheetName, e);
 		}
 	}
 	

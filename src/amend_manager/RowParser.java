@@ -14,6 +14,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import dataset.Dataset;
 import table_skeleton.TableRow;
 import xml_catalog_reader.XmlContents;
@@ -25,6 +28,8 @@ import xml_catalog_reader.XmlContents;
  */
 public class RowParser implements Closeable {
 
+	private static final Logger LOGGER = LogManager.getLogger(RowParser.class);
+	
 	private String currentNode;
 	private TableRow datasetRow;
 
@@ -124,13 +129,14 @@ public class RowParser implements Closeable {
 	 * Close the parser
 	 * @throws IOException 
 	 */
-	public void close () throws IOException {
+	public void close() throws IOException {
 		
 		if (eventReader != null) {
 			try {
 				eventReader.close();
 			} catch (XMLStreamException e) {
 				e.printStackTrace();
+				LOGGER.error("Cannot close the RowParser", e);
 			}
 		}
 

@@ -64,6 +64,7 @@ public class RefreshStatusThread extends Thread {
 			ack = report.getAck();
 		} catch (MySOAPException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get the ack for the report=" + report.getSenderId(), e);
 			return Warnings.createSOAPWarning(e);
 		}
 
@@ -190,10 +191,14 @@ public class RefreshStatusThread extends Thread {
 		}
 		catch (MySOAPException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot refresh status", e);
 			mb = Warnings.createSOAPWarning(e);
 
 		} catch (ReportException e) {
 			e.printStackTrace();
+			
+			LOGGER.error("Cannot refresh status", e);
+			
 			Warnings.create(Messages.get("error.title"), 
 					Messages.get("refresh.failed.no.senderId", PropertiesReader.getSupportEmail(), e.getMessage()), 
 					SWT.ICON_ERROR);

@@ -148,6 +148,7 @@ public class Database {
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot update database properties, key=" + key + " value=" + value, e);
 		}
 	}
 
@@ -175,6 +176,7 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get database property key=" + key, e);
 		}
 
 		return version;
@@ -205,8 +207,9 @@ public class Database {
 
 			cs.executeBatch();
 
-		} catch ( SQLException e ) {
+		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot compress database", e);
 		}
 	}
 

@@ -7,6 +7,9 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 
 /**
@@ -16,6 +19,8 @@ import app_config.AppPaths;
  */
 public class XmlLoader {
 
+	private static final Logger LOGGER = LogManager.getLogger(XmlLoader.class);
+	
 	// cache in memory to speed up
 	private static Collection<XmlContents> contents = new ArrayList<>();
 	
@@ -62,6 +67,7 @@ public class XmlLoader {
 				parser.close();
 			} catch (XMLStreamException | IOException e) {
 				e.printStackTrace();
+				LOGGER.error("Cannot refresh the XmlLoader contents", e);
 			}
 		}
 	}

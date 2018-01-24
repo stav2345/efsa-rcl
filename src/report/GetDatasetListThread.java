@@ -1,5 +1,8 @@
 package report;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import dataset.DatasetList;
 import dataset.IDataset;
 import soap.GetDatasetsList;
@@ -8,6 +11,8 @@ import user.IDcfUser;
 
 public class GetDatasetListThread extends Thread {
 
+	private static final Logger LOGGER = LogManager.getLogger(GetDatasetListThread.class);
+	
 	private DatasetList datasets;
 	
 	private ThreadFinishedListener listener;
@@ -27,6 +32,7 @@ public class GetDatasetListThread extends Thread {
 				listener.finished(this);
 		} catch (MySOAPException e) {
 			e.printStackTrace();
+			LOGGER.error("GetDatasetList failed", e);
 			if (listener != null)
 				listener.terminated(this, e);
 		}

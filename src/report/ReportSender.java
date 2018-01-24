@@ -56,6 +56,8 @@ public class ReportSender extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 			
+			LOGGER.error("Cannot send report=" + report.getSenderId(), e);
+			
 			if (progressListener != null)
 				this.progressListener.progressStopped(e);
 		}

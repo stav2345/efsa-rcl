@@ -223,6 +223,7 @@ public class TableDao {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot add row", e);
 		}
 		
 		if (id != -1) {
@@ -257,6 +258,7 @@ public class TableDao {
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
+			LOGGER.error("Cannot update row", e);
 			ok = false;	
 		}
 		
@@ -288,6 +290,7 @@ public class TableDao {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot delete rows", e);
 			ok = false;
 		}
 		
@@ -324,6 +327,7 @@ public class TableDao {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot delete rows by parent id=" + parentId, e);
 			ok = false;
 		}
 		
@@ -472,10 +476,12 @@ public class TableDao {
 			}
 			catch (SQLException e) {
 				e.printStackTrace();
+				LOGGER.error("Cannot get rows by parentId=" + parentId, e);
 			}
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get rows by parentId=" + parentId, e);
 		}
 		
 		return rows;
@@ -505,10 +511,12 @@ public class TableDao {
 			}
 			catch (SQLException e) {
 				e.printStackTrace();
+				LOGGER.error("Cannot get all rows", e);
 			}
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get all rows", e);
 		}
 		
 		return rows;
@@ -534,6 +542,7 @@ public class TableDao {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot delete row with database id=" + rowId, e);
 			ok = false;
 		}
 		
@@ -566,6 +575,7 @@ public class TableDao {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot delete rows", e);
 			ok = false;
 		}
 		
@@ -592,6 +602,7 @@ public class TableDao {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot delete rows", e);
 			ok = false;
 		}
 		
@@ -630,10 +641,12 @@ public class TableDao {
 			}
 			catch (SQLException e) {
 				e.printStackTrace();
+				LOGGER.error("Cannot get rows", e);
 			}
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get rows", e);
 		}
 		
 		return row;
@@ -664,10 +677,12 @@ public class TableDao {
 			}
 			catch (SQLException e) {
 				e.printStackTrace();
+				LOGGER.error("Cannot get rows", e);
 			}
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get rows", e);
 		}
 		
 		return rows;

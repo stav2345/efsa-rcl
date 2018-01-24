@@ -244,6 +244,7 @@ public class Relation {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get parent schema for " + getParent(), e);
 		}
 		
 		return null;
@@ -269,6 +270,7 @@ public class Relation {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot get child schema for" + getChild(), e);
 		}
 		
 		return null;

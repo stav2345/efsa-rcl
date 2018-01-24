@@ -1,7 +1,12 @@
 package table_skeleton;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 public class TableVersion {
 
+	private static final Logger LOGGER = LogManager.getLogger(TableVersion.class);
+	
 	public static String extractVersionFrom(String field) {
 		
 		String[] split = field.split("\\.");
@@ -61,6 +66,7 @@ public class TableVersion {
 		}
 		catch (NumberFormatException e) {
 			e.printStackTrace();
+			LOGGER.error("Cannot increment version. Expected number, found=" + versionCode, e);
 		}
 		
 		return newVersionCode;
