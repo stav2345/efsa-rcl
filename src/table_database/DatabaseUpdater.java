@@ -141,8 +141,9 @@ public class DatabaseUpdater {
 	 * @param newTable
 	 * @param newCol
 	 * @throws IOException
+	 * @throws SQLException 
 	 */
-	private void addColumn(TableSchema newTable, TableColumn newCol) throws IOException {
+	private void addColumn(TableSchema newTable, TableColumn newCol) throws IOException, SQLException {
 		DatabaseBuilder db = new DatabaseBuilder();
 		db.addColumnToTable(newTable, newCol);
 	}

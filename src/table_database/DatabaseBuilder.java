@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import app_config.AppPaths;
 import app_config.PropertiesReader;
+import sql.SQLExecutor;
 import table_skeleton.TableColumn;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
@@ -41,19 +42,13 @@ public class DatabaseBuilder {
 		String query = queryCreator.getCreateDatabaseQuery(TableSchemaList.getAll());
 		
 		// create the database
-		try {
-
-			// set a "create" connection
-			DriverManager.getConnection(DB_URL);
-
-			// sql script to create the database
-			SQLScriptExec script = new SQLScriptExec(DB_URL);
-
-			script.exec(query);
+		try(Connection con = DriverManager.getConnection(DB_URL);
+				SQLExecutor executor = new SQLExecutor(con);) {
+			executor.exec(query);
 			
 			addDbInfo();
 			
-		} catch ( IOException | SQLException e ) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot create database in folder=" + path, e);
 			return;
@@ -71,8 +66,11 @@ public class DatabaseBuilder {
 		
 		DatabaseStructureCreator creator = new DatabaseStructureCreator();
 		String query = creator.getNewTableQuery(table);
-		SQLScriptExec script = new SQLScriptExec(DB_URL);
-		script.exec(query);
+		
+		try(Connection con = DriverManager.getConnection(DB_URL);
+				SQLExecutor executor = new SQLExecutor(con);) {
+			executor.exec(query);
+		}
 	}
 	
 	/**
@@ -80,15 +78,18 @@ public class DatabaseBuilder {
 	 * @param schema
 	 * @param column
 	 * @throws IOException
+	 * @throws SQLException 
 	 */
-	public void addColumnToTable(TableSchema schema, TableColumn column) throws IOException {
+	public void addColumnToTable(TableSchema schema, TableColumn column) throws IOException, SQLException {
 		
 		DatabaseStructureCreator creator = new DatabaseStructureCreator();
 		
 		String query = creator.getAddNewColumnQuery(schema.getSheetName(), column);
 		
-		SQLScriptExec script = new SQLScriptExec(DB_URL);
-		script.exec(query);
+		try(Connection con = DriverManager.getConnection(DB_URL);
+				SQLExecutor executor = new SQLExecutor(con);) {
+			executor.exec(query);
+		}
 	}
 	
 	/**
@@ -96,15 +97,18 @@ public class DatabaseBuilder {
 	 * @param schema
 	 * @param foreignKey
 	 * @throws IOException
+	 * @throws SQLException 
 	 */
-	public void addForeignKey(TableSchema schema, TableColumn foreignKey) throws IOException {
+	public void addForeignKey(TableSchema schema, TableColumn foreignKey) throws IOException, SQLException {
 		
 		DatabaseStructureCreator creator = new DatabaseStructureCreator();
 		
 		String query = creator.getAddForeignKeyQuery(schema.getSheetName(), foreignKey);
 		
-		SQLScriptExec script = new SQLScriptExec(DB_URL);
-		script.exec(query);
+		try(Connection con = DriverManager.getConnection(DB_URL);
+				SQLExecutor executor = new SQLExecutor(con);) {
+			executor.exec(query);
+		}
 	}
 	
 	/**
@@ -122,8 +126,10 @@ public class DatabaseBuilder {
 		String query = creator.getRemoveForeignKeyQuery(schema.getSheetName(), 
 				foreignKey.getId());
 		
-		SQLScriptExec script = new SQLScriptExec(DB_URL);
-		script.exec(query);
+		try(Connection con = DriverManager.getConnection(DB_URL);
+				SQLExecutor executor = new SQLExecutor(con);) {
+			executor.exec(query);
+		}
 	}
 	
 	/**

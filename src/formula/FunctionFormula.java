@@ -234,7 +234,7 @@ public class FunctionFormula implements IFormula {
 			
 			// return empty value if empty operand
 			if (operand.isEmpty()) {
-				LOGGER.warn("Warning: An operand of the SUM function is empty. Operands: " + operands + ". Returning empty value");
+				LOGGER.info("Warning: An operand of the SUM function is empty. Operands: " + operands + ". Returning empty value");
 				return "";
 			}
 			
