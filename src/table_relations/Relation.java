@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 import table_database.TableDao;
 import table_skeleton.TableRow;
@@ -13,6 +16,8 @@ import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
 public class Relation {
+	
+	private static final Logger LOGGER = LogManager.getLogger(Relation.class);
 	
 	// caches for each table of the database, using the
 	// table name as key
@@ -168,7 +173,7 @@ public class Relation {
 		Relation relation = row.getSchema().getRelationByParentTable(parentTable);
 		
 		if (relation == null) {
-			System.err.println("No relation found for " + parentTable 
+			LOGGER.error("No relation found for " + parentTable 
 					+ " 1=>N " + row.getSchema().getSheetName());
 			return;
 		}

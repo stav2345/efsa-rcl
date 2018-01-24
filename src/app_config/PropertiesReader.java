@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import report.Report;
 
 /**
@@ -13,6 +16,8 @@ import report.Report;
  *
  */
 public class PropertiesReader {
+	
+	private static final Logger LOGGER = LogManager.getLogger(PropertiesReader.class);
 	
 	private static final String TECH_SUPPORT_EMAIL_PROPERTY = "TechnicalSupport.Email";
 	private static final String DB_REQUIRED_VERSION_PROPERTY = "Db.MinRequiredVersion";
@@ -49,7 +54,7 @@ public class PropertiesReader {
 			in.close();
 		}
 		catch (IOException e) {
-			System.err.println("The default properties file was not found. Please check!");
+			LOGGER.error("The properties file was not found. Please check!", e);
 		}
 		
 		return properties;
@@ -107,10 +112,9 @@ public class PropertiesReader {
 	public static String getDataCollectionCode() {
 		
 		Report report = GlobalManager.getInstance().getOpenedReport();
-		
-		// 
+
 		if (report == null) {
-			System.err.println("No report is opened! Returning " 
+			LOGGER.debug("No report is opened! Returning " 
 					+ getTestDataCollectionCode());
 			return getTestDataCollectionCode();
 		}
@@ -135,7 +139,7 @@ public class PropertiesReader {
 		// if the report year is not an available year
 		// then use the test data collection
 		if (reportYearInt < startingYear) {
-			System.out.println("The report year is < than the starting year of the data collection. Using " 
+			LOGGER.debug("The report year is < than the starting year of the data collection. Using " 
 					+ getTestDataCollectionCode() + " instead.");
 			dcCode = resolveDCPattern(dcPattern, getDcTestCode());
 		}

@@ -1,10 +1,15 @@
 package table_skeleton;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.BooleanValue;
 import table_skeleton.TableColumn.ColumnType;
 
 public class TableColumnBuilder {
 
+	private static final Logger LOGGER = LogManager.getLogger(TableColumnBuilder.class);
+	
 	private String id;            // key which identifies the column
 	private String code;          // column code
 	private String label;         // column name showed to the user
@@ -167,7 +172,7 @@ public class TableColumnBuilder {
 				visible, defaultCode, codeFormula, defaultValue, labelFormula, putInOutput, order, naturalKey);
 		
 		if (type == ColumnType.PICKLIST && picklistKey == null) {
-			System.err.println("Cannot set type to picklist without specifying list key for column " + this.id);
+			LOGGER.error("Cannot set type to picklist without specifying list key for column " + this.id);
 			return null;
 		}
 		

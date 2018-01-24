@@ -7,6 +7,9 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 import global_utils.FileUtils;
 import html_viewer.HtmlViewer;
@@ -18,6 +21,8 @@ import i18n_messages.Messages;
  *
  */
 public abstract class ReportValidator {
+	
+	private static final Logger LOGGER = LogManager.getLogger(ReportValidator.class);
 	
 	/**
 	 * Show the found errors in the default browser
@@ -79,7 +84,7 @@ public abstract class ReportValidator {
 				writer.append(line);
 		}
 		else {
-			System.err.println("No " + AppPaths.REPORT_ERRORS_HEAD_FILE + " file found!");
+			LOGGER.error("No " + AppPaths.REPORT_ERRORS_HEAD_FILE + " file found!");
 		}
 	}
 	

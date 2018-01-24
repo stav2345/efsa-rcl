@@ -16,6 +16,9 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * Parser for the .xml configuration files which provide the data that need
  * to be visualized.
@@ -24,6 +27,8 @@ import javax.xml.stream.events.XMLEvent;
  */
 public class XmlParser {
 
+	private static final Logger LOGGER = LogManager.getLogger(XmlParser.class);
+	
 	private String filename = "";
 	private boolean parsingDescriptionNode;  // true if we are parsing the description node
 	private String dataNode;
@@ -273,7 +278,7 @@ public class XmlParser {
 	 * @param text
 	 */
 	private void printError(String text) {
-		System.err.println(filename + ": " + text);
+		LOGGER.error(filename + ": " + text);
 	}
 	
 	/**

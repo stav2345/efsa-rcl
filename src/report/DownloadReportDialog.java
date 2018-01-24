@@ -4,13 +4,12 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.xml.soap.SOAPException;
-
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import app_config.PropertiesReader;
-import data_collection.IDcfDataCollection;
 import dataset.Dataset;
 import dataset.DatasetList;
 import dataset.IDataset;
@@ -18,7 +17,6 @@ import global_utils.Warnings;
 import i18n_messages.Messages;
 import soap.GetDatasetsList;
 import table_dialog.DatasetListDialog;
-import user.User;
 
 /**
  * Show the list of dcf datasets. A {@link GetDatasetsList} is performed
@@ -26,13 +24,13 @@ import user.User;
  * @author avonva
  *
  */
-public class DownloadReportDialog extends DatasetListDialog {
+public class DownloadReportDialog extends DatasetListDialog implements IDownloadReportDialog {
+
+	private static final Logger LOGGER = LogManager.getLogger(DownloadReportDialog.class);
 	
-	private DatasetList datasetsList;
-	private DatasetList allDatasets;
-	private DatasetList downloadableDatasets;
+	private DatasetList allValidStatusDatasets;
+	private DatasetList allValidStatusAndLatestVersionsDatasets;
 	private String validSenderIdPattern;
-	private IDcfDataCollection dc;
 	
 	/**
 	 * 
@@ -41,49 +39,21 @@ public class DownloadReportDialog extends DatasetListDialog {
 	 * dataset must follow to be considered downloadable (used to filter
 	 * the datasets)
 	 */
-	public DownloadReportDialog(IDcfDataCollection dc, Shell parent, String validSenderIdPattern) {
+	public DownloadReportDialog(Shell parent, String validSenderIdPattern) {
 		super(parent, Messages.get("download.title"), Messages.get("download.button"));
-		this.dc = dc;
+		
 		this.validSenderIdPattern = validSenderIdPattern;
-		this.allDatasets = new DatasetList();
-		this.downloadableDatasets = new DatasetList();
 	}
 	
-	public void loadDatasets() {
+	public void setDatasetsList(DatasetList datasetsList) {
 		
-		// prepare downloadableDatasets and allDatasets lists
-		initDatasets(validSenderIdPattern);
+		allValidStatusDatasets = datasetsList.getDownloadableDatasets(validSenderIdPattern);
 		
-		// sort the datasets
-		this.downloadableDatasets.sort();
+		allValidStatusAndLatestVersionsDatasets = datasetsList.getDownloadableDatasetsLatestVersions(validSenderIdPattern);
 		
-		this.setList(downloadableDatasets);
-	}
-
-	/**
-	 * Get a list of all the dcf datasets which are downloadable.
-	 * All the data collections starting from the starting year are considered.
-	 * @param validSenderIdPattern pattern that the sender id field of a
-	 * dataset must follow to be considered downloadable (used to filter
-	 * the datasets)
-	 * @return
-	 */
-	private void initDatasets(String validSenderIdPattern) {
+		allValidStatusAndLatestVersionsDatasets.sort();
 		
-		datasetsList = new DatasetList();
-
-		GetDatasetsList<IDataset> req = new GetDatasetsList<>(User.getInstance(), dc.getCode(), datasetsList);
-		try {
-			
-			req.getList();
-			
-		} catch (SOAPException e) {
-			e.printStackTrace();
-		}
-
-		allDatasets.addAll(datasetsList.getDownloadableDatasets(validSenderIdPattern));
-		downloadableDatasets.addAll(
-				datasetsList.getDownloadableDatasetsLatestVersions(validSenderIdPattern));
+		setList(allValidStatusAndLatestVersionsDatasets);
 	}
 	
 	public boolean isDuplicated(Dataset d, DatasetList datasets) {
@@ -111,7 +81,14 @@ public class DownloadReportDialog extends DatasetListDialog {
 			return null;
 		}
 		
-		if (isDuplicated(dataset, datasetsList)) {
+		
+		String senderId = dataset.getDecomposedSenderId();
+		LOGGER.debug("Selected dataset with senderId" + senderId);
+		
+		if (isDuplicated(dataset, allValidStatusDatasets)) {
+			
+			LOGGER.warn("Duplicated sender dataset id in DCF for senderId=" + senderId);
+			
 			int val = Warnings.warnUser(getParent(), Messages.get("error.title"), 
 					Messages.get("download.duplicate.sender.id", 
 							PropertiesReader.getSupportEmail()), 
@@ -121,14 +98,10 @@ public class DownloadReportDialog extends DatasetListDialog {
 				return null;
 		}
 		
-		String senderId = dataset.getDecomposedSenderId();
-		
-		System.out.println("Selected dataset senderId" + senderId);
-		System.out.println("Filtering in " + allDatasets);
 		if (senderId == null)
 			return null;
 		
 		// get all the versions of the dataset
-		return this.allDatasets.filterByDecomposedSenderId(senderId);
+		return this.allValidStatusDatasets.filterByDecomposedSenderId(senderId);
 	}
 }

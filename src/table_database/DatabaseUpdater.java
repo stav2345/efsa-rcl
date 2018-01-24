@@ -4,12 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.PropertiesReader;
 import table_skeleton.TableColumn;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
 public class DatabaseUpdater {
+	
+	private static final Logger LOGGER = LogManager.getLogger(DatabaseUpdater.class);
 	
 	/**
 	 * Update a database from the old schema to the new schema.
@@ -20,7 +25,7 @@ public class DatabaseUpdater {
 	 */
 	public void update(File oldSchema, File newSchema) throws IOException, SQLException {
 		
-		System.out.println("Updating database...");
+		LOGGER.info("Updating database...");
 		
 		TableSchemaList newList = TableSchemaList.getAll(newSchema.getAbsolutePath());
 		TableSchemaList oldList = TableSchemaList.getAll(oldSchema.getAbsolutePath());
@@ -35,12 +40,12 @@ public class DatabaseUpdater {
 				TableSchema oldTable = oldList.getSchemaByName(newTable.getSheetName());
 
 				// update the table to the new one
-				System.out.println("Updating table " + oldTable.getSheetName());
+				LOGGER.info("Updating table " + oldTable.getSheetName());
 				updateTable(oldTable, newTable);
 			}
 			else {
 				// if not, just create the new table
-				System.out.println("Creating new table " + newTable.getSheetName());
+				LOGGER.info("Creating new table " + newTable.getSheetName());
 				addTable(newTable);
 			}
 		}
@@ -49,7 +54,7 @@ public class DatabaseUpdater {
 		Database database = new Database();
 		database.updateVersion(PropertiesReader.getAppVersion());
 		
-		System.out.println("Database updated!");
+		LOGGER.info("Database updated!");
 	}
 	
 	/**
@@ -80,12 +85,12 @@ public class DatabaseUpdater {
 			
 			// if the old table contained the newCol we need to update
 			if (oldTable.contains(newCol)) {
-				System.out.println("Updating column " + newCol);
+				LOGGER.info("Updating column " + newCol);
 				TableColumn oldCol = oldTable.getById(newCol.getId());
 				updateColumn(oldTable, oldCol, newCol);
 			}
 			else {
-				System.out.println("Add new column " + newCol);
+				LOGGER.info("Add new column " + newCol);
 				addColumn(newTable, newCol);
 			}
 		}
@@ -111,7 +116,7 @@ public class DatabaseUpdater {
 				// the constraint in the database
 				if (oldCol.isForeignKey()) {
 					
-					System.out.println("Removing foreign key constraint " + oldCol.getId());
+					LOGGER.info("Removing foreign key constraint " + oldCol.getId());
 					
 					// delete foreign key constraint
 					removeForeignKey(oldTable, oldCol);
@@ -155,13 +160,13 @@ public class DatabaseUpdater {
 
 		// if a foreign key was removed, remove it from the db
 		if (oldCol.isForeignKey() && !newCol.isForeignKey()) {
-			System.out.println("Removing foreign key constraint " + oldCol.getId());
+			LOGGER.info("Removing foreign key constraint " + oldCol.getId());
 			removeForeignKey(table, oldCol);
 		}
 		
 		// if a foreign key was added using an old field, add it to the db
 		else if (!oldCol.isForeignKey() && newCol.isForeignKey()) {
-			System.err.println("Converting an existing column to a foreign key is not supported: " + oldCol.getId());
+			LOGGER.info("Converting an existing column to a foreign key is not supported: " + oldCol.getId());
 			// NOT SUPPORTED, it can lead to errors due to
 			// different data types (integers/strings casts)
 		}

@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 
@@ -16,6 +19,8 @@ import table_skeleton.TableRow;
  *
  */
 public class Formula {
+	
+	private static final Logger LOGGER = LogManager.getLogger(Formula.class);
 	
 	private static HashMap<Cell, Integer> dependenciesCache;
 	
@@ -117,6 +122,8 @@ public class Formula {
 	}
 	
 	private void print(String value, String header) {
+		
+		LOGGER.debug("Solving formula=" + value + ". Solving formulas=" + header);
 		
 		//if ((column.equals("sampAnId")) && fieldHeader.equals("labelFormula"))
 		//	System.out.println("column " + column + " " + header + " => " + value);

@@ -3,6 +3,8 @@ package table_dialog;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -30,6 +32,8 @@ import xml_catalog_reader.XmlLoader;
  */
 public class CatalogComboViewer {
 
+	private static final Logger LOGGER = LogManager.getLogger(CatalogComboViewer.class);
+	
 	private Composite parent;
 	private Composite composite;
 	private ComboViewer comboBox;
@@ -85,7 +89,7 @@ public class CatalogComboViewer {
 		XmlContents items = XmlLoader.getByPicklistKey(selectionListCode);
 		
 		if (items == null) {
-			System.err.println("No file found for: " + selectionListCode);
+			LOGGER.error("No file found for: " + selectionListCode);
 			return;
 		}
 

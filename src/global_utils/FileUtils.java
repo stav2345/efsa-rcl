@@ -2,9 +2,14 @@ package global_utils;
 
 import java.io.File;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 
 public class FileUtils {
+	
+	private static final Logger LOGGER = LogManager.getLogger(FileUtils.class);
 	
 	/**
 	 * Clear the temporary folder
@@ -24,7 +29,7 @@ public class FileUtils {
 		File file = new File(folderName);
 		if(!file.exists()) {
 			if(!file.mkdir()) {
-				System.err.println("Failed to create folder " + folderName);
+				LOGGER.error("Failed to create folder " + folderName);
 			}
 		}
 	}

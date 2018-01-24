@@ -8,10 +8,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 import table_relations.Relation;
-import table_skeleton.TableColumn;
 import table_skeleton.TableCell;
+import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import xlsx_reader.TableSchema;
@@ -27,6 +30,8 @@ import xml_catalog_reader.XmlLoader;
  *
  */
 public class TableDao {
+	
+	private static final Logger LOGGER = LogManager.getLogger(TableDao.class);
 
 	private String tableName;
 	private TableSchema schema;
@@ -152,7 +157,7 @@ public class TableDao {
 			TableCell colValue = row.get(col.getId());
 			
 			if (colValue == null) {
-				System.err.println("Missing value for " + col.getId() 
+				LOGGER.warn("Missing value for " + col.getId() 
 					+ " in table " + row.getSchema().getSheetName() + ". Putting an empty value.");
 				
 				colValue = new TableCell();
@@ -176,7 +181,7 @@ public class TableDao {
 				
 			} catch (NumberFormatException | IOException e) {
 				e.printStackTrace();
-				System.err.println("Wrong integer field " + col.getId() + " with value " + value);
+				LOGGER.error("Wrong integer field " + col.getId() + " with value " + value, e);
 			}
 			
 			// increase current index
@@ -221,10 +226,10 @@ public class TableDao {
 		}
 		
 		if (id != -1) {
-			System.out.println("Row " + id + " successfully added in " + tableName);
+			LOGGER.debug("Row " + id + " successfully added in " + tableName);
 		}
 		else {
-			System.err.println("Errors in adding " + row + " to " + tableName);
+			LOGGER.error("Errors in adding " + row + " to " + tableName);
 		}
 		
 		return id;
@@ -256,10 +261,10 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			System.out.println("Row " + row.getDatabaseId() + " successfully updated in " + tableName);
+			LOGGER.debug("Row " + row.getDatabaseId() + " successfully updated in " + tableName);
 		}
 		else {
-			System.err.println("Errors in updating " + row + " for " + tableName);
+			LOGGER.error("Errors in updating " + row + " for " + tableName);
 		}
 		
 		return ok;
@@ -287,10 +292,10 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			System.out.println("All rows successfully deleted from " + tableName);
+			LOGGER.debug("All rows successfully deleted from " + tableName);
 		}
 		else {
-			System.err.println("Cannot delete all rows from " + tableName);
+			LOGGER.error("Cannot delete all rows from " + tableName);
 		}
 		
 		return ok;
@@ -382,7 +387,7 @@ public class TableDao {
 						
 						if (contents == null) {
 
-							System.err.println("IMPORTANT: Check that the picklist " 
+							LOGGER.error("IMPORTANT: Check that the picklist " 
 									+ column.getPicklistKey() + " is in your " + AppPaths.XML_FOLDER
 									+ " folder. Note that also the root node of the xml should have "
 									+ "the name " + column.getPicklistKey() + ". Putting an empty value.");
@@ -391,7 +396,7 @@ public class TableDao {
 						}
 						else if (contents.getElementByCode(code) == null) {
 							
-							System.err.println("IMPORTANT: The element " 
+							LOGGER.error("IMPORTANT: The element " 
 									+ code + " is missing in the picklist " + column.getPicklistKey() 
 									+ " in the " + AppPaths.XML_FOLDER
 									+ " folder. Putting an empty value.");
@@ -533,10 +538,10 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			System.out.println("Row " + rowId + " successfully deleted from " + tableName);
+			LOGGER.info("Row " + rowId + " successfully deleted from " + tableName);
 		}
 		else {
-			System.out.println("Row " + rowId + " cannot be deleted from " + tableName);
+			LOGGER.error("Row " + rowId + " cannot be deleted from " + tableName);
 		}
 		
 		return ok;
@@ -591,11 +596,11 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			System.out.println("Rows with " + fieldName + " = " 
+			LOGGER.info("Rows with " + fieldName + " = " 
 					+ value + " successfully deleted from " + tableName);
 		}
 		else {
-			System.out.println("Rows with " + fieldName + " = " 
+			LOGGER.error("Rows with " + fieldName + " = " 
 					+ value + " cannot be deleted from " + tableName);
 		}
 		

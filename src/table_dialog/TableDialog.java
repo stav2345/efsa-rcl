@@ -3,6 +3,8 @@ package table_dialog;
 import java.io.IOException;
 import java.util.Collection;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.swt.SWT;
@@ -78,6 +80,8 @@ import xml_catalog_reader.Selection;
  */
 public abstract class TableDialog {
 	
+	private static final Logger LOGGER = LogManager.getLogger(TableDialog.class);
+	
 	private Shell parent;
 	private Shell dialog;
 	private DialogBuilder panel;
@@ -148,7 +152,7 @@ public abstract class TableDialog {
 		addWidgets(this.panel);
 		
 		if (!this.panel.isTableDefined()) {
-			System.err.println("Error. Cannot instantiate TableDialog without a table. Please check addWidgets().");
+			LOGGER.error("Cannot instantiate TableDialog without a table. Please check addWidgets().");
 			return null;
 		}
 		
@@ -343,7 +347,7 @@ public abstract class TableDialog {
 	public void setParents(TableRow... parents) {
 		
 		if (this.panel.getTable() == null) {
-			System.err.println("Cannot setParents on panel builder without table.");
+			LOGGER.error("Cannot setParents on panel builder without table");
 			return;
 		}
 		
@@ -373,7 +377,7 @@ public abstract class TableDialog {
 	public void setButtonText(String text) {
 		
 		if (!addSaveBtn) {
-			System.err.println("DataDialog-" + getSchemaSheetName() + ":Cannot set the button text to " 
+			LOGGER.error("DataDialog-" + getSchemaSheetName() + ":Cannot set the button text to " 
 					+ text + " since the button was not created. Please set addSaveBtn to true");
 			return;
 		}

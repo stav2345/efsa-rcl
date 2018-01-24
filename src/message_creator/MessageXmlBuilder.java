@@ -9,14 +9,16 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import amend_manager.DatasetComparison;
 import app_config.AppPaths;
 import message.MessageConfigBuilder;
-import table_skeleton.TableColumn;
 import table_skeleton.TableCell;
+import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 
 /**
@@ -29,6 +31,8 @@ import table_skeleton.TableRow;
  */
 public class MessageXmlBuilder implements AutoCloseable {
 
+	private static final Logger LOGGER = LogManager.getLogger(MessageXmlBuilder.class);
+	
 	private int rowCounter;       // number of processed rows	
 
 	private File file;            // file to create
@@ -156,7 +160,7 @@ public class MessageXmlBuilder implements AutoCloseable {
 			String elementName = element.getName();
 			
 			if (elementName == null) {
-				System.err.println("Null element name found during the export.");
+				LOGGER.warn("Null element name found in the xsd file");
 				continue;
 			}
 			
@@ -164,12 +168,12 @@ public class MessageXmlBuilder implements AutoCloseable {
 			TableColumn column = config.getSchema().getById(elementName);
 			
 			if (column == null) {
-				System.out.println("No column found in the message config schema for xsd field " + elementName);
+				LOGGER.warn("No column found in the message config schema for xsd field " + elementName);
 				continue;
 			}
 			
 			if (!column.isPutInOutput(config)) {
-				System.out.println("Skipping " + elementName + " since it should not be put in output");
+				LOGGER.debug("Skipping " + elementName + " since it should not be put in output");
 				continue;
 			}
 
@@ -178,7 +182,7 @@ public class MessageXmlBuilder implements AutoCloseable {
 			TableCell value = config.get(elementName);
 
 			if (value == null || value.isEmpty()) {
-				System.err.println("No value found for " + elementName 
+				LOGGER.warn("No value found for " + elementName 
 						+ ". Make sure that it is a not mandatory field for opType " 
 						+ messageConfig.getOpType());
 				continue;
@@ -187,7 +191,7 @@ public class MessageXmlBuilder implements AutoCloseable {
 			String nodeValue = value.getLabel();
 			
 			if (nodeValue == null || nodeValue.isEmpty()) {
-				System.out.println("Skipping " + elementName + " since it is empty");
+				LOGGER.debug("Skipping " + elementName + " since it is empty");
 				continue;
 			}
 
@@ -228,7 +232,7 @@ public class MessageXmlBuilder implements AutoCloseable {
 			.append(" - Exported row id=")
 			.append(row.getRowId());
 		
-		System.out.println(sb.toString());
+		LOGGER.debug(sb.toString());
 		
 		// print the row nodes into the file
 		writer.println(getXmlNode("result", row.getXmlRecord()));

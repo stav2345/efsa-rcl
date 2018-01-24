@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -39,6 +41,8 @@ import xlsx_reader.TableSchemaList;
  */
 public class TableView {
 
+	private static final Logger LOGGER = LogManager.getLogger(TableView.class);
+	
 	private static final String TABLE_COLUMN_DATA_KEY = "schema";
 	
 	private Composite parent;                    // parent widget
@@ -122,7 +126,7 @@ public class TableView {
 				continue;
 
 			if (col.getLabel() == null || col.getLabel().isEmpty()) {
-				System.err.println("WARNING: column " 
+				LOGGER.warn("Column " 
 						+ col 
 						+ " is set as visible but it has not a label set.");
 				col.setLabel("MISSING_" + col.getId());
@@ -526,7 +530,7 @@ public class TableView {
 		TableRow oldRow = this.tableElements.getElementById(row.getDatabaseId());
 		
 		if (oldRow == null) {
-			System.err.println("Cannot refresh row " 
+			LOGGER.warn("Cannot refresh row " 
 					+ row.getDatabaseId() + " since it is not present in the table.");
 			return;
 		}

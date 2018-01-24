@@ -1,7 +1,6 @@
 package global_utils;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ack.DcfAckLog;
@@ -13,7 +12,11 @@ import soap.MySOAPException;
 import soap.SOAPError;
 
 public class Warnings {
-
+	
+	public static Message create(String title, String message, int style) {
+		return new Message(title, message, style);
+	}
+	
 	/**
 	 * Warn the user with a message box with custom style
 	 * @param title
@@ -21,10 +24,7 @@ public class Warnings {
 	 * @param icon
 	 */
 	public static int warnUser(Shell shell, String title, String message, int style) {
-		MessageBox mb = new MessageBox(shell, style);
-		mb.setText(title);
-		mb.setMessage(message);
-		return mb.open();
+		return create(title, message, style).open(shell);
 	}
 	
 	/**
@@ -92,6 +92,11 @@ public class Warnings {
 		}
 		
 		return new String[] {title, message};
+	}
+	
+	public static Message createSOAPWarning(MySOAPException e) {
+		String[] warnings = getSOAPWarning(e);
+		return create(warnings[0], warnings[1], SWT.ICON_ERROR);
 	}
 	
 	

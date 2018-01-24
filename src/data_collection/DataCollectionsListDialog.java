@@ -25,21 +25,21 @@ import i18n_messages.Messages;
  * @author avonva
  *
  */
-public class DataCollectionsListDialog extends Dialog {
+public class DataCollectionsListDialog extends Dialog implements IDataCollectionsDialog {
 
 	private IDcfDataCollectionsList<IDcfDataCollection> list;
 	private IDcfDataCollection selectedDc;
 	
-	public DataCollectionsListDialog(IDcfDataCollectionsList<IDcfDataCollection> list, Shell parent, int style) {
+	public DataCollectionsListDialog(Shell parent, IDcfDataCollectionsList<IDcfDataCollection> list, int style) {
 		super(parent, style);
 		this.list = list;
 	}
 	
-	public DataCollectionsListDialog(IDcfDataCollectionsList<IDcfDataCollection> list, Shell parent) {
-		this(list, parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+	public DataCollectionsListDialog(Shell parent, IDcfDataCollectionsList<IDcfDataCollection> list) {
+		this(parent, list, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
-	private void createContents(Shell shell) {
+	protected void createContents(Shell shell) {
 		
 		TableViewer table = new TableViewer(shell, SWT.BORDER | SWT.SINGLE
 				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
@@ -90,6 +90,8 @@ public class DataCollectionsListDialog extends Dialog {
 				button.setEnabled(!arg0.getSelection().isEmpty());
 			}
 		});
+		
+		shell.pack();
 	}
 	
 	private void select(Shell shell, ISelection selection) {
@@ -114,8 +116,7 @@ public class DataCollectionsListDialog extends Dialog {
 		shell.setImage(getParent().getImage());
 
 		createContents(shell);
-
-		shell.pack();
+		
 		shell.open();
 
 		Display display = getParent().getDisplay();

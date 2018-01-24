@@ -3,6 +3,9 @@ package formula;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.BooleanValue;
 import table_skeleton.TableRow;
 
@@ -14,6 +17,8 @@ import table_skeleton.TableRow;
  */
 public class FunctionFormula implements IFormula {
 
+	private static final Logger LOGGER = LogManager.getLogger(FunctionFormula.class);
+	
 	public static final String ZERO_PADDING = "ZERO_PADDING";
 	public static final String END_TRIM = "END_TRIM";
 	public static final String IF = "IF";
@@ -229,7 +234,7 @@ public class FunctionFormula implements IFormula {
 			
 			// return empty value if empty operand
 			if (operand.isEmpty()) {
-				System.err.println("Warning: An operand of the SUM function is empty. Operands: " + operands + ". Returning empty value");
+				LOGGER.warn("Warning: An operand of the SUM function is empty. Operands: " + operands + ". Returning empty value");
 				return "";
 			}
 			

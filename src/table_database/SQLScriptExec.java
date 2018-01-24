@@ -8,8 +8,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 public class SQLScriptExec {
 
+	private static final Logger LOGGER = LogManager.getLogger(SQLScriptExec.class);
+	
 	private String dbUrl;
 
 	SQLScriptExec(String dbUrl) {
@@ -100,7 +105,7 @@ public class SQLScriptExec {
 			if ( data == ';' ) {
 				/* it is indeed the end of a statement which I will now execute */
 				if ( !executeSQLStatement( dbUrl, bufSQL ) ) {
-					System.err.println( "Error in the statement execution, script execution cancelled" );
+					LOGGER.error("Error in the statement execution, script execution cancelled");
 					dataAvailable = false;
 					continue;
 				} else {

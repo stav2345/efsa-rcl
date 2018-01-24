@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import app_config.AppPaths;
 import app_config.PropertiesReader;
@@ -24,6 +26,8 @@ import xlsx_reader.TableSchemaList;
  */
 public class Database {
 
+	private static final Logger LOGGER = LogManager.getLogger(Database.class);
+	
 	private static final String DB_URL = "jdbc:derby:" + AppPaths.DB_FOLDER;
 	private static final String CLOSE_DB_URL = DB_URL + ";shutdown=true";
 
@@ -35,27 +39,28 @@ public class Database {
 	 */
 	public void connect() throws IOException {
 
+		LOGGER.info("Connecting to database");
+		
 		try {
 
 			// load the jdbc driver
-			System.out.println( "Starting embedded database...");
+			LOGGER.debug("Starting embedded database...");
 
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 
 			// check if the database is present or not
-			System.out.println("Testing database connection...");
+			LOGGER.debug("Testing database connection...");
 
 			Connection con = getConnection();
 			con.close();
 
 		} catch (ClassNotFoundException e) {
-
 			e.printStackTrace();
-			System.err.println ("Cannot start embedded database: embedded driver missing");
+			LOGGER.fatal("Cannot start embedded database: embedded driver missing", e);
 
 		} catch (SQLException e1) {
 
-			System.out.println( "Creating database...");
+			LOGGER.debug("Creating new database...");
 
 			DatabaseBuilder creator = new DatabaseBuilder();
 			creator.create(AppPaths.DB_FOLDER);
@@ -92,7 +97,7 @@ public class Database {
 		// and apply them to the database
 		if (compare > 0) {
 
-			System.out.println("Database structure needs update");
+			LOGGER.info("Database structure needs update");
 
 			File oldSchema = new File(AppPaths.COMPAT_FOLDER + AppPaths.TABLES_SCHEMA_FILENAME 
 					+ "." + dbVersion + AppPaths.TABLES_SCHEMA_FORMAT);
@@ -104,7 +109,7 @@ public class Database {
 			upd.update(oldSchema, newSchema);
 		}
 		else {
-			System.out.println("Database structure is up to date");
+			LOGGER.info("Database structure is up to date");
 		}
 	}
 
@@ -181,6 +186,8 @@ public class Database {
 	 */
 	public void compress() throws IOException {
 
+		LOGGER.info("Compressing database");
+		
 		String query = "CALL SYSCS_UTIL.SYSCS_COMPRESS_TABLE(?, ?, ?)";
 
 		try (Connection con = Database.getConnection();
@@ -208,6 +215,9 @@ public class Database {
 	 * @throws IOException
 	 */
 	public void delete() throws IOException {
+		
+		LOGGER.info("Deleting database");
+		
 		this.shutdown();
 		File dir = new File(AppPaths.DB_FOLDER);
 		FileUtils.deleteDirectory(dir);
@@ -218,6 +228,9 @@ public class Database {
 	 * @throws SQLException
 	 */
 	public void shutdown() {
+		
+		LOGGER.info("Shutting down database");
+		
 		try {
 			DriverManager.getConnection(CLOSE_DB_URL);
 		} catch (SQLException e) {

@@ -11,6 +11,9 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import dataset.Dataset;
 import dataset.DatasetList;
 import dataset.IDataset;
@@ -24,6 +27,8 @@ import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
 
 public abstract class ReportImporter {
+	
+	private static final Logger LOGGER = LogManager.getLogger(ReportImporter.class);
 
 	private ProgressListener progressListener;
 	
@@ -58,7 +63,7 @@ public abstract class ReportImporter {
 			senderDatasetId = datasetVersions.get(0).getDecomposedSenderId();
 		}
 		else {
-			throw new IllegalArgumentException("Cannot download an empty dataset list");
+			throw new IllegalArgumentException("Cannot import an empty dataset list");
 		}
 	}
 	
@@ -87,6 +92,7 @@ public abstract class ReportImporter {
 	 * Delete all the old versions of the report
 	 */
 	public void deleteOldVersions() {
+		LOGGER.debug("Deleting the old versions of the report if were present");
 		this.oldVersions.deleteAll();
 	}
 	
@@ -108,7 +114,7 @@ public abstract class ReportImporter {
 	public void importReport() throws MySOAPException, XMLStreamException, IOException, 
 		FormulaException, NoAttachmentException, ParseException {
 		
-		System.out.println("Report downloader started");
+		LOGGER.info("Report downloader started for report=" + senderDatasetId);
 		
 		// save old versions of the report if present
 		saveOldVersions();
@@ -119,10 +125,10 @@ public abstract class ReportImporter {
 		int k = getLastAcceptedVersion();  // version of last accepted dataset
 		int n = getLastExistingVersion();  // version of last dataset
 		
-		System.out.println("Last version found is " + n 
-				+ ", while last ACCEPTED_DWH version found is " + k);
+		LOGGER.debug("Last version found=" + n 
+				+ ", while last ACCEPTED_DWH version found=" + k);
 		
-		System.out.println(datasetVersions);
+		LOGGER.debug("Versions=" + datasetVersions);
 		
 		// sort the datasets by version ascendent
 		datasetVersions.sortAsc();
@@ -134,7 +140,7 @@ public abstract class ReportImporter {
 			
 			setProgress(processedDatasets / datasetVersions.size() * 25);
 			
-			System.out.println("importSingleVersion of " + dataset);
+			LOGGER.debug("importSingleVersion=" + dataset);
 			
 			// import the single dataset into db
 			importSingleVersion((Dataset) dataset);
@@ -145,21 +151,19 @@ public abstract class ReportImporter {
 			// get the dataset version
 			int currentVersion = TableVersion.getNumVersion(dataset.getVersion());
 			
-			System.out.println("The version of the imported dataset is " + currentVersion);
+			LOGGER.debug("The version of the imported dataset is " + currentVersion);
 			
 			if (currentVersion == k || currentVersion == n) {
 				
 				if (currentVersion == n)
-					System.out.print("which is the last one");
+					LOGGER.debug("-> which is the last one");
 				else
-					System.out.print("which is the last accepted one");
+					LOGGER.debug("-> which is the last accepted one");
 				
-				System.out.println("; therefore process amendments and create the report");
+				LOGGER.debug("--> therefore process amendments and create the report");
 				
 				// populate the dataset with metadata (operation/header)
 				Dataset popDataset = dataset.populateMetadata();
-				
-				System.out.println("popu data " + popDataset);
 				
 				// process the dataset header/operation
 				TableRow newReport = importDatasetMetadata(popDataset);
@@ -170,9 +174,11 @@ public abstract class ReportImporter {
 				newVersions.add(newReport);
 				
 				// process the amendments of the current dataset
+				LOGGER.debug("Processing amendments");
 				processAmendments();
 				
 				// generate local report starting from dataset
+				LOGGER.debug("Saving the imported report version into the database");
 				createLocalReport();
 				
 				// if we have reached the last processable dataset stop
@@ -191,7 +197,7 @@ public abstract class ReportImporter {
 		if (this.progressListener != null)
 			this.progressListener.progressCompleted();
 		
-		System.out.println("Report downloader ended");
+		LOGGER.info("Report downloader ended for report=" + senderDatasetId);
 	}
 	
 	/**
@@ -338,6 +344,7 @@ public abstract class ReportImporter {
 	 * Clear comparisons table
 	 */
 	private void clearTable() {
+		LOGGER.debug("Clearing DatasetComparison table");
 		DatasetComparisonDao dao = new DatasetComparisonDao();
 		dao.deleteAll();
 	}

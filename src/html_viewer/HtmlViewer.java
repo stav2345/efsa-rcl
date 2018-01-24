@@ -3,10 +3,14 @@ package html_viewer;
 import java.io.File;
 import java.net.URI;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.swt.program.Program;
 
 public class HtmlViewer {
 
+	private static final Logger LOGGER = LogManager.getLogger(HtmlViewer.class);
+	
 	//private Shell parent;
 	//private Shell dialog;
 	
@@ -33,7 +37,7 @@ public class HtmlViewer {
 		URI uri = file.toURI();
 		
 		if (uri == null) {
-			System.err.println("File not found " + file.getName());
+			LOGGER.error("File not found " + file.getName());
 			return;
 		}
 		

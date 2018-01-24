@@ -6,6 +6,8 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import ack.DcfAck;
@@ -36,6 +38,8 @@ import xlsx_reader.TableSchemaList;
 
 public abstract class Report extends TableRow implements EFSAReport {
 
+	private static final Logger LOGGER = LogManager.getLogger(Report.class);
+	
 	public Report(TableRow row) {
 		super(row);
 	}
@@ -154,14 +158,14 @@ public abstract class Report extends TableRow implements EFSAReport {
 		
 		// if no dataset is present => we do an insert
 		if (dataset == null) {
-			System.out.println("No valid dataset found in DCF, using INSERT as operation");
+			LOGGER.debug("No valid dataset found in DCF, using INSERT as operation");
 			return new ReportSendOperation(null, OperationType.INSERT);
 		}
 		
 		// otherwise we check the dataset status
 		RCLDatasetStatus status = dataset.getRCLStatus();
 		
-		System.out.println("Found dataset in DCF in status " + status);
+		LOGGER.debug("Found dataset in DCF in status " + status);
 		
 		switch (status) {
 		case REJECTED_EDITABLE:
@@ -208,9 +212,6 @@ public abstract class Report extends TableRow implements EFSAReport {
 
 		request.getList();
 		
-		System.out.println(output);
-		System.out.println("Filtering by " + senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
-
 		return output.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
 	}
 	
@@ -364,7 +365,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 				// permanently save data
 				this.update();
 				
-				System.out.println("Ack successful for message id " + this.getMessageId() + ". Retrieved datasetId=" 
+				LOGGER.info("Ack successful for message id " + this.getMessageId() + ". Retrieved datasetId=" 
 						+ datasetId + " with status=" + this.getRCLStatus());
 			}
 			else {

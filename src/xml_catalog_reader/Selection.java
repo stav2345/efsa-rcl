@@ -2,6 +2,9 @@ package xml_catalog_reader;
 
 import java.util.HashMap;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import table_skeleton.TableCell;
 
 /**
@@ -11,6 +14,8 @@ import table_skeleton.TableCell;
  *
  */
 public class Selection {
+	
+	private static final Logger LOGGER = LogManager.getLogger(Selection.class);
 	
 	private String listId;       // list in which the selection is present (BSE/SCRAPIE...)
 	private String code;         // code of the selection (identifies a value of the list)
@@ -70,7 +75,7 @@ public class Selection {
 	}
 	
 	public void print() {
-		System.out.println("Code=" + code + ";value=" + description + ";listId=" + listId);
+		LOGGER.debug("Code=" + code + ";value=" + description + ";listId=" + listId);
 	}
 	
 	@Override

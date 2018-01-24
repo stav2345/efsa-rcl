@@ -35,8 +35,6 @@ public class DatabaseBuilder {
 		
 		String query = queryCreator.getCreateDatabaseQuery(TableSchemaList.getAll());
 		
-		System.out.println(query);
-		
 		// create the database
 		try {
 

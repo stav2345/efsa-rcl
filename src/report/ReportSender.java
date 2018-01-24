@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import message.SendMessageException;
@@ -12,6 +14,8 @@ import soap.MySOAPException;
 
 public class ReportSender extends Thread {
 
+	private static final Logger LOGGER = LogManager.getLogger(ReportSender.class);
+	
 	private enum Status {
 		CONTINUE,
 		STOP,
@@ -41,7 +45,7 @@ public class ReportSender extends Thread {
 	public void run() {
 		
 		if (this.reportListener == null) {
-			System.err.println("Cannot start ReportSender without reportListener set.");
+			LOGGER.warn("Cannot start ReportSender without reportListener set");
 			return;
 		}
 		
@@ -93,7 +97,7 @@ public class ReportSender extends Thread {
 		// (Required if we are overwriting an existing report)
 		if (opType.getDataset() != null) {
 
-			System.out.println("Overwriting dataset id: " + report.getId() 
+			LOGGER.info("Overwriting dataset id: " + report.getId() 
 				+ " with " + opType.getDataset().getId());
 			
 			report.setId(opType.getDataset().getId());

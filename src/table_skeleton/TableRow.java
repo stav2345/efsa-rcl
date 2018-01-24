@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 import app_config.BooleanValue;
 import duplicates_detector.Checkable;
@@ -26,6 +29,8 @@ import xml_catalog_reader.XmlLoader;
  *
  */
 public class TableRow implements Checkable {
+	
+	private static final Logger LOGGER = LogManager.getLogger(TableRow.class);
 	
 	public enum RowStatus {
 		OK,
@@ -204,7 +209,7 @@ public class TableRow implements Checkable {
 			numValue = Integer.valueOf(value);
 		}
 		catch (NumberFormatException e) {
-			System.err.println("Cannot get number for value:" + value);
+			LOGGER.error("Cannot get number for value:" + value, e);
 		}
 		
 		return numValue;
@@ -271,7 +276,7 @@ public class TableRow implements Checkable {
 			XmlContents contents = XmlLoader.getByPicklistKey(picklist);
 			
 			if (contents == null) {
-				System.err.println("Cannot retrieve the label of " + value + " for the picklist " + picklist);
+				LOGGER.warn("Cannot retrieve the label of " + value + " for the picklist " + picklist);
 				return;
 			}
 			
@@ -498,7 +503,7 @@ public class TableRow implements Checkable {
 		Selection sel = XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code);
 		
 		if (sel == null) {
-			System.err.println("Cannot pick the value " + code + " from list " + picklistKey 
+			LOGGER.warn("Cannot pick the value " + code + " from list " + picklistKey 
 					+ ". Either the list or the element do not exist. Empty element returned instead.");
 			return new TableCell();
 		}

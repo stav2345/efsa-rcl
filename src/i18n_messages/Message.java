@@ -6,8 +6,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 public class Message {
 
+	private static final Logger LOGGER = LogManager.getLogger(Message.class);
+	
 	private static final String VARIABLE_PLACEHOLDER = "%s";
 	private static final String VARIABLE_PLACEHOLDER_REGEX = VARIABLE_PLACEHOLDER + "\\d+";  // as %s1, %s2, ...
 	
@@ -42,7 +47,7 @@ public class Message {
 		Collections.sort(placeholders);
 		
 		if (placeholders.size() != values.length) {
-			System.err.println("The number of specified variables is not correct "
+			LOGGER.warn("The number of specified variables is not correct "
 					+ "compared to the number of variables placeholders. Message: " + this.message + ", received variables " + values);
 		}
 		
