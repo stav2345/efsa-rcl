@@ -111,8 +111,7 @@ public class RefreshStatusThread extends Thread {
 					LOGGER.warn("Error found in ack=" + log.getOpResError());
 					LOGGER.warn("Error description found in ack=" + log.getOpResLog());
 					
-					String[] warning = Warnings.getAckOperationWarning(log);
-					return Warnings.create(warning[0], warning[1], SWT.ICON_ERROR);
+					return Warnings.getAckOperationWarning(log);
 				}
 				else {
 					// not reachable
@@ -182,8 +181,8 @@ public class RefreshStatusThread extends Thread {
 					// otherwise inconsistent status
 				default:
 					
-					mb = Warnings.create(Messages.get("error.title"), Messages.get("refresh.error", newStatus.getLabel(), 
-							PropertiesReader.getSupportEmail()), SWT.ICON_ERROR);
+					mb = Warnings.createFatal(Messages.get("refresh.error", newStatus.getLabel(), 
+							PropertiesReader.getSupportEmail()));
 
 					break;
 				}
@@ -199,9 +198,8 @@ public class RefreshStatusThread extends Thread {
 			
 			LOGGER.error("Cannot refresh status", e);
 			
-			Warnings.create(Messages.get("error.title"), 
-					Messages.get("refresh.failed.no.senderId", PropertiesReader.getSupportEmail(), e.getMessage()), 
-					SWT.ICON_ERROR);
+			Warnings.createFatal(Messages.get("refresh.failed.no.senderId", 
+					PropertiesReader.getSupportEmail()));
 		}
 
 		// if we have an error show it and stop the process

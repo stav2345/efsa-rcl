@@ -13,8 +13,28 @@ import soap.SOAPError;
 
 public class Warnings {
 	
+	public static Message create(String message) {
+		return create(Messages.get("error.title"), message, SWT.ICON_ERROR, false);
+	}
+	
+	public static Message create(String title, String message) {
+		return create(title, message, SWT.ICON_ERROR, false);
+	}
+	
 	public static Message create(String title, String message, int style) {
-		return new Message(title, message, style);
+		return create(title, message, style, false);
+	}
+	
+	public static Message createFatal(String message) {
+		return create(Messages.get("error.title"), message, SWT.ICON_ERROR, true);
+	}
+	
+	public static Message createFatal(String message, int style) {
+		return create(Messages.get("error.title"), message, style | SWT.ICON_ERROR, true);
+	}
+	
+	public static Message create(String title, String message, int style, boolean fatal) {
+		return new Message(title, message, style, fatal);
 	}
 	
 	/**
@@ -41,11 +61,9 @@ public class Warnings {
 	    return trace;
 	}
 	
-	public static String[] getAckOperationWarning(DcfAckLog log) {
+	public static Message getAckOperationWarning(DcfAckLog log) {
 
 		OpResError error = log.getOpResError();
-		
-		String title = Messages.get("error.title");
 		String message = null;
 		
 		switch(error) {
@@ -65,8 +83,8 @@ public class Warnings {
 					PropertiesReader.getSupportEmail());
 			break;
 		}
-			
-		return new String[] {title, message};
+		
+		return createFatal(message);
 	}
 	
 	public static String[] getSOAPWarning(MySOAPException e) {

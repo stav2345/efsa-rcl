@@ -8,6 +8,7 @@ public class AppPaths {
 	public static final String TEMP_FOLDER = "temp" + System.getProperty("file.separator");
 	public static final String DB_FOLDER = "database" + System.getProperty("file.separator");
 	public static final String COMPAT_FOLDER = "compat" + System.getProperty("file.separator");
+	public static final String LOG_FOLDER = "logs" + System.getProperty("file.separator");
 	
 	// config files
 	public static final String TABLES_SCHEMA_FILENAME = "tablesSchema";

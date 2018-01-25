@@ -89,10 +89,9 @@ public class DownloadReportDialog extends DatasetListDialog implements IDownload
 			
 			LOGGER.warn("Duplicated sender dataset id in DCF for senderId=" + senderId);
 			
-			int val = Warnings.warnUser(getParent(), Messages.get("error.title"), 
-					Messages.get("download.duplicate.sender.id", 
-							PropertiesReader.getSupportEmail()), 
-					SWT.YES | SWT.NO | SWT.ICON_ERROR);
+			int val = Warnings.createFatal(Messages.get("download.duplicate.sender.id", 
+					PropertiesReader.getSupportEmail()), SWT.YES | SWT.NO | SWT.ICON_ERROR)
+					.open(getParent());
 			
 			if (val == SWT.NO)
 				return null;

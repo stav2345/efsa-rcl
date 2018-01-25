@@ -11,8 +11,6 @@ public class Messages {
 
 	private static RCLBundle bundle = new RCLBundle(RESOURCE_BUNDLE);
 	
-	private Messages() {}
-	
 	public static String get(String key, String... values) {
 		return bundle.get(key, values);
 	}

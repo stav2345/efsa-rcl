@@ -85,9 +85,8 @@ public abstract class ReportDownloader {
 		// if no data collection was retrieved
 		if (list.isEmpty()) {
 			
-			Warnings.warnUser(shell, Messages.get("warning.title"), 
-					Messages.get("dc.no.element.found", PropertiesReader.getSupportEmail()), 
-					SWT.ICON_WARNING);
+			Warnings.createFatal(Messages.get("dc.no.element.found", 
+					PropertiesReader.getSupportEmail())).open(shell);
 			
 			return;
 		}

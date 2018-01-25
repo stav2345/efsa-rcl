@@ -1,13 +1,21 @@
 package app_config;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import email.Email;
 import report.Report;
 
 /**
@@ -20,6 +28,8 @@ public class PropertiesReader {
 	private static final Logger LOGGER = LogManager.getLogger(PropertiesReader.class);
 	
 	private static final String TECH_SUPPORT_EMAIL_PROPERTY = "TechnicalSupport.Email";
+	private static final String TECH_SUPPORT_EMAIL_SUBJECT = "TechnicalSupport.Email.Subject";
+	private static final String TECH_SUPPORT_EMAIL_BODY = "TechnicalSupport.Email.Body";
 	private static final String DB_REQUIRED_VERSION_PROPERTY = "Db.MinRequiredVersion";
 	private static final String APP_NAME_PROPERTY = "Application.Name";
 	private static final String APP_VERSION_PROPERTY = "Application.Version";
@@ -93,6 +103,93 @@ public class PropertiesReader {
 	 */
 	public static String getSupportEmail() {
 		return getValue(TECH_SUPPORT_EMAIL_PROPERTY);
+	}
+	
+	private static String solveKeywords(String input) {
+		
+		if (input == null)
+			return null;
+		
+		String solved = input
+				.replace("%appVersion", getAppVersion())
+				.replace("%appName", getAppName());
+		
+		if (solved.contains("%appLog")) {
+			try {
+				File log = getLastLog();
+				
+				if (log == null)
+					return solved;
+
+				// add date
+				String logData = new String(Files.readAllBytes(Paths.get(log.getAbsolutePath())));
+				
+				solved = solved.replace("%appLog", logData);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return solved;
+	}
+	
+	public static boolean openMailPanel() {
+		
+		String subj = getSupportEmailSubject();
+		String body = getSupportEmailBody();
+		String address = getSupportEmail();
+		
+		if (subj == null || body == null || address == null) {
+			LOGGER.error("Cannot create e-mail without subject or body or e-mail address. Check configuration file");
+			return false;
+		}
+		
+		Email mail = new Email(subj, body, ";", address);
+		
+		if (!mail.isSupported())
+			return false;
+		
+		try {
+			mail.openEmailClient();
+		} catch (IOException | URISyntaxException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot open e-mail client", e);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Get the latest log of the application
+	 * @return
+	 * @throws IOException 
+	 */
+	private static File getLastLog() throws IOException {
+		
+		Path dir = Paths.get(AppPaths.LOG_FOLDER);  // specify your directory
+
+		  // get the last file comparing lastModified field
+		Optional<Path> lastFilePath = Files.list(dir)
+		    .filter(f -> !Files.isDirectory(f))  // exclude sub-directories
+		    .max(Comparator.comparingLong(f -> f.toFile().lastModified()));
+
+		File latestLog = null;
+		if (lastFilePath.isPresent()) {
+		    latestLog = lastFilePath.get().toFile();
+		}     
+
+		return latestLog;
+	}
+	
+	public static String getSupportEmailSubject() {
+		String subject = getValue(TECH_SUPPORT_EMAIL_SUBJECT);
+		return solveKeywords(subject);
+	}
+	
+	public static String getSupportEmailBody() {
+		String body = getValue(TECH_SUPPORT_EMAIL_BODY);
+		return solveKeywords(body);
 	}
 	
 	/**

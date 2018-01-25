@@ -509,7 +509,7 @@ public class TableRow implements Checkable {
 		
 		if (sel == null) {
 			
-			if (code != null) {
+			if (code != null && !code.trim().isEmpty()) {
 				LOGGER.warn("Cannot pick the value " + code + " from list " + picklistKey 
 						+ ". Either the list or the element do not exist. Empty element returned instead.");
 			}
