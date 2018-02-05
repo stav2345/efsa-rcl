@@ -1,7 +1,11 @@
 package formula;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -24,6 +28,7 @@ public class FunctionFormula implements IFormula {
 	public static final String IF = "IF";
 	public static final String IF_NOT_NULL = "IF_NOT_NULL";
 	public static final String SUM = "SUM";
+	public static final String HASH = "HASH";
 	
 	private String formula;
 	private String functionName;
@@ -76,7 +81,7 @@ public class FunctionFormula implements IFormula {
 		
 		String solvedFormula = null;
 		
-		switch(this.functionName) {
+		switch(this.functionName.toUpperCase()) {
 		case ZERO_PADDING:
 			solvedFormula = solvePadding();
 			break;
@@ -91,6 +96,9 @@ public class FunctionFormula implements IFormula {
 			break;
 		case SUM:
 			solvedFormula = solveSum();
+			break;
+		case HASH:
+			solvedFormula = solveHash();
 			break;
 		default:
 			throw new FormulaException("Function not supported: " + formula);
@@ -261,5 +269,34 @@ public class FunctionFormula implements IFormula {
 		
 		// return the total sum
 		return result;
+	}
+	
+	/**
+	 * Solve hash functions
+	 * @return
+	 * @throws FormulaException
+	 */
+	private String solveHash() throws FormulaException {
+		
+		if (operands.size() != 2) {
+			throw new FormulaException("Wrong number of parameters " + formula 
+					+ ". Expected 2, found " + operands.size());
+		}
+		
+		String hashAlgorithm = operands.get(0);
+		String value = operands.get(1);
+		
+		byte[] byteArray = value.getBytes();
+		byte[] digest;
+		try {
+			digest = MessageDigest.getInstance(hashAlgorithm).digest(byteArray);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			throw new FormulaException(e);
+		}
+		
+		String hash = DatatypeConverter.printHexBinary(digest);
+		
+		return hash;
 	}
 }

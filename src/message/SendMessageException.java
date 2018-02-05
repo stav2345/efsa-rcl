@@ -6,6 +6,10 @@ public class SendMessageException extends Exception {
 
 	private MessageResponse response;
 	
+	public SendMessageException(Exception e) {
+		super(e);
+	}
+	
 	public SendMessageException(MessageResponse response) {
 		super(response.getTrxError());
 		this.response = response;
@@ -16,6 +20,10 @@ public class SendMessageException extends Exception {
 	}
 	
 	public String getErrorMessage() {
+		
+		if (this.response == null)
+			return null;
+		
 		return this.response.getTrxError();
 	}
 }

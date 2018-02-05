@@ -316,9 +316,7 @@ public abstract class TableDialog {
 			return;
 		
 		// add them to the table
-		for (TableRow row : rows) {
-			panel.add(row);
-		}
+		panel.addAll(rows);
 	}
 	
 	/**
@@ -342,6 +340,14 @@ public abstract class TableDialog {
 		
 		TableRowList rows = getRows();
 		this.panel.setInput(rows);
+	}
+	
+	public void setRows(TableRowList rows) {
+		this.panel.setInput(rows);
+	}
+	
+	public TableRowList getLoadedRows() {
+		return this.panel.getTable().getTableElements();
 	}
 	
 	public void setParents(TableRow... parents) {
@@ -591,18 +597,20 @@ public abstract class TableDialog {
 	 */
 	public TableRowList getRows() {
 		
-		TableRowList rows = new TableRowList(schema);
+		if (parentFilter != null)
+			LOGGER.info("GetRows with filter=" + parentFilter);
+		
+		TableRowList rows = null;
 
 		// load parents rows
 		TableDao dao = new TableDao(schema);
 
 		// if no filter get all
 		if (parentFilter == null)
-			return dao.getAll();
-
-		// otherwise filter by id
-		rows = dao.getByParentId(parentFilter.getSchema().getSheetName(), 
-				parentFilter.getDatabaseId());
+			rows = dao.getAll();
+		else
+			rows = dao.getByParentId(parentFilter.getSchema().getSheetName(), 
+					parentFilter.getDatabaseId());
 
 		return rows;
 	}

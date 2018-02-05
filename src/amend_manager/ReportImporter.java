@@ -21,7 +21,7 @@ import dataset.NoAttachmentException;
 import formula.FormulaException;
 import progress_bar.ProgressListener;
 import report.Report;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
@@ -104,14 +104,14 @@ public abstract class ReportImporter {
 	/**
 	 * Import an entire report (composed of several dataset versions)
 	 * The amendment is also managed here
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws XMLStreamException
 	 * @throws IOException
 	 * @throws FormulaException 
 	 * @throws NoAttachmentException 
 	 * @throws ParseException 
 	 */
-	public void importReport() throws MySOAPException, XMLStreamException, IOException, 
+	public void importReport() throws DetailedSOAPException, XMLStreamException, IOException, 
 		FormulaException, NoAttachmentException, ParseException {
 		
 		LOGGER.info("Report downloader started for report=" + senderDatasetId);
@@ -203,12 +203,12 @@ public abstract class ReportImporter {
 	/**
 	 * Import a single dataset version into the database
 	 * @param dataset
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws XMLStreamException
 	 * @throws IOException
 	 * @throws NoAttachmentException 
 	 */
-	private void importSingleVersion(Dataset dataset) throws MySOAPException, 
+	private void importSingleVersion(Dataset dataset) throws DetailedSOAPException, 
 		XMLStreamException, IOException, NoAttachmentException {
 		
 		// download the dataset file

@@ -15,7 +15,7 @@ import global_utils.Message;
 import global_utils.Warnings;
 import html_viewer.HtmlViewer;
 import i18n_messages.Messages;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 
 public class DisplayAckThread extends Thread {
 
@@ -65,7 +65,7 @@ public class DisplayAckThread extends Thread {
 		DcfAck ack = null;
 		try {
 			ack = report.getAck();
-		} catch (MySOAPException e) {
+		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot get ack for report=" + report.getSenderId(), e);
 			return Warnings.createSOAPWarning(e);

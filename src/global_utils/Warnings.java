@@ -7,8 +7,9 @@ import ack.DcfAckLog;
 import ack.OpResError;
 import app_config.PropertiesReader;
 import converter.ExceptionConverter;
+import dataset.IDataset;
 import i18n_messages.Messages;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 import soap.SOAPError;
 
 public class Warnings {
@@ -25,12 +26,14 @@ public class Warnings {
 		return create(title, message, style, false);
 	}
 	
-	public static Message createFatal(String message) {
-		return create(Messages.get("error.title"), message, SWT.ICON_ERROR, true);
+	public static Message createFatal(String message, IDataset... reports) {
+		return createFatal(message, SWT.ICON_ERROR, reports);
 	}
 	
-	public static Message createFatal(String message, int style) {
-		return create(Messages.get("error.title"), message, style | SWT.ICON_ERROR, true);
+	public static Message createFatal(String message, int style, IDataset... reports) {
+		Message msg = create(Messages.get("error.title"), message, style | SWT.ICON_ERROR, true);
+		msg.setReports(reports);
+		return msg;
 	}
 	
 	public static Message create(String title, String message, int style, boolean fatal) {
@@ -61,7 +64,7 @@ public class Warnings {
 	    return trace;
 	}
 	
-	public static Message getAckOperationWarning(DcfAckLog log) {
+	public static Message getAckOperationWarning(IDataset report, DcfAckLog log) {
 
 		OpResError error = log.getOpResError();
 		String message = null;
@@ -84,10 +87,10 @@ public class Warnings {
 			break;
 		}
 		
-		return createFatal(message);
+		return createFatal(message, report);
 	}
 	
-	public static String[] getSOAPWarning(MySOAPException e) {
+	public static String[] getSOAPWarning(DetailedSOAPException e) {
 		
 		String title = null;
 		String message = null;
@@ -95,8 +98,7 @@ public class Warnings {
 		switch(error) {
 		case NO_CONNECTION:
 			title = Messages.get("error.title");
-			String trace = Warnings.getStackTrace(e);
-			message = Messages.get("no.connection", trace);
+			message = Messages.get("no.connection");
 			break;
 		case UNAUTHORIZED:
 		case FORBIDDEN:
@@ -112,13 +114,13 @@ public class Warnings {
 		return new String[] {title, message};
 	}
 	
-	public static Message createSOAPWarning(MySOAPException e) {
+	public static Message createSOAPWarning(DetailedSOAPException e) {
 		String[] warnings = getSOAPWarning(e);
 		return create(warnings[0], warnings[1], SWT.ICON_ERROR);
 	}
 	
 	
-	public static void showSOAPWarning(Shell shell, MySOAPException error) {
+	public static void showSOAPWarning(Shell shell, DetailedSOAPException error) {
 		String[] warning = Warnings.getSOAPWarning(error);
 		Warnings.warnUser(shell, warning[0], warning[1]);
 	}

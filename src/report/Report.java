@@ -14,6 +14,7 @@ import ack.DcfAck;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
 import app_config.PropertiesReader;
+import config.Config;
 import dataset.Dataset;
 import dataset.DatasetList;
 import dataset.IDataset;
@@ -25,7 +26,7 @@ import message_creator.OperationType;
 import progress_bar.ProgressListener;
 import soap.GetAck;
 import soap.GetDatasetsList;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 import soap.SendMessage;
 import table_database.TableDao;
 import table_relations.Relation;
@@ -93,12 +94,21 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * @param file
 	 * @throws SOAPException
 	 * @throws SendMessageException
+	 * @throws  
 	 */
 	public void send(File file, OperationType opType) throws SOAPException, SendMessageException {
 
+		Config config = new Config();
+		
 		// send the report and get the response to the message
-		SendMessage req = new SendMessage(User.getInstance(), file);
-		MessageResponse response = req.send();
+		SendMessage req = new SendMessage(User.getInstance(), config.getEnvironment());
+		MessageResponse response;
+		try {
+			response = req.send(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new SendMessageException(e);
+		}
 
 		// if correct response then save the message id
 		// into the report
@@ -148,9 +158,9 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * @param report
 	 * @return
 	 * @throws ReportException 
-	 * @throws MySOAPException 
+	 * @throws DetailedSOAPException 
 	 */
-	public ReportSendOperation getSendOperation() throws MySOAPException, ReportException {
+	public ReportSendOperation getSendOperation() throws DetailedSOAPException, ReportException {
 		
 		OperationType opType = OperationType.NOT_SUPPORTED;
 		
@@ -196,13 +206,15 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * @throws SOAPException
 	 * @throws ReportException 
 	 */
-	public DatasetList getDatasets() throws MySOAPException, ReportException {
+	public DatasetList getDatasets() throws DetailedSOAPException, ReportException {
 		
 		DatasetList output = new DatasetList();
 		
+		Config config = new Config();
+		
 		// check if the Report is in the DCF
-		GetDatasetsList<IDataset> request = new GetDatasetsList<>(User.getInstance(), PropertiesReader
-				.getDataCollectionCode(this.getYear()), output);
+		GetDatasetsList<IDataset> request = new GetDatasetsList<>(User.getInstance(), config.getEnvironment(), 
+				PropertiesReader.getDataCollectionCode(this.getYear()), output);
 		
 		String senderDatasetId = this.getSenderId();
 		
@@ -222,9 +234,9 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * {@link #getDatasets()}.
 	 * @return
 	 * @throws ReportException
-	 * @throws MySOAPException 
+	 * @throws DetailedSOAPException 
 	 */
-	public Dataset getLatestDataset() throws ReportException, MySOAPException {
+	public Dataset getLatestDataset() throws ReportException, DetailedSOAPException {
 
 		DatasetList datasets = getDatasets();
 		
@@ -271,7 +283,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	/**
 	 * Export and send without tracking progresses
 	 * @param opType
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
@@ -279,7 +291,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * @throws ReportException
 	 */
 	public void exportAndSend(OperationType opType) 
-			throws MySOAPException, IOException, ParserConfigurationException, 
+			throws DetailedSOAPException, IOException, ParserConfigurationException, 
 			SAXException, SendMessageException, ReportException {
 		this.exportAndSend(opType, null);
 	}
@@ -295,7 +307,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 */
 	public void exportAndSend(OperationType opType, ProgressListener progressListener) 
 			throws IOException, ParserConfigurationException, 
-		SAXException, SendMessageException, MySOAPException, ReportException {
+		SAXException, SendMessageException, DetailedSOAPException, ReportException {
 
 		MessageConfigBuilder messageConfig = getDefaultExportConfiguration(opType);
 		
@@ -315,7 +327,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 			file.delete();
 
 			// then rethrow the exception
-			throw new MySOAPException(e);
+			throw new DetailedSOAPException(e);
 		}
 		
 		if (progressListener != null)
@@ -327,7 +339,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * @return
 	 * @throws SOAPException
 	 */
-	public DcfAck getAck() throws MySOAPException {
+	public DcfAck getAck() throws DetailedSOAPException {
 
 		// make get ack request
 		String messageId = this.getMessageId();
@@ -337,7 +349,8 @@ public abstract class Report extends TableRow implements EFSAReport {
 			return null;
 		}
 		
-		GetAck req = new GetAck(User.getInstance(), messageId);
+		Config config = new Config();
+		GetAck req = new GetAck(User.getInstance(), config.getEnvironment(), messageId);
 		
 		// get state
 		DcfAck ack = req.getAck();
@@ -467,7 +480,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	}
 	
 	@Override
-	public RCLDatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException {
+	public RCLDatasetStatus alignStatusWithDCF() throws DetailedSOAPException, ReportException {
 		
 		// get the dataset related to the report from the
 		// GetDatasetList request

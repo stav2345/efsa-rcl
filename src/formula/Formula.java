@@ -122,8 +122,8 @@ public class Formula {
 	}
 	
 	private void print(String value, String header) {
-		
-		LOGGER.debug("Solving formula=" + value + ". Solving formulas=" + header);
+		//if (column.equals("progId") && fieldHeader.equals("labelFormula"))
+			LOGGER.debug("Solving formula=" + value + " Solving formulas=" + header);
 		
 		//if ((column.equals("sampAnId")) && fieldHeader.equals("labelFormula"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
@@ -157,6 +157,9 @@ public class Formula {
 		command = replaceFormulasWithSolution(list, command, false);
 		
 		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.END_TRIM);
+		command = replaceFormulasWithSolution(list, command, false);
+		
+		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.HASH);
 		command = replaceFormulasWithSolution(list, command, false);
 		
 		return command;

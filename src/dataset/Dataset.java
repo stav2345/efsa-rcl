@@ -7,10 +7,11 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import config.Config;
 import duplicates_detector.Checkable;
 import soap.GetDataset;
 import soap.GetDatasetsList;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
 import user.User;
@@ -79,14 +80,15 @@ public class Dataset extends DcfDataset implements IDataset, Checkable {
 		return split;
 	}
 	
-	public File download() throws MySOAPException, NoAttachmentException {
+	public File download() throws DetailedSOAPException, NoAttachmentException {
 		
 		// use cache if possible
 		if (this.datasetFile != null && this.datasetFile.exists()) {
 			return datasetFile;
 		}
 		
-		GetDataset req = new GetDataset(User.getInstance(), id);
+		Config config = new Config();
+		GetDataset req = new GetDataset(User.getInstance(), config.getEnvironment(), id);
 		File file = req.getDatasetFile();
 		
 		if (file == null)
@@ -101,11 +103,11 @@ public class Dataset extends DcfDataset implements IDataset, Checkable {
 	 * Populate the dataset with the header and operation information (from DCF)
 	 * @return
 	 * @throws XMLStreamException
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws IOException
 	 * @throws NoAttachmentException 
 	 */
-	public Dataset populateMetadata() throws XMLStreamException, MySOAPException, IOException, NoAttachmentException {
+	public Dataset populateMetadata() throws XMLStreamException, DetailedSOAPException, IOException, NoAttachmentException {
 		
 		File file = download();
 		

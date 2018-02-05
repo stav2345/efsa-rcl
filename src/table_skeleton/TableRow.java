@@ -119,7 +119,15 @@ public class TableRow implements Checkable {
 		
 		try {
 			
-			TableCell value = this.values.get(schema.getTableIdField());
+			if (schema == null)
+				return id;
+			
+			String idField = schema.getTableIdField();
+			
+			if (idField == null)
+				return id;
+			
+			TableCell value = this.values.get(idField);
 			
 			if (value != null && value.getCode() != null)
 				id = Integer.valueOf(value.getCode());
@@ -146,13 +154,17 @@ public class TableRow implements Checkable {
 		return parent;
 	}
 	
+	public Collection<TableRow> getChildren(TableSchema childSchema) {
+		return getChildren(childSchema, true);
+	}
+	
 	/**
 	 * Get the rows defined in the child table that are related to
 	 * this parent row.
 	 * @param childSchema the schema of the child table
 	 * @return
 	 */
-	public Collection<TableRow> getChildren(TableSchema childSchema) {
+	public Collection<TableRow> getChildren(TableSchema childSchema, boolean solveFormulas) {
 		
 		// open the child dao
 		TableDao dao = new TableDao(childSchema);
@@ -162,7 +174,7 @@ public class TableRow implements Checkable {
 		
 		// get the rows of the children related to the parent
 		Collection<TableRow> children = dao.getByParentId(parentTable, 
-				this.getDatabaseId());
+				this.getDatabaseId(), solveFormulas);
 		
 		return children;
 	}
@@ -400,6 +412,10 @@ public class TableRow implements Checkable {
 			return;
 		
 		TableCell colVal = this.get(f.getColumn().getId());
+		
+		// if no value found, initialize
+		if (colVal == null)
+			colVal = new TableCell();
 
 		if (h == XlsxHeader.CODE_FORMULA && !f.getSolvedFormula().isEmpty()) {
 			colVal.setCode(f.getSolvedFormula());
@@ -407,7 +423,7 @@ public class TableRow implements Checkable {
 		else if (h == XlsxHeader.LABEL_FORMULA && !f.getSolvedFormula().isEmpty()) {
 			colVal.setLabel(f.getSolvedFormula());
 			
-			// if the field has not a code formula and it is not a picklist, then
+			// if the field has not a code formula and it is not a pick-list, then
 			// update the code using the label
 			if (!f.getColumn().isPicklist() && f.getColumn().getCodeFormula().isEmpty())
 				colVal.setCode(f.getSolvedFormula());

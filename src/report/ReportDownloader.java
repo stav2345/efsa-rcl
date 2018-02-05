@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import amend_manager.ReportImporter;
 import app_config.PropertiesReader;
+import config.Config;
 import data_collection.DcfDataCollectionsList;
 import data_collection.GetAvailableDataCollections;
 import data_collection.IDataCollectionsDialog;
@@ -20,7 +21,7 @@ import progress_bar.FormProgressBar;
 import progress_bar.IndeterminateProgressDialog;
 import progress_bar.ProgressListener;
 import soap.GetDataCollectionsList;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 import user.User;
 
 /**
@@ -31,6 +32,7 @@ import user.User;
 public abstract class ReportDownloader {
 
 	private Shell shell;
+	private DatasetList allVersions;
 	
 	public ReportDownloader(Shell shell) {
 		this.shell = shell;
@@ -39,12 +41,15 @@ public abstract class ReportDownloader {
 	/**
 	 * Get only the available data collections for which the user is registered
 	 * @return
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 */
-	private IDcfDataCollectionsList<IDcfDataCollection> getAvailableDcList() throws MySOAPException {
+	private IDcfDataCollectionsList<IDcfDataCollection> getAvailableDcList() throws DetailedSOAPException {
+		
+		Config config = new Config();
 		
 		IDcfDataCollectionsList<IDcfDataCollection> output = new DcfDataCollectionsList();
-		GetDataCollectionsList<IDcfDataCollection> req = new GetDataCollectionsList<>(User.getInstance(), output);
+		GetDataCollectionsList<IDcfDataCollection> req = new GetDataCollectionsList<>(User.getInstance(), 
+				config.getEnvironment(), output);
 		
 		req.getList();
 		
@@ -65,9 +70,9 @@ public abstract class ReportDownloader {
 	/**
 	 * Download a dataset from the dcf
 	 * @param validSenderId
-	 * @throws MySOAPException 
+	 * @throws DetailedSOAPException 
 	 */
-	public void download() throws MySOAPException {
+	public void download() throws DetailedSOAPException {
 
 		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 		
@@ -75,7 +80,7 @@ public abstract class ReportDownloader {
 		IDcfDataCollectionsList<IDcfDataCollection> list;
 		try {
 			list = getAvailableDcList();
-		} catch(MySOAPException e) {
+		} catch(DetailedSOAPException e) {
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 			throw e;
 		}
@@ -119,7 +124,7 @@ public abstract class ReportDownloader {
 					return;
 
 				// get all the versions of the dataset that are present in the DCF
-				DatasetList allVersions = dialog.getSelectedDatasetVersions();
+				allVersions = dialog.getSelectedDatasetVersions();
 				
 				if (allVersions == null)
 					return;
@@ -200,8 +205,8 @@ public abstract class ReportDownloader {
 					
 					@Override
 					public void run() {
-						if (e instanceof MySOAPException) {
-							Warnings.showSOAPWarning(shell, (MySOAPException) e);
+						if (e instanceof DetailedSOAPException) {
+							Warnings.showSOAPWarning(shell, (DetailedSOAPException) e);
 						}
 						else {
 							Warnings.warnUser(shell, Messages.get("error.title"), Messages.get("download.dataset.error"));
@@ -251,6 +256,10 @@ public abstract class ReportDownloader {
 			}
 		});
 		thread.start();
+	}
+	
+	public DatasetList getAllVersions() {
+		return allVersions;
 	}
 	
 	/**

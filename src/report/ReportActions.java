@@ -17,7 +17,7 @@ import message.SendMessageException;
 import progress_bar.FormProgressBar;
 import progress_bar.ProgressListener;
 import report.ReportSender.ReportSenderListener;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 
 /**
  * Bridge between the user interface and the programmatic part.
@@ -45,6 +45,10 @@ public abstract class ReportActions {
 	public ReportActions(Shell shell, Report report) {
 		this.shell = shell;
 		this.report = report;
+	}
+	
+	public Report getReport() {
+		return report;
 	}
 	
 	/**
@@ -150,7 +154,7 @@ public abstract class ReportActions {
 	 * Export the report and send it to the dcf.
 	 * @param report
 	 * @throws ReportException 
-	 * @throws MySOAPException 
+	 * @throws DetailedSOAPException 
 	 * @throws IOException
 	 * @throws SOAPException
 	 * @throws SAXException 

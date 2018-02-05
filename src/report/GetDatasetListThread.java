@@ -3,10 +3,11 @@ package report;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import config.Config;
 import dataset.DatasetList;
 import dataset.IDataset;
 import soap.GetDatasetsList;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 import user.IDcfUser;
 
 public class GetDatasetListThread extends Thread {
@@ -30,7 +31,7 @@ public class GetDatasetListThread extends Thread {
 			datasets = getDatasets();
 			if (listener != null)
 				listener.finished(this);
-		} catch (MySOAPException e) {
+		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("GetDatasetList failed", e);
 			if (listener != null)
@@ -50,13 +51,14 @@ public class GetDatasetListThread extends Thread {
 	 * Get a list of all the dcf datasets for the selected user,
 	 * data collection.
 	 * @return
-	 * @throws MySOAPException 
+	 * @throws DetailedSOAPException 
 	 */
-	private DatasetList getDatasets() throws MySOAPException {
+	private DatasetList getDatasets() throws DetailedSOAPException {
 		
 		DatasetList output = new DatasetList();
 		
-		GetDatasetsList<IDataset> req = new GetDatasetsList<>(user, dcCode, output);
+		Config config = new Config();
+		GetDatasetsList<IDataset> req = new GetDatasetsList<>(user, config.getEnvironment(), dcCode, output);
 		req.getList();
 
 		return output;

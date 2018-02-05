@@ -10,7 +10,7 @@ import org.xml.sax.SAXException;
 
 import message.SendMessageException;
 import progress_bar.ProgressListener;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 
 public class ReportSender extends Thread {
 
@@ -65,7 +65,7 @@ public class ReportSender extends Thread {
 	
 	/**
 	 * Send the report
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 * @throws IOException
 	 * @throws ParserConfigurationException
@@ -73,7 +73,7 @@ public class ReportSender extends Thread {
 	 * @throws SendMessageException
 	 * @throws InterruptedException 
 	 */
-	private void send() throws MySOAPException, ReportException, 
+	private void send() throws DetailedSOAPException, ReportException, 
 		IOException, ParserConfigurationException, SAXException, SendMessageException, 
 		InterruptedException {
 		

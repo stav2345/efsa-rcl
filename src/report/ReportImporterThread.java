@@ -31,9 +31,7 @@ public class ReportImporterThread extends Thread {
 	public void run() {
 		
 		try {
-			
 			this.importer.importReport();
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			

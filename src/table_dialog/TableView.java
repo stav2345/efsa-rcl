@@ -256,7 +256,7 @@ public class TableView {
 	 * Get all the table rows
 	 * @return
 	 */
-	public ArrayList<TableRow> getTableElements() {
+	public TableRowList getTableElements() {
 		return tableElements;
 	}
 

@@ -15,7 +15,9 @@ import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import dataset.IDataset;
 import email.Email;
+import report.EFSAReport;
 import report.Report;
 
 /**
@@ -105,14 +107,41 @@ public class PropertiesReader {
 		return getValue(TECH_SUPPORT_EMAIL_PROPERTY);
 	}
 	
-	private static String solveKeywords(String input) {
+	private static String solveKeywords(String input, IDataset... reports) {
 		
 		if (input == null)
 			return null;
 		
+		String reportDiagnostic = "";
+		
+		StringBuilder sb = new StringBuilder();
+		
+		if (reports.length > 0) {
+			sb.append("Involved reports:\\n");
+		}
+		
+		for (IDataset report : reports) {
+			sb.append("\\nSender dataset id=")
+				.append(report.getSenderId());
+				
+			
+			if (report instanceof EFSAReport)
+				sb.append("\\nMessage id=").append(((EFSAReport)report).getMessageId());
+			
+				sb.append("\\nDataset id=")
+				.append(report.getId())
+				.append("\\nStatus=")
+				.append(report.getRCLStatus().getStatus())
+				.append("\\nStatus step=").append(report.getRCLStatus().getStep());
+		}
+		
+		reportDiagnostic = sb.toString();
+
+		
 		String solved = input
 				.replace("%appVersion", getAppVersion())
-				.replace("%appName", getAppName());
+				.replace("%appName", getAppName())
+				.replace("%report", reportDiagnostic);
 		
 		if (solved.contains("%appLog")) {
 			try {
@@ -133,7 +162,7 @@ public class PropertiesReader {
 		return solved;
 	}
 	
-	public static boolean openMailPanel() {
+	public static boolean openMailPanel(IDataset... reports) {
 		
 		String subj = getSupportEmailSubject();
 		String body = getSupportEmailBody();
@@ -143,6 +172,9 @@ public class PropertiesReader {
 			LOGGER.error("Cannot create e-mail without subject or body or e-mail address. Check configuration file");
 			return false;
 		}
+		
+		subj = solveKeywords(subj, reports);
+		body = solveKeywords(body, reports);
 		
 		Email mail = new Email(subj, body, ";", address);
 		
@@ -183,13 +215,11 @@ public class PropertiesReader {
 	}
 	
 	public static String getSupportEmailSubject() {
-		String subject = getValue(TECH_SUPPORT_EMAIL_SUBJECT);
-		return solveKeywords(subject);
+		return getValue(TECH_SUPPORT_EMAIL_SUBJECT);
 	}
 	
 	public static String getSupportEmailBody() {
-		String body = getValue(TECH_SUPPORT_EMAIL_BODY);
-		return solveKeywords(body);
+		return getValue(TECH_SUPPORT_EMAIL_BODY);
 	}
 	
 	/**

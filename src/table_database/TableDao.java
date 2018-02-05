@@ -340,7 +340,7 @@ public class TableDao {
 	 * @return
 	 * @throws SQLException
 	 */
-	public TableRow getByResultSet(ResultSet rs) throws SQLException {
+	public TableRow getByResultSet(ResultSet rs, boolean solveFormulas) throws SQLException {
 		
 		// here we need all the columns because we also
 		// compute composite fields
@@ -435,13 +435,18 @@ public class TableDao {
 		}
 
 		// solve automatic fields
-		row.updateFormulas();
+		if (solveFormulas)
+			row.updateFormulas();
 		
 		return row;
 	}
 	
 	public TableRowList getByParentId(String parentTable, int parentId) {
-		return getByParentId(parentTable, parentId, "asc");
+		return getByParentId(parentTable, parentId, true, "asc");
+	}
+	
+	public TableRowList getByParentId(String parentTable, int parentId, boolean solveFormulas) {
+		return getByParentId(parentTable, parentId, solveFormulas, "asc");
 	}
 	
 	/**
@@ -449,7 +454,7 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public TableRowList getByParentId(String parentTable, int parentId, String order) {
+	public TableRowList getByParentId(String parentTable, int parentId, boolean solveFormulas, String order) {
 		
 		TableRowList rows = new TableRowList(schema);
 
@@ -468,7 +473,7 @@ public class TableDao {
 				
 				while (rs.next()) {
 
-					TableRow row = getByResultSet(rs);
+					TableRow row = getByResultSet(rs, solveFormulas);
 	
 					if (row != null)
 						rows.add(row);
@@ -504,7 +509,7 @@ public class TableDao {
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
 					
-					TableRow row = getByResultSet(rs);
+					TableRow row = getByResultSet(rs, true);
 					if (row != null)
 						rows.add(row);
 				}
@@ -636,7 +641,7 @@ public class TableDao {
 			
 			try (ResultSet rs = stmt.executeQuery();) {
 				if (rs.next()) {
-					row = getByResultSet(rs);
+					row = getByResultSet(rs, true);
 				}
 			}
 			catch (SQLException e) {
@@ -671,7 +676,7 @@ public class TableDao {
 			
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
-					TableRow row = getByResultSet(rs);
+					TableRow row = getByResultSet(rs, true);
 					rows.add(row);
 				}
 			}

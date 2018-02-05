@@ -18,7 +18,7 @@ import message.MessageConfigBuilder;
 import message.SendMessageException;
 import message_creator.OperationType;
 import progress_bar.ProgressListener;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 import table_skeleton.TableRow;
 
 /**
@@ -61,12 +61,12 @@ public interface EFSAReport extends IDataset {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws SendMessageException
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 */
 	public void submit() throws IOException, 
 		ParserConfigurationException, SAXException, SendMessageException, 
-		MySOAPException, ReportException;
+		DetailedSOAPException, ReportException;
 	
 	/**
 	 * Reject the report in the DCF
@@ -74,42 +74,42 @@ public interface EFSAReport extends IDataset {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws SendMessageException
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 */
 	public void reject() throws IOException, 
 		ParserConfigurationException, SAXException, SendMessageException, 
-		MySOAPException, ReportException;
+		DetailedSOAPException, ReportException;
 	
 	/**
 	 * Get an acknowledgment of the report (DCF call)
 	 * @return
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 */
-	public DcfAck getAck() throws MySOAPException;
+	public DcfAck getAck() throws DetailedSOAPException;
 	
 	/**
 	 * Update the status of the report with the one contained in the ack
 	 * @return
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 */
 	public RCLDatasetStatus updateStatusWithAck(DcfAck ack);
 	
 	/**
 	 * Get all the datasets related to this report
 	 * @return
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 */
-	public DatasetList getDatasets() throws MySOAPException, ReportException;
+	public DatasetList getDatasets() throws DetailedSOAPException, ReportException;
 	
 	/**
 	 * get the last dataset related to this report
 	 * @return
-	 * @throws MySOAPException
+	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 */
-	public IDataset getLatestDataset() throws MySOAPException, ReportException;
+	public IDataset getLatestDataset() throws DetailedSOAPException, ReportException;
 	
 	/**
 	 * Force the report to be editable
@@ -201,7 +201,7 @@ public interface EFSAReport extends IDataset {
 	 * if possible
 	 * @return the new status
 	 */
-	public RCLDatasetStatus alignStatusWithDCF() throws MySOAPException, ReportException;
+	public RCLDatasetStatus alignStatusWithDCF() throws DetailedSOAPException, ReportException;
 	
 	/**
 	 * Get the sender dataset id related to the report.

@@ -11,7 +11,7 @@ import dataset.RCLDatasetStatus;
 import global_utils.Message;
 import global_utils.Warnings;
 import i18n_messages.Messages;
-import soap.MySOAPException;
+import soap.DetailedSOAPException;
 
 public class RefreshStatusThread extends Thread {
 
@@ -62,7 +62,7 @@ public class RefreshStatusThread extends Thread {
 		DcfAck ack = null;
 		try {
 			ack = report.getAck();
-		} catch (MySOAPException e) {
+		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot get the ack for the report=" + report.getSenderId(), e);
 			return Warnings.createSOAPWarning(e);
@@ -111,7 +111,7 @@ public class RefreshStatusThread extends Thread {
 					LOGGER.warn("Error found in ack=" + log.getOpResError());
 					LOGGER.warn("Error description found in ack=" + log.getOpResLog());
 					
-					return Warnings.getAckOperationWarning(log);
+					return Warnings.getAckOperationWarning(report, log);
 				}
 				else {
 					// not reachable
@@ -136,7 +136,7 @@ public class RefreshStatusThread extends Thread {
 	 * @param shell
 	 * @param report
 	 * @throws ReportException 
-	 * @throws MySOAPException 
+	 * @throws DetailedSOAPException 
 	 */
 	public Message alignReportStatusWithDCF() {
 
@@ -182,13 +182,13 @@ public class RefreshStatusThread extends Thread {
 				default:
 					
 					mb = Warnings.createFatal(Messages.get("refresh.error", newStatus.getLabel(), 
-							PropertiesReader.getSupportEmail()));
+							PropertiesReader.getSupportEmail()), report);
 
 					break;
 				}
 			}
 		}
-		catch (MySOAPException e) {
+		catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot refresh status", e);
 			mb = Warnings.createSOAPWarning(e);
@@ -199,7 +199,7 @@ public class RefreshStatusThread extends Thread {
 			LOGGER.error("Cannot refresh status", e);
 			
 			Warnings.createFatal(Messages.get("refresh.failed.no.senderId", 
-					PropertiesReader.getSupportEmail()));
+					PropertiesReader.getSupportEmail()), report);
 		}
 
 		// if we have an error show it and stop the process
