@@ -4,6 +4,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
+import i18n_messages.Messages;
 import table_skeleton.TableColumn;
 import table_skeleton.TableCell;
 import table_skeleton.TableRow;
@@ -56,6 +57,10 @@ public class TableLabelProvider extends ColumnLabelProvider {
 			return null;
 		
 		TableColumn col = row.getSchema().getById(key);
+		
+		if (!col.isEditable(row) && cell.isEmpty()) {
+			return Messages.get("not.supported.field.cell.label");
+		}
 		
 		if (col.isPassword() && !showPwds) {
 			// show as password with dots

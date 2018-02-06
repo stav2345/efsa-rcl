@@ -292,6 +292,11 @@ public class TableView {
 		return this.tableElements.getElementById(lightRow.getDatabaseId());
 	}
 	
+	public TableRow getCompleteRow(int id) {
+		TableRow completeRow = this.tableElements.getElementById(id);
+		return completeRow;
+	}
+	
 	/**
 	 * Get the selected elements if present
 	 * @return
@@ -311,7 +316,7 @@ public class TableView {
 			
 			TableRow lightRow = (TableRow) iter.next();
 			
-			TableRow completeRow = this.tableElements.getElementById(lightRow.getDatabaseId());
+			TableRow completeRow = getCompleteRow(lightRow.getDatabaseId());
 			
 			if (completeRow != null)
 				list.add(completeRow);

@@ -76,14 +76,17 @@ public class TableCell {
 	
 	@Override
 	public boolean equals(Object arg0) {
-		if (!(arg0 instanceof TableCell))
-			return super.equals(arg0);
 		
-		TableCell other = (TableCell) arg0;
+		if (arg0 instanceof TableCell) {
 		
-		// check code and label
-		return (this.getCode().equals(other.getCode())
-				&& this.getLabel().equals(other.getLabel()));
+			TableCell other = (TableCell) arg0;
+			
+			// check code and label
+			return (this.getCode().equals(other.getCode())
+					&& this.getLabel().equals(other.getLabel()));
+		}
+		
+		return super.equals(arg0);
 	}
 	
 	@Override

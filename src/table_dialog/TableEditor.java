@@ -117,10 +117,12 @@ public class TableEditor extends EditingSupport {
 						return;
 					
 					Selection selection = (Selection) sel.getFirstElement();
-					
-					setValue(row, selection);
+
+					if (selection != null)
+						setValue(row, selection);
 				}
 			});
+			
 			// get the list of possible values for the current column
 			// filtering by the summarized information type (bse..)
 			SelectionList list = column.getList(row);
@@ -188,18 +190,6 @@ public class TableEditor extends EditingSupport {
 	}
 
 	private void setRowValue(Object arg0, Object value) {
-		
-		// avoid refreshing if same value
-		Object oldValue = getValue(arg0);
-
-		if (value == null || (oldValue != null && value.equals(oldValue))) {
-
-			// edit is ended
-			for(EditorListener listener : listeners)
-				listener.editEnded(null, column, false);
-
-			return;
-		}
 
 		TableRow row = (TableRow) arg0;
 
@@ -250,6 +240,17 @@ public class TableEditor extends EditingSupport {
 	protected void setValue(Object arg0, Object value) {
 		
 		TableRow row = (TableRow) arg0;
+		// avoid refreshing if same value
+		Object oldValue = getValue(arg0);
+		
+		if (value == null || (oldValue != null && value.equals(oldValue))) {
+			
+			// edit is ended
+			for(EditorListener listener : listeners)
+				listener.editEnded(null, column, false);
+
+			return;
+		}
 		
 		setRowValue(arg0, value);
 		
