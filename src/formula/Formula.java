@@ -107,11 +107,6 @@ public class Formula {
 		
 		print(value, "LOGIC OP");
 		
-		// solve logical comparisons
-		value = solveLogicalComparators(value);
-		
-		print(value, "LOGIC COMP");
-		
 		value = solveFunctionsFormula(value);
 		
 		print(value, "FUNCTIONS");
@@ -122,8 +117,8 @@ public class Formula {
 	}
 	
 	private void print(String value, String header) {
-		//if (column.equals("progId") && fieldHeader.equals("labelFormula"))
-			LOGGER.debug("Solving formula=" + value + " Solving formulas=" + header);
+		if (column.equals("sampArea") && fieldHeader.equals("mandatory"))
+			LOGGER.warn("Solving formula=" + value + " Solving formulas=" + header);
 		
 		//if ((column.equals("sampAnId")) && fieldHeader.equals("labelFormula"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
@@ -144,7 +139,14 @@ public class Formula {
 		
 		String command = value;
 		
-		FormulaList list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF);
+		// and/or before the if!!
+		FormulaList list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.AND);
+		command = replaceFormulasWithSolution(list, command, false);
+		
+		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.OR);
+		command = replaceFormulasWithSolution(list, command, false);
+		
+		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF);
 		command = replaceFormulasWithSolution(list, command, false);
 
 		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF_NOT_NULL);
@@ -161,7 +163,6 @@ public class Formula {
 		
 		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.HASH);
 		command = replaceFormulasWithSolution(list, command, false);
-		
 		return command;
 	}
 	
@@ -206,27 +207,6 @@ public class Formula {
 		// compute disequal
 		comparisonFormulas.addAll(FormulaFinder
 				.findComparatorFormulas(value, ComparatorFormula.DISEQUAL));
-
-		return replaceFormulasWithSolution(comparisonFormulas, value, false);
-	}
-	
-	/**
-	 * Solve or/and
-	 * @param value
-	 * @return
-	 * @throws FormulaException
-	 */
-	private String solveLogicalComparators(String value) throws FormulaException {
-		
-		FormulaList comparisonFormulas = new FormulaList();
-		
-		// compute or
-		comparisonFormulas.addAll(FormulaFinder
-				.findComparatorFormulas(value, ComparatorFormula.OR));
-		
-		// compute or
-		comparisonFormulas.addAll(FormulaFinder
-				.findComparatorFormulas(value, ComparatorFormula.AND));
 
 		return replaceFormulasWithSolution(comparisonFormulas, value, false);
 	}

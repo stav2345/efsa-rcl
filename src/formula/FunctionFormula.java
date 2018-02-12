@@ -29,6 +29,8 @@ public class FunctionFormula implements IFormula {
 	public static final String IF_NOT_NULL = "IF_NOT_NULL";
 	public static final String SUM = "SUM";
 	public static final String HASH = "HASH";
+	public static final String AND = "AND";
+	public static final String OR = "OR";
 	
 	private String formula;
 	private String functionName;
@@ -99,6 +101,12 @@ public class FunctionFormula implements IFormula {
 			break;
 		case HASH:
 			solvedFormula = solveHash();
+			break;
+		case AND:
+			solvedFormula = solveAnd();
+			break;
+		case OR:
+			solvedFormula = solveOr();
 			break;
 		default:
 			throw new FormulaException("Function not supported: " + formula);
@@ -298,5 +306,54 @@ public class FunctionFormula implements IFormula {
 		String hash = DatatypeConverter.printHexBinary(digest);
 		
 		return hash;
+	}
+	
+	/**
+	 * Solve and functions
+	 * @return
+	 * @throws FormulaException
+	 */
+	private String solveAnd() throws FormulaException {
+		
+		if (operands.size() < 2) {
+			throw new FormulaException("Wrong number of parameters " + formula 
+					+ ". Expected at least 2, found " + operands.size());
+		}
+		
+		boolean result = true;
+		for (String op: operands) {
+			result = result && BooleanValue.isTrue(op);
+		}
+		
+		String stringComp = result ? BooleanValue.getTrueValue() : BooleanValue.getFalseValue();
+		
+		return stringComp;
+	}
+	
+	/**
+	 * Solve or functions
+	 * @return
+	 * @throws FormulaException
+	 */
+	private String solveOr() throws FormulaException {
+		
+		if (operands.size() < 2) {
+			throw new FormulaException("Wrong number of parameters " + formula 
+					+ ". Expected at least 2, found " + operands.size());
+		}
+		
+		boolean result = false;
+		for (String op: operands) {
+			result = result || BooleanValue.isTrue(op);
+		}
+		
+		String stringComp = result ? BooleanValue.getTrueValue() : BooleanValue.getFalseValue();
+		
+		return stringComp;
+	}
+	
+	public static void main(String[] args) throws FormulaException {
+		FunctionFormula f = new FunctionFormula("AND(Yes,Yes,No)");
+		System.out.println(f.solve());
 	}
 }
