@@ -117,8 +117,8 @@ public class Formula {
 	}
 	
 	private void print(String value, String header) {
-		if (column.equals("sampArea") && fieldHeader.equals("mandatory"))
-			LOGGER.warn("Solving formula=" + value + " Solving formulas=" + header);
+		//if (column.equals("sampArea") && fieldHeader.equals("mandatory"))
+			LOGGER.debug("Solving formula=" + value + " Solving formulas=" + header);
 		
 		//if ((column.equals("sampAnId")) && fieldHeader.equals("labelFormula"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
