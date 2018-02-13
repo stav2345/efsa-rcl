@@ -23,7 +23,7 @@ import soap.DetailedSOAPException;
  * Bridge between the user interface and the programmatic part.
  * It follows the documentation that can be found in the
  * ToolTSE.vsd file.
- * For downloading reports please use instead {@link ReportDownloader}.
+ * For downloading reports please use instead {@link ReportDownloaderDialog}.
  * For ack use {@link ReportAckManager}.
  * @author avonva
  *

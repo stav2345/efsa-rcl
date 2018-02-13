@@ -29,12 +29,12 @@ import user.User;
  * @author avonva
  *
  */
-public abstract class ReportDownloader {
+public abstract class ReportDownloaderDialog {
 
 	private Shell shell;
 	private DatasetList allVersions;
 	
-	public ReportDownloader(Shell shell) {
+	public ReportDownloaderDialog(Shell shell) {
 		this.shell = shell;
 	}
 

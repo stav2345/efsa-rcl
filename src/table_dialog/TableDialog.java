@@ -552,6 +552,9 @@ public abstract class TableDialog {
 		// put the first cell in the row
 		TableRow row = createNewRow(getSchema(), selectedItem);
 		
+		if (row == null)
+			return;
+		
 		// initialize the row fields with default values
 		row.initialize();
 		

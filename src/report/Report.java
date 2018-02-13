@@ -213,8 +213,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 		Config config = new Config();
 		
 		// check if the Report is in the DCF
-		GetDatasetsList<IDataset> request = new GetDatasetsList<>(User.getInstance(), config.getEnvironment(), 
-				PropertiesReader.getDataCollectionCode(this.getYear()), output);
+		GetDatasetsList<IDataset> request = new GetDatasetsList<>(User.getInstance(), config.getEnvironment());
 		
 		String senderDatasetId = this.getSenderId();
 		
@@ -222,7 +221,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 			throw new ReportException("Cannot retrieve the report sender id for " + this);
 		}
 
-		request.getList();
+		request.getList(PropertiesReader.getDataCollectionCode(this.getYear()), output);
 		
 		return output.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
 	}
