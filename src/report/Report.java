@@ -101,10 +101,10 @@ public abstract class Report extends TableRow implements EFSAReport {
 		Config config = new Config();
 		
 		// send the report and get the response to the message
-		SendMessage req = new SendMessage(User.getInstance(), config.getEnvironment());
+		SendMessage req = new SendMessage();
 		MessageResponse response;
 		try {
-			response = req.send(file);
+			response = req.send(config.getEnvironment(), User.getInstance(), file);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new SendMessageException(e);
@@ -213,7 +213,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 		Config config = new Config();
 		
 		// check if the Report is in the DCF
-		GetDatasetsList<IDataset> request = new GetDatasetsList<>(User.getInstance(), config.getEnvironment());
+		GetDatasetsList<IDataset> request = new GetDatasetsList<>();
 		
 		String senderDatasetId = this.getSenderId();
 		
@@ -221,7 +221,8 @@ public abstract class Report extends TableRow implements EFSAReport {
 			throw new ReportException("Cannot retrieve the report sender id for " + this);
 		}
 
-		request.getList(PropertiesReader.getDataCollectionCode(this.getYear()), output);
+		request.getList(config.getEnvironment(), User.getInstance(), 
+				PropertiesReader.getDataCollectionCode(this.getYear()), output);
 		
 		return output.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
 	}
@@ -349,10 +350,10 @@ public abstract class Report extends TableRow implements EFSAReport {
 		}
 		
 		Config config = new Config();
-		GetAck req = new GetAck(User.getInstance(), config.getEnvironment(), messageId);
+		GetAck req = new GetAck();
 		
 		// get state
-		DcfAck ack = req.getAck();
+		DcfAck ack = req.getAck(config.getEnvironment(), User.getInstance(), messageId);
 		
 		return ack;
 	}
@@ -441,6 +442,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	public void setStatus(String status) {
 		this.put(AppPaths.REPORT_PREVIOUS_STATUS, this.getRCLStatus().getLabel());
 		this.put(AppPaths.REPORT_STATUS, status);
+		this.update();
 	}
 	
 	/**

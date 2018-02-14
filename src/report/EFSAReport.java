@@ -215,4 +215,16 @@ public interface EFSAReport extends IDataset {
 	 * @return
 	 */
 	public boolean isValid();
+	
+	/**
+	 * Get the year related to the report
+	 * @return
+	 */
+	public String getYear();
+	
+	/**
+	 * Get the month related to the report
+	 * @return
+	 */
+	public String getMonth();
 }

@@ -48,10 +48,9 @@ public abstract class ReportDownloaderDialog {
 		Config config = new Config();
 		
 		IDcfDataCollectionsList<IDcfDataCollection> output = new DcfDataCollectionsList();
-		GetDataCollectionsList<IDcfDataCollection> req = new GetDataCollectionsList<>(User.getInstance(), 
-				config.getEnvironment(), output);
+		GetDataCollectionsList<IDcfDataCollection> req = new GetDataCollectionsList<>();
 		
-		req.getList();
+		req.getList(config.getEnvironment(), User.getInstance(), output);
 		
 		Collection<String> validDcs = GetAvailableDataCollections.getCodes();
 		
