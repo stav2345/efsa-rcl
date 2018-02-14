@@ -17,14 +17,12 @@ public class RefreshStatusThread extends Thread {
 
 	private static final Logger LOGGER = LogManager.getLogger(RefreshStatusThread.class);
 	
-	private ReportService reportService;
 	private ThreadFinishedListener listener;
 	private EFSAReport report;
 	private Message result;
 	
-	public RefreshStatusThread(EFSAReport report, ReportService reportService) {
+	public RefreshStatusThread(EFSAReport report) {
 		this.report = report;
-		this.reportService = reportService;
 	}
 	
 	public void setListener(ThreadFinishedListener listener) {
@@ -147,8 +145,7 @@ public class RefreshStatusThread extends Thread {
 		try {
 
 			RCLDatasetStatus oldStatus = report.getRCLStatus();
-			
-			RCLDatasetStatus newStatus =  reportService.alignStatusWithDCF(report);
+			RCLDatasetStatus newStatus =  report.alignStatusWithDCF();
 			
 			//RCLDatasetStatus newStatus = report.alignStatusWithDCF();
 			
