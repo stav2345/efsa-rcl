@@ -72,4 +72,11 @@ public interface IReportService {
 	 * @return
 	 */
 	public Message refreshStatus(Report report);
+	
+	/**
+	 * Display an ack
+	 * @param messageId
+	 * @return
+	 */
+	public Message displayAck(String messageId);
 }
