@@ -23,10 +23,12 @@ public class DisplayAckThread extends Thread {
 	
 	private Message result;
 	private EFSAReport report;
+	private IReportService reportService;
 	private ThreadFinishedListener listener;
 	
-	public DisplayAckThread(EFSAReport report) {
+	public DisplayAckThread(EFSAReport report, IReportService reportService) {
 		this.report = report;
+		this.reportService = reportService;
 	}
 	
 	@Override
@@ -64,7 +66,7 @@ public class DisplayAckThread extends Thread {
 		// if no connection return
 		DcfAck ack = null;
 		try {
-			ack = report.getAck();
+			ack = reportService.getAckOf(report.getMessageId());
 		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot get ack for report=" + report.getSenderId(), e);

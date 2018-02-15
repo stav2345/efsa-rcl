@@ -6,26 +6,17 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPException;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import ack.DcfAck;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
-import app_config.PropertiesReader;
 import config.Config;
-import dataset.Dataset;
-import dataset.DatasetList;
-import dataset.IDataset;
 import dataset.RCLDatasetStatus;
 import message.MessageConfigBuilder;
 import message.MessageResponse;
 import message.SendMessageException;
 import message_creator.OperationType;
 import progress_bar.ProgressListener;
-import soap.GetAck;
-import soap.GetDatasetsList;
 import soap.DetailedSOAPException;
 import soap.SendMessage;
 import table_database.TableDao;
@@ -38,8 +29,6 @@ import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
 public abstract class Report extends TableRow implements EFSAReport {
-
-	private static final Logger LOGGER = LogManager.getLogger(Report.class);
 	
 	public Report(TableRow row) {
 		super(row);
@@ -150,115 +139,6 @@ public abstract class Report extends TableRow implements EFSAReport {
 		}
 	}
 	
-	/**
-	 * Given a report and its state, get the operation
-	 * that is correct for sending it to the dcf.
-	 * For example, if the report was never sent then the operation
-	 * will be {@link OperationType#INSERT}.
-	 * @param report
-	 * @return
-	 * @throws ReportException 
-	 * @throws DetailedSOAPException 
-	 */
-	public ReportSendOperation getSendOperation() throws DetailedSOAPException, ReportException {
-		
-		OperationType opType = OperationType.NOT_SUPPORTED;
-		
-		Dataset dataset = this.getLatestDataset();
-		
-		String senderId = TableVersion.mergeNameAndVersion(this.getSenderId(), 
-				this.getVersion());
-		
-		LOGGER.info("Searching report with sender dataset id=" + senderId);
-		
-		// if no dataset is present => we do an insert
-		if (dataset == null || !dataset.getSenderId().equals(senderId)) {
-			LOGGER.debug("No valid dataset found in DCF, using INSERT as operation");
-			return new ReportSendOperation(null, OperationType.INSERT);
-		}
-		
-		// otherwise we check the dataset status
-		RCLDatasetStatus status = dataset.getRCLStatus();
-		
-		LOGGER.debug("Found dataset in DCF in status " + status);
-		
-		switch (status) {
-		case REJECTED_EDITABLE:
-		case VALID:
-		case VALID_WITH_WARNINGS:
-		case REJECTED:
-			opType = OperationType.REPLACE;
-			break;
-		case DELETED:
-			opType = OperationType.INSERT;
-			break;
-		default:
-			opType = OperationType.NOT_SUPPORTED;
-			//throw new ReportException("No send operation for status " 
-			//		+ status + " is supported");
-		}
-		
-		ReportSendOperation operation = new ReportSendOperation(dataset, opType);
-		
-		return operation;
-	}
-	
-	/**
-	 * Get all the datasets in the DCF that have the as senderDatasetId
-	 * the one given in input.
-	 * @param report
-	 * @return
-	 * @throws SOAPException
-	 * @throws ReportException 
-	 */
-	public DatasetList getDatasets() throws DetailedSOAPException, ReportException {
-		
-		DatasetList output = new DatasetList();
-		
-		Config config = new Config();
-		
-		// check if the Report is in the DCF
-		GetDatasetsList<IDataset> request = new GetDatasetsList<>();
-		
-		String senderDatasetId = this.getSenderId();
-		
-		if (senderDatasetId == null) {
-			throw new ReportException("Cannot retrieve the report sender id for " + this);
-		}
-
-		request.getList(config.getEnvironment(), User.getInstance(), 
-				PropertiesReader.getDataCollectionCode(this.getYear()), output);
-		
-		return output.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
-	}
-	
-	/**
-	 * Get the dataset related to this report (only metadata!). 
-	 * Note that only the newer one will
-	 * be returned. If you need all the datasets related to this report use
-	 * {@link #getDatasets()}.
-	 * @return
-	 * @throws ReportException
-	 * @throws DetailedSOAPException 
-	 */
-	public Dataset getLatestDataset() throws ReportException, DetailedSOAPException {
-
-		DatasetList datasets = getDatasets();
-
-		// use the dataset id if we have it
-		if (this.getId() != null && !this.getId().isEmpty()) {
-			datasets = datasets.filterByDatasetId(this.getId());
-		}
-		else {
-			
-			// otherwise use the sender dataset id to filter
-			// the old versions and get the last one
-			datasets = datasets.filterOldVersions();
-		}
-		
-		return (Dataset) datasets.getMostRecentDataset();
-	}
-	
 	public File export(MessageConfigBuilder messageConfig) 
 			throws IOException, ParserConfigurationException, SAXException, ReportException {
 		return this.export(messageConfig, null);
@@ -339,66 +219,6 @@ public abstract class Report extends TableRow implements EFSAReport {
 			progressListener.progressCompleted();
 	}
 	
-	/**
-	 * Get an acknowledgement of the dataset related to the report
-	 * @return
-	 * @throws SOAPException
-	 */
-	public DcfAck getAck() throws DetailedSOAPException {
-
-		// make get ack request
-		String messageId = this.getMessageId();
-		
-		// if no message id => the report was never sent
-		if (messageId.isEmpty()) {
-			return null;
-		}
-		
-		Config config = new Config();
-		GetAck req = new GetAck();
-		
-		// get state
-		DcfAck ack = req.getAck(config.getEnvironment(), User.getInstance(), messageId);
-		
-		return ack;
-	}
-
-	public RCLDatasetStatus updateStatusWithAck(DcfAck ack) {
-
-		// if we have something in the ack
-		if (ack.isReady()) {
-			
-			if (ack.getLog().isOk()) {
-				
-				// save id
-				String datasetId = ack.getLog().getDatasetId();
-				this.setId(datasetId);
-				
-				// save status
-				RCLDatasetStatus status = RCLDatasetStatus.fromDcfStatus(
-						ack.getLog().getDatasetStatus());
-				
-				this.setStatus(status);
-				
-				// permanently save data
-				this.update();
-				
-				LOGGER.info("Ack successful for message id " + this.getMessageId() + ". Retrieved datasetId=" 
-						+ datasetId + " with status=" + this.getRCLStatus());
-			}
-			else {
-				
-				// Reset the status with the previous if possible
-				if(this.getPreviousStatus() != null) {
-					this.setStatus(this.getPreviousStatus());
-					this.update();
-				}
-			}
-		}
-		
-		return this.getRCLStatus();
-	}
-
 	public String getMessageId() {
 		return this.getCode(AppPaths.REPORT_MESSAGE_ID);
 	}
@@ -482,54 +302,6 @@ public abstract class Report extends TableRow implements EFSAReport {
 	public void setMonth(String month) {
 		this.put(AppPaths.REPORT_MONTH, 
 				getTableColumnValue(month, AppPaths.MONTHS_LIST));
-	}
-	
-	@Override
-	public RCLDatasetStatus alignStatusWithDCF() throws DetailedSOAPException, ReportException {
-		
-		// get the dataset related to the report from the
-		// GetDatasetList request
-		Dataset dataset = this.getLatestDataset();
-		
-		// if not dataset is retrieved
-		if (dataset == null) {
-			return this.getRCLStatus();
-		}
-
-		// if equal, ok
-		if (dataset.getRCLStatus() == this.getRCLStatus())
-			return this.getRCLStatus();
-		
-		// if the report is submitted
-		if (this.getRCLStatus() == RCLDatasetStatus.SUBMITTED 
-				&& (dataset.getRCLStatus() == RCLDatasetStatus.ACCEPTED_DWH 
-					|| dataset.getRCLStatus() == RCLDatasetStatus.REJECTED_EDITABLE)) {
-			
-			this.setStatus(dataset.getRCLStatus());
-			this.update();
-
-		}
-		else {
-	
-			// if not in status submitted
-			switch(dataset.getRCLStatus()) {
-			// if deleted/rejected then make the report editable
-			case DELETED:
-			case REJECTED:
-				
-				// put the report in draft (status automatically changed)
-				this.makeEditable();
-				return dataset.getRCLStatus();
-				//break;
-				
-			// otherwise inconsistent status
-			default:
-				break;
-			}
-			return dataset.getRCLStatus();
-		}
-		
-		return this.getRCLStatus();
 	}
 	
 	/**

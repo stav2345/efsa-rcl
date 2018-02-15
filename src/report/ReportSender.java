@@ -24,12 +24,14 @@ public class ReportSender extends Thread {
 	
 	private Status status;
 	
+	private IReportService reportService;
 	private Report report;
 	private ProgressListener progressListener;
 	private ReportSenderListener reportListener;
 	
-	public ReportSender(Report report) {
+	public ReportSender(Report report, IReportService reportService) {
 		this.report = report;
+		this.reportService = reportService;
 		this.status = Status.WAIT;
 	}
 	
@@ -80,7 +82,7 @@ public class ReportSender extends Thread {
 		if (progressListener != null)
 			progressListener.progressChanged(5);
 		
-		ReportSendOperation opType = report.getSendOperation();
+		ReportSendOperation opType = reportService.getSendOperation(report);
 		
 		if (progressListener != null)
 			progressListener.progressChanged(20);

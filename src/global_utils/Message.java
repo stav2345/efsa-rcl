@@ -8,6 +8,7 @@ import dataset.IDataset;
 
 public class Message {
 	
+	private String code;
 	private String title;
 	private String message;
 	private int style;
@@ -26,8 +27,32 @@ public class Message {
 		this.reports = null;
 	}
 	
+	public void setCode(String code) {
+		this.code = code;
+	}
+	
+	public String getCode() {
+		return code;
+	}
+	
 	public void setReports(IDataset... reports) {
 		this.reports = reports;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+	
+	public String getMessage() {
+		return message;
+	}
+	
+	public int getStyle() {
+		return style;
+	}
+	
+	public boolean isFatal() {
+		return fatal;
 	}
 	
 	public int open(Shell shell) {

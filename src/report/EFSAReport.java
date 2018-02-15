@@ -9,9 +9,7 @@ import javax.xml.soap.SOAPException;
 
 import org.xml.sax.SAXException;
 
-import ack.DcfAck;
 import amend_manager.ReportXmlBuilder;
-import dataset.DatasetList;
 import dataset.IDataset;
 import dataset.RCLDatasetStatus;
 import message.MessageConfigBuilder;
@@ -80,37 +78,7 @@ public interface EFSAReport extends IDataset {
 	public void reject() throws IOException, 
 		ParserConfigurationException, SAXException, SendMessageException, 
 		DetailedSOAPException, ReportException;
-	
-	/**
-	 * Get an acknowledgment of the report (DCF call)
-	 * @return
-	 * @throws DetailedSOAPException
-	 */
-	public DcfAck getAck() throws DetailedSOAPException;
-	
-	/**
-	 * Update the status of the report with the one contained in the ack
-	 * @return
-	 * @throws DetailedSOAPException
-	 */
-	public RCLDatasetStatus updateStatusWithAck(DcfAck ack);
-	
-	/**
-	 * Get all the datasets related to this report
-	 * @return
-	 * @throws DetailedSOAPException
-	 * @throws ReportException
-	 */
-	public DatasetList getDatasets() throws DetailedSOAPException, ReportException;
-	
-	/**
-	 * get the last dataset related to this report
-	 * @return
-	 * @throws DetailedSOAPException
-	 * @throws ReportException
-	 */
-	public IDataset getLatestDataset() throws DetailedSOAPException, ReportException;
-	
+
 	/**
 	 * Force the report to be editable
 	 */
@@ -195,13 +163,6 @@ public interface EFSAReport extends IDataset {
 	 * @param status
 	 */
 	public void setStatus(RCLDatasetStatus status);
-	
-	/**
-	 * Align the report status with the one in the DCF
-	 * if possible
-	 * @return the new status
-	 */
-	public RCLDatasetStatus alignStatusWithDCF() throws DetailedSOAPException, ReportException;
 	
 	/**
 	 * Get the sender dataset id related to the report.

@@ -161,7 +161,7 @@ public abstract class ReportActions {
 	 * @throws ParserConfigurationException 
 	 * @throws SendMessageException 
 	 */
-	public void send(Listener listener) {
+	public void send(IReportService reportService, Listener listener) {
 		
 		boolean confirm = askConfirmation(ReportAction.SEND);
 		
@@ -178,7 +178,7 @@ public abstract class ReportActions {
 		progressBarDialog.open();
 		
 		// start the sender thread
-		ReportSender sender = new ReportSender(report);
+		ReportSender sender = new ReportSender(report, reportService);
 		
 		sender.setReportListener(new ReportSenderListener() {
 			
