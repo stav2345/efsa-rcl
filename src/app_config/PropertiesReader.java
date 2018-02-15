@@ -19,6 +19,7 @@ import dataset.IDataset;
 import email.Email;
 import report.EFSAReport;
 import report.Report;
+import table_database.Database;
 
 /**
  * Class to read an xml used to store the properties
@@ -141,7 +142,14 @@ public class PropertiesReader {
 		String solved = input
 				.replace("%appVersion", getAppVersion())
 				.replace("%appName", getAppName())
+				.replace("%minDbVersion", getMinRequiredDbVersion())
 				.replace("%report", reportDiagnostic);
+		
+		String dbVersion = new Database().getVersion();
+		if (dbVersion != null)
+			solved = solved.replace("%dbVersion", dbVersion);
+		else
+			solved = solved.replace("%dbVersion", "NULL");
 		
 		if (solved.contains("%appLog")) {
 			try {

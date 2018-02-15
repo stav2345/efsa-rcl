@@ -172,7 +172,7 @@ public abstract class ReportImporter {
 				}
 				
 				newVersions.add(newReport);
-				
+				System.err.println("Processing amendments");
 				// process the amendments of the current dataset
 				LOGGER.debug("Processing amendments");
 				processAmendments();
@@ -239,6 +239,8 @@ public abstract class ReportImporter {
 		// for each dataset comparison insert into the db
 		DatasetComparison comp;
 		while ((comp = parser.next()) != null) {
+			
+			System.err.println("Add comp: " + comp);
 			DatasetComparisonDao dao = new DatasetComparisonDao();
 			dao.add(comp);
 		}

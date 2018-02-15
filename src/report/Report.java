@@ -166,8 +166,13 @@ public abstract class Report extends TableRow implements EFSAReport {
 		
 		Dataset dataset = this.getLatestDataset();
 		
+		String senderId = TableVersion.mergeNameAndVersion(this.getSenderId(), 
+				this.getVersion());
+		
+		LOGGER.info("Searching report with sender dataset id=" + senderId);
+		
 		// if no dataset is present => we do an insert
-		if (dataset == null) {
+		if (dataset == null || !dataset.getSenderId().equals(senderId)) {
 			LOGGER.debug("No valid dataset found in DCF, using INSERT as operation");
 			return new ReportSendOperation(null, OperationType.INSERT);
 		}
@@ -239,7 +244,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	public Dataset getLatestDataset() throws ReportException, DetailedSOAPException {
 
 		DatasetList datasets = getDatasets();
-		
+
 		// use the dataset id if we have it
 		if (this.getId() != null && !this.getId().isEmpty()) {
 			datasets = datasets.filterByDatasetId(this.getId());
@@ -442,7 +447,6 @@ public abstract class Report extends TableRow implements EFSAReport {
 	public void setStatus(String status) {
 		this.put(AppPaths.REPORT_PREVIOUS_STATUS, this.getRCLStatus().getLabel());
 		this.put(AppPaths.REPORT_STATUS, status);
-		this.update();
 	}
 	
 	/**

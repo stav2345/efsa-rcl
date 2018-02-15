@@ -97,7 +97,8 @@ public class DatasetComparison {
 	public String toString() {
 		return "rowId=" + rowId
 				+ ";version=" + version
-				+ ";xmlRecord=" + xmlRecord.substring(0,10)
-				+ ";amType=" + amType.getCode();
+				+ ";xmlRecord=" + (xmlRecord != null ? xmlRecord.substring(0,100) : "NULL")
+				+ ";amType=" + (amType != null ? amType.getCode() : "NULL")
+				+ ";isNullified=" + isNullified;
 	}
 }
