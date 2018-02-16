@@ -127,11 +127,11 @@ public class Relation {
 		if (lastUsedId == null || parentId != lastUsedId) {
 			
 			// search in the parent data
-			TableDao dao = new TableDao(getParentSchema());
+			TableDao dao = new TableDao();
 			
 			// get the first (and unique) value related to this
 			// relation from the parent data
-			parentValueCache.put(parent, dao.getById(parentId));
+			parentValueCache.put(parent, dao.getById(getParentSchema(), parentId));
 			lastIds.put(parent, parentId);
 		}
 		
@@ -214,9 +214,9 @@ public class Relation {
 
 		TableSchema schema = TableSchemaList.getByName(tableName);
 
-		TableDao dao = new TableDao(schema);
+		TableDao dao = new TableDao();
 
-		Collection<TableRow> opts = dao.getAll();
+		Collection<TableRow> opts = dao.getAll(schema);
 
 		if (opts.isEmpty())
 			return null;

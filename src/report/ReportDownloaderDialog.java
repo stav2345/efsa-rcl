@@ -20,8 +20,9 @@ import i18n_messages.Messages;
 import progress_bar.FormProgressBar;
 import progress_bar.IndeterminateProgressDialog;
 import progress_bar.ProgressListener;
-import soap.GetDataCollectionsList;
+import providers.IReportService;
 import soap.DetailedSOAPException;
+import soap.GetDataCollectionsList;
 import user.User;
 
 /**
@@ -33,9 +34,11 @@ public abstract class ReportDownloaderDialog {
 
 	private Shell shell;
 	private DatasetList allVersions;
+	private IReportService reportService;
 	
-	public ReportDownloaderDialog(Shell shell) {
+	public ReportDownloaderDialog(Shell shell, IReportService reportService) {
 		this.shell = shell;
+		this.reportService = reportService;
 	}
 
 	/**
@@ -132,7 +135,7 @@ public abstract class ReportDownloaderDialog {
 				String senderId = selectedDataset.getDecomposedSenderId();
 				
 				// if the report already exists locally, warn that it will be overwritten
-				if (Report.isLocallyPresent(senderId)) {
+				if (reportService.isLocallyPresent(senderId)) {
 					
 					// ask confirmation to the user
 					boolean confirm = askConfirmation();

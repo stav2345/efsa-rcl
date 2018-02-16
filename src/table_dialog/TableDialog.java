@@ -606,13 +606,13 @@ public abstract class TableDialog {
 		TableRowList rows = null;
 
 		// load parents rows
-		TableDao dao = new TableDao(schema);
+		TableDao dao = new TableDao();
 
 		// if no filter get all
 		if (parentFilter == null)
-			rows = dao.getAll();
+			rows = dao.getAll(schema);
 		else
-			rows = dao.getByParentId(parentFilter.getSchema().getSheetName(), 
+			rows = dao.getByParentId(schema, parentFilter.getSchema().getSheetName(), 
 					parentFilter.getDatabaseId());
 
 		return rows;

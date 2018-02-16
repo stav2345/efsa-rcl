@@ -1,22 +1,11 @@
 package report;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.soap.SOAPException;
-
-import org.xml.sax.SAXException;
-
-import amend_manager.ReportXmlBuilder;
 import dataset.IDataset;
 import dataset.RCLDatasetStatus;
 import message.MessageConfigBuilder;
-import message.SendMessageException;
 import message_creator.OperationType;
-import progress_bar.ProgressListener;
-import soap.DetailedSOAPException;
 import table_skeleton.TableRow;
 
 /**
@@ -35,49 +24,6 @@ public interface EFSAReport extends IDataset {
 	 * @return
 	 */
 	public Collection<TableRow> getRecords();
-	
-	/**
-	 * Export the report into a file. Suggestion: use then {@link ReportXmlBuilder}
-	 * to export the data into the file.
-	 * @param messageConfig configuration to create the report message
-	 */
-	public File export(MessageConfigBuilder messageConfig, ProgressListener progressListener) 
-			throws IOException, ParserConfigurationException, SAXException, ReportException;
-
-	/**
-	 * Send the report (DCF call)
-	 * @param file file which contains the .xml report to send
-	 * @param opType the operation type required in the exported file
-	 * @throws SOAPException
-	 * @throws SendMessageException
-	 */
-	public void send(File file, OperationType opType) throws SOAPException, SendMessageException;
-
-	/**
-	 * Submit the report to the DCF
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws SendMessageException
-	 * @throws DetailedSOAPException
-	 * @throws ReportException
-	 */
-	public void submit() throws IOException, 
-		ParserConfigurationException, SAXException, SendMessageException, 
-		DetailedSOAPException, ReportException;
-	
-	/**
-	 * Reject the report in the DCF
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws SendMessageException
-	 * @throws DetailedSOAPException
-	 * @throws ReportException
-	 */
-	public void reject() throws IOException, 
-		ParserConfigurationException, SAXException, SendMessageException, 
-		DetailedSOAPException, ReportException;
 
 	/**
 	 * Force the report to be editable

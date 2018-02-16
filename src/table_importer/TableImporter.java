@@ -25,18 +25,18 @@ public abstract class TableImporter {
 	public void copyByParent(TableSchema childSchema, 
 			TableRow parentToCopy, TableRow parentToWrite) {
 		
-		TableDao dao = new TableDao(childSchema);
+		TableDao dao = new TableDao();
 		
 		String parentTable = parentToCopy.getSchema().getSheetName();
 		int parentToCopyId = parentToCopy.getDatabaseId();
 		
 		// load all the rows of the parent we want to copy
-		Collection<TableRow> rowsToCopy = dao.getByParentId(parentTable, parentToCopyId);
+		Collection<TableRow> rowsToCopy = dao.getByParentId(childSchema, parentTable, parentToCopyId);
 		
 		// remove all the rows from the parent we want to override
-		TableDao writeDao = new TableDao(childSchema);
+		TableDao writeDao = new TableDao();
 		int parentToWriteId = parentToWrite.getDatabaseId();
-		writeDao.deleteByParentId(parentTable, parentToWriteId);
+		writeDao.deleteByParentId(childSchema,parentTable, parentToWriteId);
 		
 		// for each copied row, insert it into the
 		// parentToWrite table

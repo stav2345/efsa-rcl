@@ -1,6 +1,7 @@
 package report;
 
 import global_utils.Message;
+import providers.IReportService;
 
 public class DisplayAckThread extends Thread {
 	

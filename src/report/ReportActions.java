@@ -14,8 +14,11 @@ import org.xml.sax.SAXException;
 
 import i18n_messages.Messages;
 import message.SendMessageException;
+import message_creator.OperationType;
 import progress_bar.FormProgressBar;
 import progress_bar.ProgressListener;
+import providers.IReportService;
+import providers.ITableDaoService;
 import report.ReportSender.ReportSenderListener;
 import soap.DetailedSOAPException;
 
@@ -41,10 +44,15 @@ public abstract class ReportActions {
 	
 	private Shell shell;
 	private Report report;
+	private IReportService reportService;
+	private ITableDaoService daoService;
 	
-	public ReportActions(Shell shell, Report report) {
+	public ReportActions(Shell shell, Report report, IReportService reportService, 
+			ITableDaoService daoService) {
 		this.shell = shell;
 		this.report = report;
+		this.reportService = reportService;
+		this.daoService = daoService;
 	}
 	
 	public Report getReport() {
@@ -121,10 +129,10 @@ public abstract class ReportActions {
 			
 			switch(action) {
 			case REJECT:
-				report.reject();
+				reportService.exportAndSend(report, OperationType.REJECT);
 				break;
 			case SUBMIT:
-				report.submit();
+				reportService.exportAndSend(report, OperationType.SUBMIT);
 				break;
 			default:  // unsupported
 				break;
@@ -161,7 +169,7 @@ public abstract class ReportActions {
 	 * @throws ParserConfigurationException 
 	 * @throws SendMessageException 
 	 */
-	public void send(IReportService reportService, Listener listener) {
+	public void send(Listener listener) {
 		
 		boolean confirm = askConfirmation(ReportAction.SEND);
 		
@@ -178,7 +186,7 @@ public abstract class ReportActions {
 		progressBarDialog.open();
 		
 		// start the sender thread
-		ReportSender sender = new ReportSender(report, reportService);
+		ReportSender sender = new ReportSender(report, reportService, daoService);
 		
 		sender.setReportListener(new ReportSenderListener() {
 			

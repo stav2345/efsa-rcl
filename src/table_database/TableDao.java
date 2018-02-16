@@ -29,30 +29,22 @@ import xml_catalog_reader.XmlLoader;
  * @author avonva
  *
  */
-public class TableDao {
+public class TableDao implements ITableDao {
 	
 	private static final Logger LOGGER = LogManager.getLogger(TableDao.class);
-
-	private String tableName;
-	private TableSchema schema;
-	private TableSchema completeSchema;
 	
-	public TableDao(TableSchema schema) {
-		this.tableName = "APP." + schema.getSheetName();
-		this.completeSchema = schema;
-		this.schema = schema; // TODO save just the needed information
-		//this.schema = schema.getNonCompositeColumns();  // we save just the editable columns
-		this.schema.sortById();
+	private String getTable(TableSchema schema) {
+		return "APP." + schema.getSheetName();
 	}
 	
 	/**
 	 * Get the query needed to add a row to the table
 	 * @return
 	 */
-	private String getAddQuery() {
+	private String getAddQuery(TableSchema schema) {
 		
 		StringBuilder query = new StringBuilder();
-		query.append("insert into " + tableName + " (");
+		query.append("insert into " + getTable(schema) + " (");
 		
 		// set the columns names
 		Iterator<TableColumn> iterator = schema.iterator();
@@ -95,10 +87,10 @@ public class TableDao {
 	 * Get the query needed to update a row to the table
 	 * @return
 	 */
-	private String getUpdateQuery() {
+	private String getUpdateQuery(TableSchema schema) {
 		
 		StringBuilder query = new StringBuilder();
-		query.append("update " + tableName + " set ");
+		query.append("update " + getTable(schema) + " set ");
 		
 		// set the columns names
 		Iterator<TableColumn> iterator = schema.iterator();
@@ -126,7 +118,7 @@ public class TableDao {
 	 * @return
 	 * @throws IOException
 	 */
-	private boolean isRelationId(String id) throws IOException {
+	private boolean isRelationId(TableSchema schema, String id) throws IOException {
 		
 		if (schema.getRelations() == null)
 			return false;
@@ -150,9 +142,9 @@ public class TableDao {
 
 		int currentIndex = 1;
 		
-		for (int i = 0; i < schema.size(); ++i) {
+		for (int i = 0; i < row.getSchema().size(); ++i) {
 			
-			TableColumn col = schema.get(i);
+			TableColumn col = row.getSchema().get(i);
 			
 			TableCell colValue = row.get(col.getId());
 			
@@ -173,7 +165,7 @@ public class TableDao {
 			// If we have a relation ID => then convert into integer
 			try {
 				
-				if (isRelationId(col.getId()))
+				if (isRelationId(row.getSchema(), col.getId()))
 					stmt.setInt(currentIndex, Integer.valueOf(value));
 				else {
 					stmt.setString(currentIndex, value);
@@ -205,7 +197,7 @@ public class TableDao {
 		int id = -1;
 		
 		try (Connection con = Database.getConnection(); 
-				PreparedStatement stmt = con.prepareStatement(getAddQuery(), 
+				PreparedStatement stmt = con.prepareStatement(getAddQuery(row.getSchema()), 
 						Statement.RETURN_GENERATED_KEYS);) {
 			
 			// set the row values in the parameters
@@ -227,10 +219,10 @@ public class TableDao {
 		}
 		
 		if (id != -1) {
-			LOGGER.debug("Row " + id + " successfully added in " + tableName);
+			LOGGER.debug("Row " + id + " successfully added in " + getTable(row.getSchema()));
 		}
 		else {
-			LOGGER.error("Errors in adding " + row + " to " + tableName);
+			LOGGER.error("Errors in adding " + row + " to " + getTable(row.getSchema()));
 		}
 		
 		return id;
@@ -246,7 +238,7 @@ public class TableDao {
 		boolean ok = true;
 		
 		try (Connection con = Database.getConnection(); 
-				PreparedStatement stmt = con.prepareStatement(getUpdateQuery());) {
+				PreparedStatement stmt = con.prepareStatement(getUpdateQuery(row.getSchema()));) {
 			
 			// set the row values in the parameters
 			// with the where id included
@@ -263,10 +255,10 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			LOGGER.debug("Row " + row.getDatabaseId() + " successfully updated in " + tableName);
+			LOGGER.debug("Row " + row.getDatabaseId() + " successfully updated in " + getTable(row.getSchema()));
 		}
 		else {
-			LOGGER.error("Errors in updating " + row + " for " + tableName);
+			LOGGER.error("Errors in updating " + row + " for " + getTable(row.getSchema()));
 		}
 		
 		return ok;
@@ -277,11 +269,11 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public boolean deleteAll() {
+	public boolean deleteAll(TableSchema schema) {
 		
 		boolean ok = true;
 		
-		String query = "delete from " + tableName;
+		String query = "delete from " + getTable(schema);
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -295,10 +287,10 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			LOGGER.debug("All rows successfully deleted from " + tableName);
+			LOGGER.debug("All rows successfully deleted from " + getTable(schema));
 		}
 		else {
-			LOGGER.error("Cannot delete all rows from " + tableName);
+			LOGGER.error("Cannot delete all rows from " + getTable(schema));
 		}
 		
 		return ok;
@@ -309,13 +301,13 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public boolean deleteByParentId(String parentTable, int parentId) {
+	public boolean deleteByParentId(TableSchema schema, String parentTable, int parentId) {
 
 		boolean ok = true;
 		
 		Relation r = schema.getRelationByParentTable(parentTable);
 
-		String query = "delete from " + tableName + " where " + r.getForeignKey() + " = ?";
+		String query = "delete from " + getTable(schema) + " where " + r.getForeignKey() + " = ?";
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -340,11 +332,11 @@ public class TableDao {
 	 * @return
 	 * @throws SQLException
 	 */
-	public TableRow getByResultSet(ResultSet rs, boolean solveFormulas) throws SQLException {
+	public TableRow getByResultSet(TableSchema schema, ResultSet rs, boolean solveFormulas) throws SQLException {
 		
 		// here we need all the columns because we also
 		// compute composite fields
-		TableRow row = new TableRow(completeSchema);
+		TableRow row = new TableRow(schema);
 		
 		// put the id
 		int id = rs.getInt(schema.getTableIdField());
@@ -441,12 +433,12 @@ public class TableDao {
 		return row;
 	}
 	
-	public TableRowList getByParentId(String parentTable, int parentId) {
-		return getByParentId(parentTable, parentId, true, "asc");
+	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId) {
+		return getByParentId(schema, parentTable, parentId, true, "asc");
 	}
 	
-	public TableRowList getByParentId(String parentTable, int parentId, boolean solveFormulas) {
-		return getByParentId(parentTable, parentId, solveFormulas, "asc");
+	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas) {
+		return getByParentId(schema, parentTable, parentId, solveFormulas, "asc");
 	}
 	
 	/**
@@ -454,13 +446,13 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public TableRowList getByParentId(String parentTable, int parentId, boolean solveFormulas, String order) {
+	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas, String order) {
 		
 		TableRowList rows = new TableRowList(schema);
 
 		Relation r = schema.getRelationByParentTable(parentTable);
 
-		String query = "select * from " + tableName + " where " + r.getForeignKey() 
+		String query = "select * from " + getTable(schema) + " where " + r.getForeignKey() 
 			+ " = ? order by " + schema.getTableIdField() + " " + order;
 		
 		try (Connection con = Database.getConnection(); 
@@ -473,7 +465,7 @@ public class TableDao {
 				
 				while (rs.next()) {
 
-					TableRow row = getByResultSet(rs, solveFormulas);
+					TableRow row = getByResultSet(schema, rs, solveFormulas);
 	
 					if (row != null)
 						rows.add(row);
@@ -497,11 +489,11 @@ public class TableDao {
 	 * @param row
 	 * @return
 	 */
-	public TableRowList getAll() {
+	public TableRowList getAll(TableSchema schema) {
 		
 		TableRowList rows = new TableRowList(schema);
 
-		String query = "select * from " + tableName + " order by " + schema.getTableIdField() + " asc";
+		String query = "select * from " + getTable(schema) + " order by " + schema.getTableIdField() + " asc";
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -509,7 +501,7 @@ public class TableDao {
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
 					
-					TableRow row = getByResultSet(rs, true);
+					TableRow row = getByResultSet(schema, rs, true);
 					if (row != null)
 						rows.add(row);
 				}
@@ -532,11 +524,11 @@ public class TableDao {
 	 * @param rowId
 	 * @return
 	 */
-	public boolean delete(int rowId) {
+	public boolean delete(TableSchema schema, int rowId) {
 
 		boolean ok = true;
 		
-		String query = "delete from " + tableName + " where " + schema.getTableIdField() + " = ?";
+		String query = "delete from " + getTable(schema) + " where " + schema.getTableIdField() + " = ?";
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -552,10 +544,10 @@ public class TableDao {
 		}
 		
 		if (ok) {
-			LOGGER.info("Row " + rowId + " successfully deleted from " + tableName);
+			LOGGER.info("Row " + rowId + " successfully deleted from " + getTable(schema));
 		}
 		else {
-			LOGGER.error("Row " + rowId + " cannot be deleted from " + tableName);
+			LOGGER.error("Row " + rowId + " cannot be deleted from " + getTable(schema));
 		}
 		
 		return ok;
@@ -565,7 +557,12 @@ public class TableDao {
 
 		boolean ok = true;
 		
-		String query = "delete from " + tableName + " where " + schema.getTableIdField() + " = ?";
+		if (list.isEmpty())
+			return true;
+		
+		TableSchema schema = list.get(0).getSchema();
+		
+		String query = "delete from " + getTable(schema) + " where " + schema.getTableIdField() + " = ?";
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -593,11 +590,11 @@ public class TableDao {
 	 * @param value
 	 * @return
 	 */
-	public boolean deleteByStringField(String fieldName, String value) {
+	public boolean deleteByStringField(TableSchema schema, String fieldName, String value) {
 
 		boolean ok = true;
 		
-		String query = "delete from " + tableName + " where " + fieldName + " = ?";
+		String query = "delete from " + getTable(schema) + " where " + fieldName + " = ?";
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -613,11 +610,11 @@ public class TableDao {
 		
 		if (ok) {
 			LOGGER.info("Rows with " + fieldName + " = " 
-					+ value + " successfully deleted from " + tableName);
+					+ value + " successfully deleted from " + getTable(schema));
 		}
 		else {
 			LOGGER.error("Rows with " + fieldName + " = " 
-					+ value + " cannot be deleted from " + tableName);
+					+ value + " cannot be deleted from " + getTable(schema));
 		}
 		
 		return ok;
@@ -628,11 +625,11 @@ public class TableDao {
 	 * @param id
 	 * @return
 	 */
-	public TableRow getById(int id) {
+	public TableRow getById(TableSchema schema, int id) {
 		
 		TableRow row = null;
 
-		String query = "select * from " + tableName + " where " + schema.getTableIdField() + " = ?";
+		String query = "select * from " + getTable(schema) + " where " + schema.getTableIdField() + " = ?";
 		
 		try (Connection con = Database.getConnection(); 
 				PreparedStatement stmt = con.prepareStatement(query);) {
@@ -641,7 +638,7 @@ public class TableDao {
 			
 			try (ResultSet rs = stmt.executeQuery();) {
 				if (rs.next()) {
-					row = getByResultSet(rs, true);
+					row = getByResultSet(schema, rs, true);
 				}
 			}
 			catch (SQLException e) {
@@ -662,11 +659,11 @@ public class TableDao {
 	 * @param id
 	 * @return
 	 */
-	public TableRowList getByStringField(String fieldName, String value) {
+	public TableRowList getByStringField(TableSchema schema, String fieldName, String value) {
 		
 		TableRowList rows = new TableRowList(schema);
 
-		String query = "select * from " + tableName + " where " + fieldName 
+		String query = "select * from " + getTable(schema) + " where " + fieldName 
 				+ " = ? order by " + schema.getTableIdField() + " asc";
 		
 		try (Connection con = Database.getConnection(); 
@@ -676,7 +673,7 @@ public class TableDao {
 			
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
-					TableRow row = getByResultSet(rs, true);
+					TableRow row = getByResultSet(schema, rs, true);
 					rows.add(row);
 				}
 			}

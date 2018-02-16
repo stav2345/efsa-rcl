@@ -10,6 +10,8 @@ import org.xml.sax.SAXException;
 
 import message.SendMessageException;
 import progress_bar.ProgressListener;
+import providers.IReportService;
+import providers.ITableDaoService;
 import soap.DetailedSOAPException;
 
 public class ReportSender extends Thread {
@@ -25,13 +27,16 @@ public class ReportSender extends Thread {
 	private Status status;
 	
 	private IReportService reportService;
+	private ITableDaoService daoService;
+	
 	private Report report;
 	private ProgressListener progressListener;
 	private ReportSenderListener reportListener;
 	
-	public ReportSender(Report report, IReportService reportService) {
+	public ReportSender(Report report, IReportService reportService, ITableDaoService daoService) {
 		this.report = report;
 		this.reportService = reportService;
+		this.daoService = daoService;
 		this.status = Status.WAIT;
 	}
 	
@@ -105,10 +110,11 @@ public class ReportSender extends Thread {
 				+ " with " + opType.getDataset().getId());
 			
 			report.setId(opType.getDataset().getId());
-			report.update();
+			
+			daoService.update(report);
 		}
 		
-		report.exportAndSend(opType.getOpType(), progressListener);
+		reportService.exportAndSend(report, opType.getOpType(), progressListener);
 	}
 	
 	public void confirmSend() {

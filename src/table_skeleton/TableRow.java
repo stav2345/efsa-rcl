@@ -146,10 +146,10 @@ public class TableRow implements Checkable {
 	public TableRow getParent(TableSchema parentSchema) {
 		
 		// open the child dao
-		TableDao dao = new TableDao(parentSchema);
+		TableDao dao = new TableDao();
 
 		// get parent using the id contained in the row
-		TableRow parent = dao.getById(this.getNumLabel(parentSchema.getTableIdField()));
+		TableRow parent = dao.getById(parentSchema, this.getNumLabel(parentSchema.getTableIdField()));
 		
 		return parent;
 	}
@@ -167,13 +167,13 @@ public class TableRow implements Checkable {
 	public Collection<TableRow> getChildren(TableSchema childSchema, boolean solveFormulas) {
 		
 		// open the child dao
-		TableDao dao = new TableDao(childSchema);
+		TableDao dao = new TableDao();
 		
 		// get parent table name using the relation
 		String parentTable = this.getSchema().getSheetName();
 		
 		// get the rows of the children related to the parent
-		Collection<TableRow> children = dao.getByParentId(parentTable, 
+		Collection<TableRow> children = dao.getByParentId(childSchema, parentTable, 
 				this.getDatabaseId(), solveFormulas);
 		
 		return children;
@@ -468,7 +468,7 @@ public class TableRow implements Checkable {
 	 */
 	public int save() {
 		
-		TableDao dao = new TableDao(this.schema);
+		TableDao dao = new TableDao();
 		int id = dao.add(this);
 		this.setId(id);
 		
@@ -479,7 +479,7 @@ public class TableRow implements Checkable {
 	 * Update the row in the database
 	 */
 	public void update() {
-		TableDao dao = new TableDao(this.schema);
+		TableDao dao = new TableDao();
 		dao.update(this);
 	}
 	
@@ -487,8 +487,8 @@ public class TableRow implements Checkable {
 	 * Delete permanently the row from the database
 	 */
 	public void delete() {
-		TableDao dao = new TableDao(this.schema);
-		dao.delete(this.getDatabaseId());
+		TableDao dao = new TableDao();
+		dao.delete(this.schema, this.getDatabaseId());
 	}
 
 	/**

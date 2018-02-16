@@ -61,7 +61,7 @@ public class TableRowList extends ArrayList<TableRow> {
 	 * Delete the entire list from the db
 	 */
 	public void deleteAll() {
-		TableDao dao = new TableDao(schema);
+		TableDao dao = new TableDao();
 		dao.delete(this);
 	}
 }

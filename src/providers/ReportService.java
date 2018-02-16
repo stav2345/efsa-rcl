@@ -1,16 +1,21 @@
-package report;
+package providers;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.soap.SOAPException;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
+import org.xml.sax.SAXException;
 
 import ack.DcfAck;
 import ack.IDcfAckLog;
+import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
 import app_config.PropertiesReader;
 import config.Config;
@@ -22,12 +27,24 @@ import global_utils.Message;
 import global_utils.Warnings;
 import html_viewer.HtmlViewer;
 import i18n_messages.Messages;
+import message.MessageConfigBuilder;
+import message.MessageResponse;
+import message.SendMessageException;
 import message_creator.OperationType;
+import progress_bar.ProgressListener;
+import report.EFSAReport;
+import report.Report;
+import report.ReportException;
+import report.ReportSendOperation;
 import soap.DetailedSOAPException;
 import soap_interface.IGetAck;
 import soap_interface.IGetDatasetsList;
+import soap_interface.ISendMessage;
+import table_relations.Relation;
+import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
 import user.User;
+import xlsx_reader.TableSchemaList;
 
 public class ReportService implements IReportService {
 
@@ -35,10 +52,177 @@ public class ReportService implements IReportService {
 	
 	private IGetAck getAck;
 	private IGetDatasetsList<IDataset> getDatasetsList;
+	private ITableDaoService daoService;
+	private ISendMessage sendMessage;
 	
-	public ReportService(IGetAck getAck, IGetDatasetsList<IDataset> getDatasetsList) {
+	public ReportService(IGetAck getAck, IGetDatasetsList<IDataset> getDatasetsList, 
+			ISendMessage sendMessage, ITableDaoService daoService) {
 		this.getAck = getAck;
 		this.getDatasetsList = getDatasetsList;
+		this.sendMessage = sendMessage;
+		this.daoService = daoService;
+	}
+	
+	public File export(Report report, MessageConfigBuilder messageConfig) 
+			throws IOException, ParserConfigurationException, SAXException, ReportException {
+		return this.export(report, messageConfig, null);
+	}
+	
+	public File export(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
+			throws ParserConfigurationException, SAXException, IOException, ReportException {
+		
+		if (messageConfig.needEmptyDataset())
+			return ReportXmlBuilder.createEmptyReport(messageConfig);
+		else {
+			
+			Relation.emptyCache();
+
+			// get the previous report version to process amendments
+			try(ReportXmlBuilder creator = new ReportXmlBuilder(report, 
+					messageConfig, report.getRowIdFieldName());) {
+				
+				creator.setProgressListener(progressListener);
+				
+				return creator.exportReport();
+			}
+		}
+	}
+	
+	/**
+	 * @throws IOException 
+	 * Send the report contained in the file
+	 * and update the report status accordingly.
+	 * NOTE only for expert users. Otherwise use
+	 * {@link #exportAndSend()} to send the report
+	 * with an atomic operation.
+	 * @param file
+	 * @throws SOAPException
+	 * @throws SendMessageException
+	 * @throws  
+	 */
+	private MessageResponse send(File file, OperationType opType) 
+			throws DetailedSOAPException, IOException {
+
+		Config config = new Config();
+		
+		// send the report and get the response to the message
+		MessageResponse response = sendMessage.send(config.getEnvironment(), User.getInstance(), file);
+
+		return response;
+	}
+	
+	/**
+	 * Update a report with a send message response
+	 * @param report
+	 * @param requiredSendOp
+	 * @param response
+	 * @return
+	 */
+	private RCLDatasetStatus updateReportWithSendResponse(Report report, OperationType requiredSendOp, 
+			MessageResponse response) {
+		
+		RCLDatasetStatus newStatus;
+		
+		// if correct response then save the message id
+		// into the report
+		if (response.isCorrect()) {
+
+			// save the message id
+			report.setMessageId(response.getMessageId());
+			
+			// update report status based on the request operation type
+			switch(requiredSendOp) {
+			case INSERT:
+			case REPLACE:
+				newStatus = RCLDatasetStatus.UPLOADED;
+				break;
+			case REJECT:
+				newStatus = RCLDatasetStatus.REJECTION_SENT;
+				break;
+			case SUBMIT:
+				newStatus = RCLDatasetStatus.SUBMISSION_SENT;
+				break;
+			default:
+				newStatus = null;
+				break;
+			}
+		}
+		else {
+			// set upload failed status if message is not valid
+			newStatus = RCLDatasetStatus.UPLOAD_FAILED;
+		}
+		
+		if (newStatus != null) {
+			report.setStatus(newStatus);
+			daoService.update(report);
+		}
+		
+		return newStatus;
+	}
+	
+	/**
+	 * Export the report and send it to the DCF
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws ReportException 
+	 * @throws SOAPException
+	 */
+	public MessageResponse exportAndSend(Report report, OperationType opType, ProgressListener progressListener) 
+			throws IOException, ParserConfigurationException, 
+		SAXException, SendMessageException, DetailedSOAPException, ReportException {
+
+		MessageConfigBuilder messageConfig = report.getDefaultExportConfiguration(opType);
+		
+		// export the report and get an handle to the exported file
+		File file = this.export(report, messageConfig, progressListener);
+
+		MessageResponse response;
+		try {
+			
+			response = this.send(file, opType);
+			
+			// Update the report
+			updateReportWithSendResponse(report, opType, response);
+			
+			// if wrong response
+			if (!response.isCorrect()) {
+				throw new SendMessageException(response);
+			}
+			
+			// delete file also if exception occurs
+			file.delete();
+		}
+		catch (DetailedSOAPException e) {
+
+			// delete file also if exception occurs
+			file.delete();
+
+			// then rethrow the exception
+			throw e;
+		}
+		
+		if (progressListener != null)
+			progressListener.progressCompleted();
+		
+		return response;
+	}
+	
+	/**
+	 * Export and send without tracking progresses
+	 * @param opType
+	 * @throws DetailedSOAPException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws ReportException
+	 */
+	public MessageResponse exportAndSend(Report report, OperationType opType) 
+			throws DetailedSOAPException, IOException, ParserConfigurationException, 
+			SAXException, SendMessageException, ReportException {
+		return this.exportAndSend(report, opType, null);
 	}
 	
 	@Override
@@ -108,6 +292,102 @@ public class ReportService implements IReportService {
 		else
 			return getLatestDataset(report.getSenderId(), report.getYear());
 	}
+	
+	@Override
+	public boolean isLocallyPresent(String senderDatasetId) {
+		
+		for (TableRow row : daoService.getAll(TableSchemaList.getByName(AppPaths.REPORT_SHEET))) {
+
+			String otherSenderId = row.getLabel(AppPaths.REPORT_SENDER_ID);
+			
+			// if same sender dataset id then return true
+			if (otherSenderId != null 
+					&& otherSenderId.equals(senderDatasetId))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public RCLError create(Report report) throws DetailedSOAPException {
+		
+		// if the report is already present
+		// show error message
+		if (isLocallyPresent(report.getSenderId())) {
+			return new RCLError("WARN304");
+		}
+		
+		Dataset oldReport = getLatestDataset(report);
+		
+		// if the report already exists
+		// with the selected sender dataset id
+		if (oldReport != null) {
+			
+			// check if there are errors
+			RCLError error = getCreateReportError(report, oldReport);
+
+			if (error != null)
+				return error;
+
+			// if no errors, then we are able to create the report
+			
+			switch (oldReport.getRCLStatus()) {
+			case REJECTED:
+				// we mantain the same dataset id
+				// of the rejected dataset, but actually
+				// we create a new report with that
+				report.setId(oldReport.getId());
+				break;
+				
+			default:
+				break;
+			}
+		}
+
+		// if no conflicts create the new report
+		daoService.add(report);
+		
+		return null;
+	}
+	
+	/**
+	 * get the error message that needs to be displayed if
+	 * an old report already exists
+	 * @param oldReport
+	 * @return
+	 */
+	private RCLError getCreateReportError(IDataset report, IDataset oldReport) {
+
+		String code = null;
+		
+		switch(oldReport.getRCLStatus()) {
+		case ACCEPTED_DWH:
+			code = "WARN301";
+			break;
+		case SUBMITTED:
+			code = "WARN302";
+			break;
+		case VALID:
+		case VALID_WITH_WARNINGS:
+		case REJECTED_EDITABLE:
+			code = "WARN303";
+			break;
+		case PROCESSING:
+			code = "WARN300";
+			break;
+		case DELETED:
+		case REJECTED:
+			break;
+		default:
+			code = "ERR300";
+			break;
+		}
+		
+		if (code == null)
+			return null;
+		
+		return new RCLError(code, oldReport);
+	}
 
 	/**
 	 * Get the report status comparing the local status
@@ -138,8 +418,8 @@ public class ReportService implements IReportService {
 				|| dataset.getRCLStatus() == RCLDatasetStatus.REJECTED_EDITABLE)) {
 
 			report.setStatus(dataset.getRCLStatus());
-			report.update();
-
+			
+			daoService.update(report);
 		}
 		else {
 
@@ -151,6 +431,8 @@ public class ReportService implements IReportService {
 
 				// put the report in draft (status automatically changed)
 				report.makeEditable();
+				daoService.update(report);
+				
 				return dataset.getRCLStatus();
 				//break;
 
@@ -188,7 +470,7 @@ public class ReportService implements IReportService {
 				report.setStatus(status);
 
 				// permanently save data
-				report.update();
+				daoService.update(report);
 
 				LOGGER.info("Ack successful for message id " + report.getMessageId() + ". Retrieved datasetId=" 
 						+ datasetId + " with status=" + report.getRCLStatus());
@@ -198,7 +480,7 @@ public class ReportService implements IReportService {
 				// Reset the status with the previous if possible
 				if(report.getPreviousStatus() != null) {
 					report.setStatus(report.getPreviousStatus());
-					report.update();
+					daoService.update(report);
 				}
 			}
 		}

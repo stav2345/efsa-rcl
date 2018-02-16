@@ -1,12 +1,43 @@
-package report;
+package providers;
+
+import java.io.File;
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import ack.DcfAck;
 import dataset.Dataset;
 import dataset.DatasetList;
 import global_utils.Message;
+import message.MessageConfigBuilder;
+import message.MessageResponse;
+import message.SendMessageException;
+import message_creator.OperationType;
+import progress_bar.ProgressListener;
+import report.EFSAReport;
+import report.Report;
+import report.ReportException;
+import report.ReportSendOperation;
 import soap.DetailedSOAPException;
 
 public interface IReportService {
+	
+	/**
+	 * Check if the report is already present in the db
+	 * @param report
+	 * @return
+	 */
+	public boolean isLocallyPresent(String senderDatasetId);
+	
+	/**
+	 * Create a new report
+	 * @param report
+	 * @return error if something wrong happened
+	 * @throws DetailedSOAPException
+	 */
+	public RCLError create(Report report) throws DetailedSOAPException;
 	
 	/**
 	 * Get the ack of a report using its message id
@@ -65,6 +96,65 @@ public interface IReportService {
 	 * @throws ReportException
 	 */
 	public ReportSendOperation getSendOperation(EFSAReport report) throws DetailedSOAPException, ReportException;
+
+	/**
+	 * Export a report in .xml file
+	 * @param report
+	 * @param messageConfig
+	 * @return
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws ReportException
+	 */
+	public File export(Report report, MessageConfigBuilder messageConfig) 
+			throws IOException, ParserConfigurationException, SAXException, ReportException;
+	
+	/**
+	 * Export a report into an .xml file tracking the progresses
+	 * @param report
+	 * @param messageConfig
+	 * @param progressListener
+	 * @return
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ReportException
+	 */
+	public File export(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
+			throws ParserConfigurationException, SAXException, IOException, ReportException;
+	
+	/**
+	 * Export and send the report with the required operation type. It allows tracking progresses.
+	 * @param report
+	 * @param opType
+	 * @param progressListener
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws DetailedSOAPException
+	 * @throws ReportException
+	 */
+	public MessageResponse exportAndSend(Report report, OperationType opType, ProgressListener progressListener) 
+			throws IOException, ParserConfigurationException, SAXException, SendMessageException, 
+			DetailedSOAPException, ReportException;
+	
+	/**
+	 * Export and send the report with the required operation type.
+	 * @param report
+	 * @param opType
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws DetailedSOAPException
+	 * @throws ReportException
+	 */
+	public MessageResponse exportAndSend(Report report, OperationType opType) 
+			throws DetailedSOAPException, IOException, ParserConfigurationException, 
+			SAXException, SendMessageException, ReportException;
+	
 	
 	/**
 	 * Refresh the report status

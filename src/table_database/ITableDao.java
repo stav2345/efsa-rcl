@@ -22,14 +22,14 @@ public interface ITableDao {
 	 * @param row
 	 * @return
 	 */
-	public int add(TableSchema schema, TableRow row);
+	public int add(TableRow row);
 	
 	/**
 	 * Add a new row to the table
 	 * @param row
 	 * @return
 	 */
-	public boolean update(TableSchema schema, TableRow row);
+	public boolean update(TableRow row);
 
 	/**
 	 * Delete all the rows from the table
@@ -78,7 +78,7 @@ public interface ITableDao {
 	 */
 	public boolean delete(TableSchema schema, int rowId);
 	
-	public boolean delete(TableSchema schema, TableRowList list);
+	public boolean delete(TableRowList list);
 
 	/**
 	 * Delete all the records by a database field
