@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import providers.ITableDaoService;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 
@@ -31,9 +32,12 @@ public class Formula {
 	private TableColumn column;
 	private int dependenciesCount;
 	
+	private ITableDaoService daoService;
+	
 	//private long debugTime;
 	
-	public Formula(TableRow row, TableColumn column, String fieldHeader) {
+	public Formula(TableRow row, TableColumn column, 
+			String fieldHeader, ITableDaoService daoService) {
 		
 		if (dependenciesCache == null)
 			dependenciesCache = new HashMap<>();
@@ -42,6 +46,9 @@ public class Formula {
 		this.column = column;
 		this.fieldHeader = fieldHeader;
 		this.formula = column.getFieldByHeader(fieldHeader);
+		
+		this.daoService = daoService;
+		
 		this.dependenciesCount = 0;
 		evalDependencies();
 	}
@@ -186,7 +193,7 @@ public class Formula {
 	 * @throws FormulaException 
 	 */
 	private String solveRelationFormula(String value) throws FormulaException {
-		FormulaList relFormulas = FormulaFinder.findRelationFormulas(value);
+		FormulaList relFormulas = FormulaFinder.findRelationFormulas(value, daoService);
 		return replaceFormulasWithSolution(relFormulas, value, true);
 	}
 	
@@ -323,7 +330,7 @@ public class Formula {
 				if (numOfDep > 0) {
 					
 					// evaluate column dependencies recursively
-					Formula child = new Formula(row, col, fieldHeader);
+					Formula child = new Formula(row, col, fieldHeader, daoService);
 					
 					// also add the column dependencies to the current
 					// number of dependencies

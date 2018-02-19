@@ -14,7 +14,6 @@ import global_utils.Message;
 import message.MessageConfigBuilder;
 import message.MessageResponse;
 import message.SendMessageException;
-import message_creator.OperationType;
 import progress_bar.ProgressListener;
 import report.EFSAReport;
 import report.Report;
@@ -95,8 +94,26 @@ public interface IReportService {
 	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 */
-	public ReportSendOperation getSendOperation(EFSAReport report) throws DetailedSOAPException, ReportException;
+	public ReportSendOperation getSendOperation(Report report, Dataset dcfDataset) throws DetailedSOAPException, ReportException;
 
+	/**
+	 * Send a report to the dcf. This handles by its self the operation required (i.e. if
+	 * it is needed an insert or a replace)
+	 * @param report
+	 * @param dcfDataset
+	 * @param messageConfig
+	 * @param progressListener
+	 * @throws DetailedSOAPException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws SendMessageException
+	 * @throws ReportException
+	 */
+	public void send(Report report, Dataset dcfDataset, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
+			throws DetailedSOAPException, IOException, ParserConfigurationException, SAXException, 
+			SendMessageException, ReportException;
+	
 	/**
 	 * Export a report in .xml file
 	 * @param report
@@ -136,7 +153,7 @@ public interface IReportService {
 	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 */
-	public MessageResponse exportAndSend(Report report, OperationType opType, ProgressListener progressListener) 
+	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
 			throws IOException, ParserConfigurationException, SAXException, SendMessageException, 
 			DetailedSOAPException, ReportException;
 	
@@ -151,7 +168,7 @@ public interface IReportService {
 	 * @throws DetailedSOAPException
 	 * @throws ReportException
 	 */
-	public MessageResponse exportAndSend(Report report, OperationType opType) 
+	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig) 
 			throws DetailedSOAPException, IOException, ParserConfigurationException, 
 			SAXException, SendMessageException, ReportException;
 	

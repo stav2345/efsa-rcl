@@ -9,6 +9,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import app_config.AppPaths;
+import providers.ITableDaoService;
+import providers.TableDaoService;
 import table_database.TableDao;
 import table_skeleton.TableRow;
 import xlsx_reader.SchemaReader;
@@ -118,7 +120,7 @@ public class Relation {
 	 * @param parentId
 	 * @return
 	 */
-	public TableRow getParentValue(int parentId) {
+	public TableRow getParentValue(int parentId, ITableDaoService daoService) {
 		
 		Integer lastUsedId = lastIds.get(parent);
 		
@@ -126,12 +128,9 @@ public class Relation {
 		// update cache
 		if (lastUsedId == null || parentId != lastUsedId) {
 			
-			// search in the parent data
-			TableDao dao = new TableDao();
-			
 			// get the first (and unique) value related to this
 			// relation from the parent data
-			parentValueCache.put(parent, dao.getById(getParentSchema(), parentId));
+			parentValueCache.put(parent, daoService.getById(getParentSchema(), parentId));
 			lastIds.put(parent, parentId);
 		}
 		
@@ -211,19 +210,21 @@ public class Relation {
 	 * @throws IOException
 	 */
 	public static TableRow getGlobalParent(String tableName) throws IOException {
+		return getGlobalParent(tableName, new TableDaoService(new TableDao())); // TODO to be removed
+	}
+	
+	public static TableRow getGlobalParent(String tableName, ITableDaoService daoService) throws IOException {
 
 		TableSchema schema = TableSchemaList.getByName(tableName);
 
-		TableDao dao = new TableDao();
-
-		Collection<TableRow> opts = dao.getAll(schema);
+		Collection<TableRow> opts = daoService.getAll(schema);
 
 		if (opts.isEmpty())
 			return null;
 
 		return opts.iterator().next();
 	}
-
+	
 	/**
 	 * get the schema of the parent
 	 * @return

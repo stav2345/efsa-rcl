@@ -12,14 +12,14 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.xml.sax.SAXException;
 
+import dataset.Dataset;
 import i18n_messages.Messages;
+import message.MessageConfigBuilder;
 import message.SendMessageException;
 import message_creator.OperationType;
 import progress_bar.FormProgressBar;
 import progress_bar.ProgressListener;
 import providers.IReportService;
-import providers.ITableDaoService;
-import report.ReportSender.ReportSenderListener;
 import soap.DetailedSOAPException;
 
 /**
@@ -45,14 +45,15 @@ public abstract class ReportActions {
 	private Shell shell;
 	private Report report;
 	private IReportService reportService;
-	private ITableDaoService daoService;
 	
-	public ReportActions(Shell shell, Report report, IReportService reportService, 
-			ITableDaoService daoService) {
+	public ReportActions(Shell shell, Report report, IReportService reportService) {
 		this.shell = shell;
 		this.report = report;
 		this.reportService = reportService;
-		this.daoService = daoService;
+	}
+	
+	public IReportService getReportService() {
+		return reportService;
 	}
 	
 	public Report getReport() {
@@ -60,83 +61,32 @@ public abstract class ReportActions {
 	}
 	
 	/**
-	 * Amend a report
-	 * @param shell
-	 * @param report
-	 * @param listener
-	 */
-	public Report amend() {
-		
-		
-		boolean confirm = askConfirmation(ReportAction.AMEND);
-		
-		if (!confirm)
-			return null;
-		
-		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-		
-		// create a new version of the report in the db
-		// it affects directly the current object
-		report.amend();
-		
-		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-		
-		// we can returned the modified object
-		return report;
-	}
-	
-	/**
-	 * Reject a dataset
-	 * @param listener called to update ui
-	 */
-	public void reject(Listener listener) {
-		
-		boolean confirm = askConfirmation(ReportAction.REJECT);
-		
-		if (!confirm)
-			return;
-		
-		performAction(ReportAction.REJECT, listener);
-	}
-	
-	/**
-	 * Submit a dataset
-	 * @param listener called to update ui
-	 */
-	public void submit(Listener listener) {
-		
-		
-		boolean confirm = askConfirmation(ReportAction.SUBMIT);
-		
-		if (!confirm)
-			return;
-		
-		performAction(ReportAction.SUBMIT, listener);
-	}
-	
-	/**
 	 * Perform a report action that involves the dcf
 	 * @param action
 	 * @param listener
 	 */
-	private void performAction(ReportAction action, Listener listener) {
+	public void perform(MessageConfigBuilder messageConfig, Listener listener) {
 		
 		Exception exceptionOccurred = null;
+		
+		ReportAction action;
+		if (messageConfig.getOpType() == OperationType.SUBMIT)
+			action = ReportAction.SUBMIT;
+		else if (messageConfig.getOpType() == OperationType.REJECT)
+			action = ReportAction.REJECT;
+		else
+			return;
+		
+		boolean confirm = askConfirmation(action);
+		
+		if (!confirm)
+			return;
 		
 		try {
 			
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 			
-			switch(action) {
-			case REJECT:
-				reportService.exportAndSend(report, OperationType.REJECT);
-				break;
-			case SUBMIT:
-				reportService.exportAndSend(report, OperationType.SUBMIT);
-				break;
-			default:  // unsupported
-				break;
-			}
+			reportService.exportAndSend(report, messageConfig);
 
 			listener.handleEvent(null);
 			
@@ -169,61 +119,45 @@ public abstract class ReportActions {
 	 * @throws ParserConfigurationException 
 	 * @throws SendMessageException 
 	 */
-	public void send(Listener listener) {
-		
-		boolean confirm = askConfirmation(ReportAction.SEND);
-		
-		if (!confirm)
-			return;
-		
-		// data collection ask confirmation
-		boolean confirm2 = askDataCollectionConfirmation(report);
-		
-		if (!confirm2)
-			return;
+	public void send(MessageConfigBuilder messageConfig, Listener listener) {
 		
 		FormProgressBar progressBarDialog = new FormProgressBar(shell, Messages.get("send.progress.title"));
 		progressBarDialog.open();
 		
-		// start the sender thread
-		ReportSender sender = new ReportSender(report, reportService, daoService);
+		Dataset dataset;
+		try {
+			dataset = reportService.getLatestDataset(report);
+		} catch (DetailedSOAPException e) {
+			e.printStackTrace();
+			progressBarDialog.close();
+			LOGGER.error("Cannot send report=" + report.getSenderId(), e);
+			manageException(e, ReportAction.SEND);
+			return;
+		}
 		
-		sender.setReportListener(new ReportSenderListener() {
-			
-			@Override
-			public void confirm(ReportSendOperation opType) {
+		if (dataset != null) {
+			try {
+				boolean goOn = showSendWarning(shell, dataset);
 				
-				shell.getDisplay().syncExec(new Runnable() {
-					
-					@Override
-					public void run() {
-						
-						try {
-
-							boolean goOn = showSendWarning(shell, opType);
-							
-							if (goOn) {
-								sender.confirmSend();
-							}
-							else {
-								
-								sender.stopSend();
-								
-								// close the progress bar
-								progressBarDialog.close();
-							}
-							
-						} catch (UnsupportedReportActionException e) {
-							e.printStackTrace();
-							LOGGER.error("Cannot send report=" + report.getSenderId(), e);
-							manageException(e, ReportAction.SEND);
-						}
-					}
-				});
+				if (!goOn) {
+					progressBarDialog.close();
+					return;
+				}
+				
+			} catch (NotOverwritableDcfDatasetException e) {
+				e.printStackTrace();
+				
+				progressBarDialog.close();
+				
+				LOGGER.error("Cannot send report=" + report.getSenderId(), e);
+				manageException(e, ReportAction.SEND);
+				return;
 			}
-		});
+		}
 		
-		
+		// start the sender thread
+		ReportExportAndSendThread sender = new ReportExportAndSendThread(report, dataset, messageConfig, reportService);
+
 		sender.setProgressListener(new ProgressListener() {
 			
 			@Override
@@ -277,28 +211,27 @@ public abstract class ReportActions {
 	 * @param shell
 	 * @param operation
 	 * @return
-	 * @throws UnsupportedReportActionException 
+	 * @throws NotOverwritableDcfDatasetException 
 	 */
-	public boolean showSendWarning(Shell shell, ReportSendOperation operation) 
-			throws UnsupportedReportActionException {
+	public boolean showSendWarning(Shell shell, Dataset dcfDataset) 
+			throws NotOverwritableDcfDatasetException {
 		
 		boolean goOn = true;
-
-		// new dataset
-		if (operation.getStatus() == null)
+		
+		if (dcfDataset == null)
 			return true;
 
-		switch(operation.getStatus()) {
+		switch(dcfDataset.getRCLStatus()) {
 		case ACCEPTED_DWH:
 		case SUBMITTED:
 		case PROCESSING:
-			throw new UnsupportedReportActionException(operation);
+			throw new NotOverwritableDcfDatasetException(dcfDataset);
 
 		case REJECTED_EDITABLE:
 		case VALID:
 		case VALID_WITH_WARNINGS:
 			// replace
-			goOn = askReplaceConfirmation(operation);
+			goOn = askReplaceConfirmation(dcfDataset);
 			break;
 		case REJECTED:
 		case DELETED:
@@ -307,7 +240,7 @@ public abstract class ReportActions {
 
 			break;
 		default:
-			throw new UnsupportedReportActionException(operation);
+			throw new NotOverwritableDcfDatasetException(dcfDataset);
 		}
 		
 		// default answer is no
@@ -322,17 +255,11 @@ public abstract class ReportActions {
 	public abstract boolean askConfirmation(ReportAction action);
 	
 	/**
-	 * Ask confirmation for sending to the test data collection
-	 * @return
-	 */
-	public abstract boolean askDataCollectionConfirmation(Report report);
-	
-	/**
 	 * Ask confirmation for replacing an existing dataset with a send operation
 	 * @param sendOp
 	 * @return
 	 */
-	public abstract boolean askReplaceConfirmation(ReportSendOperation sendOp);
+	public abstract boolean askReplaceConfirmation(Dataset status);
 	
 	/**
 	 * Called if an exception occurred

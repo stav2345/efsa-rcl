@@ -5,9 +5,11 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import table_database.ITableDao;
+import table_relations.Relation;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import xlsx_reader.TableSchema;
+import xlsx_reader.TableSchemaList;
 
 public class TableDaoMock implements ITableDao {
 
@@ -30,7 +32,10 @@ public class TableDaoMock implements ITableDao {
 		boolean hasUpdated = false;
 		
 		while(iterator.hasNext()) {
-			if (iterator.next().getDatabaseId() == row.getDatabaseId()) {
+			
+			TableRow c = iterator.next();
+			
+			if (c.getSchema().equals(row.getSchema()) && c.getDatabaseId() == row.getDatabaseId()) {
 				iterator.remove();
 				hasUpdated = true;
 			}
@@ -61,11 +66,11 @@ public class TableDaoMock implements ITableDao {
 		
 		while(iterator.hasNext()) {
 			
-			TableRow parent = iterator.next();
+			TableRow row = iterator.next();
 			
-			boolean isParent = parent.getSchema().getSheetName().equals(parentTable);
+			TableRow parent = row.getParent(TableSchemaList.getByName(parentTable));
 			
-			if (isParent && parent.getDatabaseId() == parentId) {
+			if (parent.getDatabaseId() == parentId) {
 				iterator.remove();
 				hasUpdated = true;
 			}
@@ -85,8 +90,20 @@ public class TableDaoMock implements ITableDao {
 		TableRowList list = new TableRowList();
 		
 		for(TableRow row: db) {
-			if(row.getSchema().getSheetName().equals(parentTable) && row.getDatabaseId() == parentId)
-				list.add(row);				
+			
+			Relation r = schema.getRelationByParentTable(parentTable);
+			
+			String pId = row.getCode(r.getForeignKey());
+			
+			if (pId.isEmpty())
+				continue;
+			
+			// get the parent from the db
+			TableRow parent = getById(TableSchemaList.getByName(parentTable), 
+					Integer.valueOf(pId));
+
+			if(row.getSchema().equals(schema) && parent.getDatabaseId() == parentId)
+				list.add(row);
 		}
 
 		return list;
@@ -104,7 +121,14 @@ public class TableDaoMock implements ITableDao {
 
 	@Override
 	public TableRowList getAll(TableSchema schema) {
-		return db;
+		
+		TableRowList out = new TableRowList();
+		
+		for(TableRow row: db)
+			if (row.getSchema().equals(schema))
+				out.add(row);
+		
+		return out;
 	}
 
 	@Override
@@ -115,7 +139,9 @@ public class TableDaoMock implements ITableDao {
 		boolean hasUpdated = false;
 		
 		while(iterator.hasNext()) {
-			if (iterator.next().getDatabaseId() == rowId) {
+			TableRow row = iterator.next();
+			
+			if (row.getSchema().equals(schema) && row.getDatabaseId() == rowId) {
 				iterator.remove();
 				hasUpdated = true;
 			}
@@ -145,7 +171,10 @@ public class TableDaoMock implements ITableDao {
 		boolean hasUpdated = false;
 		
 		while(iterator.hasNext()) {
-			if (iterator.next().get(fieldName).equals(value)) {
+			
+			TableRow row = iterator.next();
+			
+			if (row.getSchema().equals(schema) && row.get(fieldName).equals(value)) {
 				iterator.remove();
 				hasUpdated = true;
 			}
@@ -158,7 +187,7 @@ public class TableDaoMock implements ITableDao {
 	public TableRow getById(TableSchema schema, int id) {
 		
 		for(TableRow row: db) {
-			if (row.getDatabaseId() == id)
+			if (row.getSchema().equals(schema) && row.getDatabaseId() == id)
 				return row;
 		}
 		
@@ -170,7 +199,7 @@ public class TableDaoMock implements ITableDao {
 		
 		TableRowList list = new TableRowList();
 		for(TableRow row: db) {
-			if (row.get(fieldName).equals(value))
+			if (row.getSchema().equals(schema) && row.get(fieldName).equals(value))
 				list.add(row);
 		}
 		

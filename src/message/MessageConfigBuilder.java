@@ -6,8 +6,8 @@ import java.util.Collection;
 
 import app_config.AppPaths;
 import global_utils.TimeUtils;
-import message_creator.MessageXmlBuilder;
 import message_creator.OperationType;
+import providers.IFormulaService;
 import table_relations.Relation;
 import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
@@ -19,24 +19,13 @@ public class MessageConfigBuilder {
 	private OperationType opType;
 	private File out;
 	
-	/**
-	 * Create a configuration for a message that will be created
-	 * in {@link MessageXmlBuilder}
-	 * @param messageParents parents that will be injected into the message
-	 * put here all the tables that are required (foreignKey) in the message schema
-	 * @param opType required operation type that will be put in the message
-	 * ({@link AppPaths#MESSAGE_CONFIG_SHEET}).
-	 */
-	public MessageConfigBuilder(Collection<TableRow> messageParents, OperationType opType) {
-		this(messageParents, opType, generateTempFile());
-	}
+	private IFormulaService formulaService;
 	
-	public MessageConfigBuilder(Collection<TableRow> messageParents, OperationType opType, File out) {
+	public MessageConfigBuilder(IFormulaService formulaService, 
+			Collection<TableRow> messageParents) {
 		this.messageParents = messageParents;
-		this.opType = opType;
-		this.out = out;
+		this.formulaService = formulaService;
 	}
-	
 	
 	/**
 	 * Generate a temporary .xml file to export the dataset
@@ -51,6 +40,10 @@ public class MessageConfigBuilder {
 		return messageParents;
 	}
 	
+	public void setOpType(OperationType opType) {
+		this.opType = opType;
+	}
+	
 	public OperationType getOpType() {
 		return opType;
 	}
@@ -59,11 +52,19 @@ public class MessageConfigBuilder {
 		return opType.needEmptyDataset();
 	}
 	
+	public void setOut(File out) {
+		this.out = out;
+	}
+	
 	/**
 	 * Get the file where the export will be created
 	 * @return
 	 */
 	public File getOut() {
+		
+		if (out == null)
+			return generateTempFile();
+		
 		return out;
 	}
 	
@@ -79,7 +80,7 @@ public class MessageConfigBuilder {
 		// create the header row
 		TableRow row = new TableRow(schema);
 		row.initialize();
-
+		
 		// add the op type to the row
 		row.put(AppPaths.MESSAGE_CONFIG_OP_TYPE, opType.getOpType());
 		row.put(AppPaths.MESSAGE_CONFIG_INTERNAL_OP_TYPE, opType.getInternalOpType());
@@ -94,7 +95,7 @@ public class MessageConfigBuilder {
 		
 		Relation.emptyCache();
 		
-		row.updateFormulas();
+		formulaService.updateFormulas(row);
 		
 		return row;
 	}

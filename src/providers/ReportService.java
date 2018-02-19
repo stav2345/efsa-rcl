@@ -63,6 +63,10 @@ public class ReportService implements IReportService {
 		this.daoService = daoService;
 	}
 	
+	public ITableDaoService getDaoService() {
+		return daoService;
+	}
+	
 	public File export(Report report, MessageConfigBuilder messageConfig) 
 			throws IOException, ParserConfigurationException, SAXException, ReportException {
 		return this.export(report, messageConfig, null);
@@ -160,6 +164,41 @@ public class ReportService implements IReportService {
 		return newStatus;
 	}
 	
+	public void send(Report report, Dataset dcfDataset, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
+			throws DetailedSOAPException, IOException, ParserConfigurationException, SAXException, 
+			SendMessageException, ReportException {
+		
+		// Update the report dataset id if it was found in the DCF
+		// (Required if we are overwriting an existing report)
+		if (dcfDataset != null) {
+
+			switch (dcfDataset.getRCLStatus()) {
+			case PROCESSING: // cannot send with these status
+			case ACCEPTED_DWH:
+			case OTHER:
+			case SUBMITTED:
+				return;
+				
+			case VALID: // dataset id needs to be copied to replace
+			case VALID_WITH_WARNINGS:
+			case REJECTED:
+			case REJECTED_EDITABLE:
+				
+				LOGGER.info("Overwriting dataset id: " + report.getId() 
+					+ " with " + dcfDataset.getId());
+				
+				report.setId(dcfDataset.getId());
+				daoService.update(report);
+				break;
+				
+			default:  // for deleted no action required
+				break;
+			}
+		}
+		
+		this.exportAndSend(report, messageConfig, progressListener);
+	}
+	
 	/**
 	 * Export the report and send it to the DCF
 	 * @throws IOException
@@ -169,22 +208,20 @@ public class ReportService implements IReportService {
 	 * @throws ReportException 
 	 * @throws SOAPException
 	 */
-	public MessageResponse exportAndSend(Report report, OperationType opType, ProgressListener progressListener) 
+	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
 			throws IOException, ParserConfigurationException, 
 		SAXException, SendMessageException, DetailedSOAPException, ReportException {
 
-		MessageConfigBuilder messageConfig = report.getDefaultExportConfiguration(opType);
-		
 		// export the report and get an handle to the exported file
 		File file = this.export(report, messageConfig, progressListener);
 
 		MessageResponse response;
 		try {
 			
-			response = this.send(file, opType);
+			response = this.send(file, messageConfig.getOpType());
 			
 			// Update the report
-			updateReportWithSendResponse(report, opType, response);
+			updateReportWithSendResponse(report, messageConfig.getOpType(), response);
 			
 			// if wrong response
 			if (!response.isCorrect()) {
@@ -219,10 +256,10 @@ public class ReportService implements IReportService {
 	 * @throws SendMessageException
 	 * @throws ReportException
 	 */
-	public MessageResponse exportAndSend(Report report, OperationType opType) 
+	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig) 
 			throws DetailedSOAPException, IOException, ParserConfigurationException, 
 			SAXException, SendMessageException, ReportException {
-		return this.exportAndSend(report, opType, null);
+		return this.exportAndSend(report, messageConfig, null);
 	}
 	
 	@Override
@@ -498,11 +535,11 @@ public class ReportService implements IReportService {
 	 * @throws ReportException 
 	 * @throws DetailedSOAPException 
 	 */
-	public ReportSendOperation getSendOperation(EFSAReport report) throws DetailedSOAPException, ReportException {
+	public ReportSendOperation getSendOperation(Report report, Dataset dcfDataset) throws DetailedSOAPException, ReportException {
 		
 		OperationType opType = OperationType.NOT_SUPPORTED;
 		
-		Dataset dataset = this.getLatestDataset(report);
+		//Dataset dataset = this.getLatestDataset(report);
 		
 		String senderId = TableVersion.mergeNameAndVersion(report.getSenderId(), 
 				report.getVersion());
@@ -510,13 +547,13 @@ public class ReportService implements IReportService {
 		LOGGER.info("Searching report with sender dataset id=" + senderId);
 		
 		// if no dataset is present => we do an insert
-		if (dataset == null || !dataset.getSenderId().equals(senderId)) {
+		if (dcfDataset == null || !dcfDataset.getSenderId().equals(senderId)) {
 			LOGGER.debug("No valid dataset found in DCF, using INSERT as operation");
 			return new ReportSendOperation(null, OperationType.INSERT);
 		}
 		
 		// otherwise we check the dataset status
-		RCLDatasetStatus status = dataset.getRCLStatus();
+		RCLDatasetStatus status = dcfDataset.getRCLStatus();
 		
 		LOGGER.debug("Found dataset in DCF in status " + status);
 		
@@ -536,7 +573,7 @@ public class ReportService implements IReportService {
 			//		+ status + " is supported");
 		}
 		
-		ReportSendOperation operation = new ReportSendOperation(dataset, opType);
+		ReportSendOperation operation = new ReportSendOperation(dcfDataset, opType);
 		
 		return operation;
 	}

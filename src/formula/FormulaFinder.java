@@ -3,6 +3,8 @@ package formula;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import providers.ITableDaoService;
+
 public class FormulaFinder {
 	
 	// regex components
@@ -124,7 +126,7 @@ public class FormulaFinder {
 	 * @return
 	 * @throws FormulaException 
 	 */
-	public static FormulaList findRelationFormulas(String text) 
+	public static FormulaList findRelationFormulas(String text, ITableDaoService daoService) 
 			throws FormulaException {
 		
 		FormulaList relFormulas = new FormulaList();
@@ -136,7 +138,7 @@ public class FormulaFinder {
 		// compile all the relation formulas
 		while (m.find()) {
 			String formula = m.group();
-			RelationFormula relFormula = new RelationFormula(formula);
+			RelationFormula relFormula = new RelationFormula(formula, daoService);
 			relFormulas.add(relFormula);
 		}
 		

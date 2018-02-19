@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import providers.ITableDaoService;
+import providers.TableDaoService;
+import table_database.TableDao;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
+import xlsx_reader.TableHeaders.XlsxHeader;
+import xlsx_reader.TableSchema;
 
 /**
  * Class which solves the formulas included in the columns schema
@@ -17,13 +22,19 @@ import table_skeleton.TableRow;
 public class FormulaSolver {
 
 	private TableRow row;
-
+	private ITableDaoService daoService;
+	
 	/**
 	 * Initialize the solver.
 	 * @param row row that contains the values for solving the formulas
 	 */
 	public FormulaSolver(TableRow row) {
+		this(row, new TableDaoService(new TableDao())); // TODO to be removed
+	}
+	
+	public FormulaSolver(TableRow row, ITableDaoService daoService) {
 		this.row = row;
+		this.daoService = daoService;
 	}
 	
 	/**
@@ -35,7 +46,7 @@ public class FormulaSolver {
 	public Formula solve(TableColumn column, String fieldHeader) throws FormulaException {
 
 		// get all the formulas
-		FormulaParser parser = new FormulaParser(row);
+		FormulaParser parser = new FormulaParser(row, daoService);
 		
 		Formula formula = parser.parse(column, fieldHeader);
 		formula.solve();
@@ -58,7 +69,7 @@ public class FormulaSolver {
 		ArrayList<Formula> solvedFormulas = new ArrayList<>();
 		
 		// get all the formulas
-		FormulaParser parser = new FormulaParser(row);
+		FormulaParser parser = new FormulaParser(row, daoService);
 		
 		ArrayList<Formula> formulas = parser.parse(fieldHeader);
 		

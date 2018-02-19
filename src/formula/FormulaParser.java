@@ -2,6 +2,7 @@ package formula;
 
 import java.util.ArrayList;
 
+import providers.ITableDaoService;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import xlsx_reader.TableHeaders.XlsxHeader;
@@ -14,10 +15,11 @@ import xlsx_reader.TableHeaders.XlsxHeader;
 public class FormulaParser {
 
 	private TableRow row;
-	
+	private ITableDaoService daoService;
 
-	public FormulaParser(TableRow row) {
+	public FormulaParser(TableRow row, ITableDaoService daoService) {
 		this.row = row;
+		this.daoService = daoService;
 	}
 	
 	/**
@@ -29,7 +31,7 @@ public class FormulaParser {
 	 */
 	public Formula parse(TableColumn column, String columnField) {
 
-		Formula formula = new Formula(row, column, columnField);
+		Formula formula = new Formula(row, column, columnField, daoService);
 		return formula;
 	}
 	
@@ -46,7 +48,7 @@ public class FormulaParser {
 
 		// for each column of the schema create the formula
 		for (TableColumn column : row.getSchema()) {
-			formulas.add(new Formula(row, column, columnField));
+			formulas.add(new Formula(row, column, columnField, daoService));
 		}
 		
 		return formulas;

@@ -1,6 +1,7 @@
 package formula;
 
 import app_config.AppPaths;
+import providers.ITableDaoService;
 import table_relations.Relation;
 import table_skeleton.TableCell;
 import table_skeleton.TableRow;
@@ -16,9 +17,12 @@ public class RelationFormula implements IFormula {
 	private String parentTable;
 	private String parentColumnId;
 	private String parentFieldType;
+	
+	private ITableDaoService daoService;
 
-	public RelationFormula(String formula) throws FormulaException {
+	public RelationFormula(String formula, ITableDaoService daoService) throws FormulaException {
 		this.formula = formula;
+		this.daoService = daoService;
 		compile();
 	}
 
@@ -100,7 +104,7 @@ public class RelationFormula implements IFormula {
 		}
 
 		// get the parent row using the foreign key
-		TableRow parent = r.getParentValue(Integer.valueOf(foreignKey));
+		TableRow parent = r.getParentValue(Integer.valueOf(foreignKey), daoService);
 		
 		if (parent == null) {
 			throw new FormulaException("No relation value found for " + foreignKey + "; relation " + r);

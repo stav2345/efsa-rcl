@@ -4,8 +4,6 @@ import java.util.Collection;
 
 import dataset.IDataset;
 import dataset.RCLDatasetStatus;
-import message.MessageConfigBuilder;
-import message_creator.OperationType;
 import table_skeleton.TableRow;
 
 /**
@@ -53,14 +51,7 @@ public interface EFSAReport extends IDataset {
 	 * @param id
 	 */
 	public void setId(String id);
-	
-	/**
-	 * Get the default configuration used to export the report
-	 * @param opType
-	 * @return
-	 */
-	public MessageConfigBuilder getDefaultExportConfiguration(OperationType opType);
-	
+
 	/**
 	 * Get the current version of the report
 	 * @return

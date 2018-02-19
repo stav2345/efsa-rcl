@@ -33,5 +33,15 @@ public interface ITableDaoService {
 	 * @return
 	 */
 	public TableRow getById(TableSchema schema, int id);
+	
+	/**
+	 * Get rows by parent
+	 * @param schema
+	 * @param parentTable
+	 * @param parentId
+	 * @param solveFormulas
+	 * @return
+	 */
+	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas);
 
 }

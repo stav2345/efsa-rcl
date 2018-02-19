@@ -34,4 +34,9 @@ public class TableDaoService implements ITableDaoService {
 	public TableRow getById(TableSchema schema, int id) {
 		return dao.getById(schema, id);
 	}
+
+	@Override
+	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas) {
+		return dao.getByParentId(schema, parentTable, parentId, solveFormulas);
+	}
 }
