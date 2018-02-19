@@ -20,7 +20,8 @@ import dataset.IDataset;
 import dataset.NoAttachmentException;
 import formula.FormulaException;
 import progress_bar.ProgressListener;
-import report.Report;
+import providers.IReportService;
+import providers.ITableDaoService;
 import soap.DetailedSOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
@@ -41,6 +42,9 @@ public abstract class ReportImporter {
 	
 	private int processedDatasets;
 	
+	private ITableDaoService daoService;
+	private IReportService reportService;
+	
 	/**
 	 * Download and import a dataset using all its versions to
 	 * manage the amendments.
@@ -50,13 +54,16 @@ public abstract class ReportImporter {
 	 * using the format value.version, as FR1704.01 (senderDatasetId.version)
 	 */
 	public ReportImporter(DatasetList datasetVersions, 
-			String rowIdField, String versionField) {
+			String rowIdField, String versionField, IReportService reportService, 
+			ITableDaoService daoService) {
 		
 		this.processedDatasets = 1;
 		
 		this.datasetVersions = datasetVersions;
 		this.rowIdField = rowIdField;
 		this.versionField =  versionField;
+		this.daoService = daoService;
+		this.reportService = reportService;
 		
 		// get the sender id of the dataset versions
 		if (!datasetVersions.isEmpty()) {
@@ -85,7 +92,7 @@ public abstract class ReportImporter {
 	}
 	
 	private void saveOldVersions() {
-		this.oldVersions = Report.getAllVersions(this.senderDatasetId);
+		this.oldVersions = reportService.getAllVersions(this.senderDatasetId);
 	}
 	
 	/**
@@ -93,12 +100,27 @@ public abstract class ReportImporter {
 	 */
 	public void deleteOldVersions() {
 		LOGGER.debug("Deleting the old versions of the report if were present");
-		this.oldVersions.deleteAll();
+		daoService.delete(oldVersions);
 	}
 	
 	public void abort() {
 		if (this.newVersions != null)
-			this.newVersions.deleteAll();
+			daoService.delete(newVersions);
+	}
+	
+	private Dataset download(Dataset dataset) throws XMLStreamException, IOException, 
+		DetailedSOAPException, NoAttachmentException {
+		
+		String datasetId = dataset.getId();
+		
+		File file = reportService.download(datasetId);
+		Dataset populatedDataset = reportService.datasetFromFile(file);
+		
+		populatedDataset.setStatus(dataset.getRCLStatus());
+		populatedDataset.setSenderId(dataset.getSenderId());
+		populatedDataset.setId(populatedDataset.getOperation().getDatasetId());
+		
+		return populatedDataset;
 	}
 	
 	/**
@@ -163,7 +185,7 @@ public abstract class ReportImporter {
 				LOGGER.debug("--> therefore process amendments and create the report");
 				
 				// populate the dataset with metadata (operation/header)
-				Dataset popDataset = dataset.populateMetadata();
+				Dataset popDataset = download(dataset);
 				
 				// process the dataset header/operation
 				TableRow newReport = importDatasetMetadata(popDataset);
@@ -172,7 +194,7 @@ public abstract class ReportImporter {
 				}
 				
 				newVersions.add(newReport);
-				System.err.println("Processing amendments");
+
 				// process the amendments of the current dataset
 				LOGGER.debug("Processing amendments");
 				processAmendments();
@@ -212,7 +234,7 @@ public abstract class ReportImporter {
 		XMLStreamException, IOException, NoAttachmentException {
 		
 		// download the dataset file
-		File file = dataset.download();
+		File file = reportService.download(dataset.getId());
 		
 		setProgress(processedDatasets / datasetVersions.size() * 75);
 		
@@ -233,19 +255,18 @@ public abstract class ReportImporter {
 		}
 		
 		// parse it to extract the relevant information
-		DatasetComparisonParser parser = new DatasetComparisonParser(
-				file, rowIdField, versionField);
-
-		// for each dataset comparison insert into the db
-		DatasetComparison comp;
-		while ((comp = parser.next()) != null) {
+		try(DatasetComparisonParser parser = new DatasetComparisonParser(
+				file, rowIdField, versionField);) {
 			
-			System.err.println("Add comp: " + comp);
-			DatasetComparisonDao dao = new DatasetComparisonDao();
-			dao.add(comp);
-		}
+			// for each dataset comparison insert into the db
+			DatasetComparison comp;
+			while ((comp = parser.next()) != null) {
+				DatasetComparisonDao dao = new DatasetComparisonDao();
+				dao.add(comp);
+			}
 
-		parser.close();
+			parser.close();
+		}
 	}
 
 	/**

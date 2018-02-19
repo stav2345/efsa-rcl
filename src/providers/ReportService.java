@@ -7,6 +7,7 @@ import java.nio.file.Files;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPException;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -21,7 +22,9 @@ import app_config.PropertiesReader;
 import config.Config;
 import dataset.Dataset;
 import dataset.DatasetList;
+import dataset.DatasetMetaDataParser;
 import dataset.IDataset;
+import dataset.NoAttachmentException;
 import dataset.RCLDatasetStatus;
 import global_utils.Message;
 import global_utils.Warnings;
@@ -38,10 +41,12 @@ import report.ReportException;
 import report.ReportSendOperation;
 import soap.DetailedSOAPException;
 import soap_interface.IGetAck;
+import soap_interface.IGetDataset;
 import soap_interface.IGetDatasetsList;
 import soap_interface.ISendMessage;
 import table_relations.Relation;
 import table_skeleton.TableRow;
+import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
 import user.User;
 import xlsx_reader.TableSchemaList;
@@ -54,17 +59,51 @@ public class ReportService implements IReportService {
 	private IGetDatasetsList<IDataset> getDatasetsList;
 	private ITableDaoService daoService;
 	private ISendMessage sendMessage;
+	private IGetDataset getDataset;
 	
 	public ReportService(IGetAck getAck, IGetDatasetsList<IDataset> getDatasetsList, 
-			ISendMessage sendMessage, ITableDaoService daoService) {
+			ISendMessage sendMessage, IGetDataset getDataset, ITableDaoService daoService) {
 		this.getAck = getAck;
 		this.getDatasetsList = getDatasetsList;
 		this.sendMessage = sendMessage;
+		this.getDataset = getDataset;
 		this.daoService = daoService;
 	}
 	
 	public ITableDaoService getDaoService() {
 		return daoService;
+	}
+	
+	/**
+	 * Populate the dataset with the header and operation information (from DCF)
+	 * @return
+	 * @throws XMLStreamException
+	 * @throws DetailedSOAPException
+	 * @throws IOException
+	 * @throws NoAttachmentException 
+	 */
+	public Dataset datasetFromFile(File file) throws XMLStreamException, IOException {
+		
+		Dataset dataset = null;
+		
+		try(DatasetMetaDataParser parser = new DatasetMetaDataParser(file);) {
+			dataset = parser.parse();
+			parser.close();
+		}
+
+		return dataset;
+	}
+	
+	@Override
+	public File download(String datasetId) throws DetailedSOAPException, NoAttachmentException {
+		
+		Config config = new Config();
+		File file = getDataset.getDatasetFile(config.getEnvironment(), User.getInstance(), datasetId);
+		
+		if (file == null)
+			throw new NoAttachmentException("Cannot find the attachment of the dataset with id=" + datasetId);
+		
+		return file;
 	}
 	
 	public File export(Report report, MessageConfigBuilder messageConfig) 
@@ -260,6 +299,12 @@ public class ReportService implements IReportService {
 			throws DetailedSOAPException, IOException, ParserConfigurationException, 
 			SAXException, SendMessageException, ReportException {
 		return this.exportAndSend(report, messageConfig, null);
+	}
+	
+	@Override
+	public TableRowList getAllVersions(String senderId) {
+		return daoService.getByStringField(TableSchemaList.getByName(AppPaths.REPORT_SHEET), 
+				AppPaths.REPORT_SENDER_ID, senderId);
 	}
 	
 	@Override

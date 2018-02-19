@@ -44,4 +44,19 @@ public interface ITableDaoService {
 	 */
 	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas);
 
+	/**
+	 * Get rows by string field value
+	 * @param schema
+	 * @param fieldName
+	 * @param value
+	 * @return
+	 */
+	public TableRowList getByStringField(TableSchema schema, String fieldName, String value);
+	
+	/**
+	 * Delete all the rows
+	 * @param list
+	 * @return
+	 */
+	public boolean delete(TableRowList list);
 }

@@ -41,6 +41,10 @@ public abstract class ReportDownloaderDialog {
 		this.reportService = reportService;
 	}
 
+	public IReportService getReportService() {
+		return reportService;
+	}
+	
 	/**
 	 * Get only the available data collections for which the user is registered
 	 * @return

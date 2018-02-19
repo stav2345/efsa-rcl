@@ -1,6 +1,5 @@
 package amend_manager;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -26,7 +25,7 @@ import table_skeleton.TableVersion;
  * @author avonva
  *
  */
-public class DatasetComparisonParser implements Closeable {
+public class DatasetComparisonParser implements AutoCloseable {
 
 	private static final Logger LOGGER = LogManager.getLogger(DatasetComparisonParser.class);
 	

@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import org.xml.sax.SAXException;
 
 import ack.DcfAck;
 import dataset.Dataset;
 import dataset.DatasetList;
+import dataset.NoAttachmentException;
 import global_utils.Message;
 import message.MessageConfigBuilder;
 import message.MessageResponse;
@@ -20,6 +22,7 @@ import report.Report;
 import report.ReportException;
 import report.ReportSendOperation;
 import soap.DetailedSOAPException;
+import table_skeleton.TableRowList;
 
 public interface IReportService {
 	
@@ -172,6 +175,31 @@ public interface IReportService {
 			throws DetailedSOAPException, IOException, ParserConfigurationException, 
 			SAXException, SendMessageException, ReportException;
 	
+	/**
+	 * Download a dataset using its dataset id
+	 * @param datasetId
+	 * @return
+	 * @throws DetailedSOAPException
+	 * @throws NoAttachmentException
+	 */
+	public File download(String datasetId) throws DetailedSOAPException, NoAttachmentException;
+	
+	/**
+	 * Read a dataset file downloaded from dcf and create a {@link Dataset}
+	 * object containing all the retrieved information
+	 * @param file
+	 * @return
+	 * @throws XMLStreamException
+	 * @throws IOException
+	 */
+	public Dataset datasetFromFile(File file) throws XMLStreamException, IOException;
+	
+	/**
+	 * Get all the versions of the report in the database
+	 * @param senderId
+	 * @return
+	 */
+	public TableRowList getAllVersions(String senderId);
 	
 	/**
 	 * Refresh the report status

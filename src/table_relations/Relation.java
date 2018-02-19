@@ -201,6 +201,17 @@ public class Relation {
 			Relation.injectParent(globalParent, row);
 	}
 	
+	public static void injectGlobalParent(TableRow row, String parentTableName, ITableDaoService daoService) throws IOException {
+		
+		// load the global parent
+		TableRow globalParent = Relation.getGlobalParent(parentTableName, daoService);
+		
+		// set the global parent foreign key to the row
+		// if possible
+		if (globalParent != null)
+			Relation.injectParent(globalParent, row);
+	}
+	
 	/**
 	 * Get a global parent by its table name. (A global parent is
 	 * a table with just one row that contains values that are used

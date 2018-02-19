@@ -39,4 +39,14 @@ public class TableDaoService implements ITableDaoService {
 	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas) {
 		return dao.getByParentId(schema, parentTable, parentId, solveFormulas);
 	}
+	
+	@Override
+	public TableRowList getByStringField(TableSchema schema, String fieldName, String value) {
+		return dao.getByStringField(schema, fieldName, value);
+	}
+	
+	@Override
+	public boolean delete(TableRowList list) {
+		return dao.delete(list);
+	}
 }

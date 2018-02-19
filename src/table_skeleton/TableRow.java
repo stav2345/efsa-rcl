@@ -726,11 +726,11 @@ public class TableRow implements Checkable {
 			
 			print.append("Column: " + key);
 
-			print.append(" code=" + values.get(key).getCode());
-			
-			print.append(";value=" + values.get(key).getLabel());
-
-			print.append("\n");
+			if (values.get(key) != null) {
+				print.append(" code=" + values.get(key).getCode());
+				print.append(";value=" + values.get(key).getLabel());
+				print.append("\n");
+			}
 		}
 		return print.toString();
 	}
