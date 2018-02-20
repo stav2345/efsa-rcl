@@ -29,12 +29,6 @@ public interface EFSAReport extends IDataset {
 	public void makeEditable();
 	
 	/**
-	 * Create a new version of the report
-	 * @return
-	 */
-	public EFSAReport amend();
-	
-	/**
 	 * Get the message id related to the report if present
 	 * @return
 	 */
@@ -107,12 +101,6 @@ public interface EFSAReport extends IDataset {
 	 * @return
 	 */
 	public String getSenderId();
-	
-	/**
-	 * Check if the report is correct or not
-	 * @return
-	 */
-	public boolean isValid();
 	
 	/**
 	 * Get the year related to the report

@@ -45,6 +45,17 @@ public interface ITableDaoService {
 	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas);
 
 	/**
+	 * Get rows by parent
+	 * @param schema
+	 * @param parentTable
+	 * @param parentId
+	 * @param solveFormulas
+	 * @param order
+	 * @return
+	 */
+	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas, String order);
+	
+	/**
 	 * Get rows by string field value
 	 * @param schema
 	 * @param fieldName
@@ -59,4 +70,12 @@ public interface ITableDaoService {
 	 * @return
 	 */
 	public boolean delete(TableRowList list);
+	
+	/**
+	 * delete a row
+	 * @param schema
+	 * @param rowId
+	 * @return
+	 */
+	public boolean delete(TableSchema schema, int rowId);
 }

@@ -21,6 +21,11 @@ public class TableCell {
 		this.changed = true;
 	}
 	
+	public TableCell(String code, String label) {
+		this.setCode(code);
+		this.setLabel(label);
+	}
+	
 	public TableCell(Selection sel) {
 		this.code = sel.getCode();
 		this.label = sel.getDescription();

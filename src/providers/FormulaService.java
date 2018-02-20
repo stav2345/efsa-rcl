@@ -3,8 +3,10 @@ package providers;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import formula.Formula;
 import formula.FormulaException;
 import formula.FormulaSolver;
+import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import xlsx_reader.TableHeaders.XlsxHeader;
 
@@ -18,10 +20,17 @@ public class FormulaService implements IFormulaService {
 		this.daoService = daoService;
 	}
 	
-	/**
-	 * Update the values of the rows applying the columns formulas
-	 * (Compute all the automatic values)
-	 */
+	@Override
+	public String solve(TableRow row, TableColumn column, XlsxHeader columnProperty) throws FormulaException {
+
+		FormulaSolver solver = new FormulaSolver(row, daoService);
+		
+		Formula formula = solver.solve(column, columnProperty.getHeaderName());
+
+		return formula.getSolvedFormula();
+	}
+	
+	@Override
 	public void updateFormulas(TableRow row) {
 		
 		// solve the formula for default code and default value

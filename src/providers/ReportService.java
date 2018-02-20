@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPException;
@@ -18,6 +20,7 @@ import ack.DcfAck;
 import ack.IDcfAckLog;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
+import app_config.BooleanValue;
 import app_config.PropertiesReader;
 import config.Config;
 import dataset.Dataset;
@@ -26,6 +29,7 @@ import dataset.DatasetMetaDataParser;
 import dataset.IDataset;
 import dataset.NoAttachmentException;
 import dataset.RCLDatasetStatus;
+import formula.FormulaException;
 import global_utils.Message;
 import global_utils.Warnings;
 import html_viewer.HtmlViewer;
@@ -45,10 +49,13 @@ import soap_interface.IGetDataset;
 import soap_interface.IGetDatasetsList;
 import soap_interface.ISendMessage;
 import table_relations.Relation;
+import table_skeleton.TableCell;
+import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
 import table_skeleton.TableVersion;
 import user.User;
+import xlsx_reader.TableHeaders.XlsxHeader;
 import xlsx_reader.TableSchemaList;
 
 public class ReportService implements IReportService {
@@ -61,17 +68,50 @@ public class ReportService implements IReportService {
 	private ISendMessage sendMessage;
 	private IGetDataset getDataset;
 	
-	public ReportService(IGetAck getAck, IGetDatasetsList<IDataset> getDatasetsList, 
-			ISendMessage sendMessage, IGetDataset getDataset, ITableDaoService daoService) {
+	private IFormulaService formulaService;
+	
+	public ReportService(IGetAck getAck, 
+			IGetDatasetsList<IDataset> getDatasetsList, 
+			ISendMessage sendMessage, 
+			IGetDataset getDataset, 
+			ITableDaoService daoService,
+			IFormulaService formulaService) {
+		
 		this.getAck = getAck;
 		this.getDatasetsList = getDatasetsList;
 		this.sendMessage = sendMessage;
 		this.getDataset = getDataset;
 		this.daoService = daoService;
+		this.formulaService = formulaService;
 	}
 	
 	public ITableDaoService getDaoService() {
 		return daoService;
+	}
+	
+	/**
+	 * Get all the mandatory fields that are not filled
+	 * @return
+	 * @throws FormulaException 
+	 */
+	public Collection<TableColumn> getMandatoryFieldNotFilled(TableRow row) throws FormulaException {
+		
+		Collection<TableColumn> notFilled = new ArrayList<>();
+		
+		for (TableColumn column : row.getSchema()) {
+
+			String mandatory = formulaService.solve(row, column, XlsxHeader.MANDATORY);
+			
+			if (BooleanValue.isTrue(mandatory)) {
+				
+				TableCell value = row.get(column.getId());
+				
+				if (value == null || value.isEmpty())
+					notFilled.add(column);
+			}
+		}
+		
+		return notFilled;
 	}
 	
 	/**

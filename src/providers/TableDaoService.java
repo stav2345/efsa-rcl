@@ -41,6 +41,11 @@ public class TableDaoService implements ITableDaoService {
 	}
 	
 	@Override
+	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas, String order) {
+		return dao.getByParentId(schema, parentTable, parentId, solveFormulas, order);
+	}
+	
+	@Override
 	public TableRowList getByStringField(TableSchema schema, String fieldName, String value) {
 		return dao.getByStringField(schema, fieldName, value);
 	}
@@ -48,5 +53,10 @@ public class TableDaoService implements ITableDaoService {
 	@Override
 	public boolean delete(TableRowList list) {
 		return dao.delete(list);
+	}
+	
+	@Override
+	public boolean delete(TableSchema schema, int rowId) {
+		return dao.delete(schema, rowId);
 	}
 }
