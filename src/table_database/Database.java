@@ -30,7 +30,17 @@ public class Database {
 	
 	private static final String DB_URL = "jdbc:derby:" + AppPaths.DB_FOLDER;
 	private static final String CLOSE_DB_URL = DB_URL + ";shutdown=true";
-
+	
+	private IDatabaseBuilder dbBuilder;
+	public Database(IDatabaseBuilder dbBuilder) {
+		this.dbBuilder = dbBuilder;
+	}
+	
+	// TODO to be removed
+	public Database() {
+		this.dbBuilder = new DatabaseBuilder();
+	}
+	
 	/**
 	 * Connect to the main catalogues database if present, otherwise create it and then connect
 	 * @param DBString
@@ -105,8 +115,11 @@ public class Database {
 			File newSchema = new File(AppPaths.TABLES_SCHEMA_FILE);
 
 			// update the database
-			DatabaseUpdater upd = new DatabaseUpdater();
+			DatabaseUpdater upd = new DatabaseUpdater(dbBuilder);
 			upd.update(oldSchema, newSchema);
+
+			// update the version with the current
+			this.updateVersion(PropertiesReader.getAppVersion());
 		}
 		else {
 			LOGGER.info("Database structure is up to date");

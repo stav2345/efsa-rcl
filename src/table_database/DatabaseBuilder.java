@@ -24,7 +24,7 @@ import xlsx_reader.TableSchemaList;
  * @author avonva
  *
  */
-public class DatabaseBuilder {
+public class DatabaseBuilder implements IDatabaseBuilder {
 	
 	private static final Logger LOGGER = LogManager.getLogger(DatabaseBuilder.class);
 	

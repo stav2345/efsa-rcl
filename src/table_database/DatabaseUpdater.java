@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import app_config.PropertiesReader;
 import table_skeleton.TableColumn;
 import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
@@ -15,6 +14,12 @@ import xlsx_reader.TableSchemaList;
 public class DatabaseUpdater {
 	
 	private static final Logger LOGGER = LogManager.getLogger(DatabaseUpdater.class);
+	
+	private IDatabaseBuilder dbBuilder;
+	
+	public DatabaseUpdater(IDatabaseBuilder dbBuilder) {
+		this.dbBuilder = dbBuilder;
+	}
 	
 	/**
 	 * Update a database from the old schema to the new schema.
@@ -49,10 +54,6 @@ public class DatabaseUpdater {
 				addTable(newTable);
 			}
 		}
-		
-		// update the database version with the new one
-		Database database = new Database();
-		database.updateVersion(PropertiesReader.getAppVersion());
 		
 		LOGGER.info("Database updated!");
 	}
@@ -132,8 +133,7 @@ public class DatabaseUpdater {
 	 * @throws IOException
 	 */
 	private void addTable(TableSchema table) throws SQLException, IOException {
-		DatabaseBuilder db = new DatabaseBuilder();
-		db.createTable(table);
+		dbBuilder.createTable(table);
 	}
 	
 	/**
@@ -144,8 +144,7 @@ public class DatabaseUpdater {
 	 * @throws SQLException 
 	 */
 	private void addColumn(TableSchema newTable, TableColumn newCol) throws IOException, SQLException {
-		DatabaseBuilder db = new DatabaseBuilder();
-		db.addColumnToTable(newTable, newCol);
+		dbBuilder.addColumnToTable(newTable, newCol);
 	}
 	
 	/**
@@ -182,7 +181,6 @@ public class DatabaseUpdater {
 	 */
 	private void removeForeignKey(TableSchema table, TableColumn fk) throws IOException, SQLException {
 		// delete foreign key constraint
-		DatabaseBuilder db = new DatabaseBuilder();
-		db.removeForeignKey(table, fk);
+		dbBuilder.removeForeignKey(table, fk);
 	}
 }
