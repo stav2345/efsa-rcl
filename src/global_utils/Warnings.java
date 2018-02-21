@@ -1,5 +1,7 @@
 package global_utils;
 
+import java.util.Collection;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
@@ -84,8 +86,14 @@ public class Warnings {
 			code = "ERR101";
 			break;
 		default:
+			Collection<String> errorMessages = log.getOpResLog();
+			
+			StringBuilder sb = new StringBuilder();
+			for(String m: errorMessages)
+				sb.append(m).append("\n");
+			
 			message = Messages.get("ack.general.error", 
-					error.toString(),
+					sb.toString(),
 					PropertiesReader.getSupportEmail());
 			code = "ERR502";
 			break;

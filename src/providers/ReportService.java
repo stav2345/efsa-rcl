@@ -765,6 +765,19 @@ public class ReportService implements IReportService {
 			}
 			else {
 			
+				// mark the status of the report accordingly
+				// since the refresh status discovered a TRXKO ack
+				RCLDatasetStatus failedStatus = RCLDatasetStatus.getFailedVersionOf(
+						report.getRCLStatus());
+
+				if (failedStatus != null) {
+					report.setStatus(failedStatus);
+					
+					// permanently save data
+					daoService.update(report);
+				}
+				
+				
 				// errors
 				if (log.hasErrors()) {
 					
@@ -774,7 +787,6 @@ public class ReportService implements IReportService {
 					return Warnings.getAckOperationWarning(report, log);
 				}
 				else {
-					// not reachable
 					LOGGER.error("Wrong ack structure. The log is TRXKO but no errors found!");
 					Message m = Warnings.createFatal(Messages.get("ack.ko.no.errors", 
 							PropertiesReader.getSupportEmail()), report);

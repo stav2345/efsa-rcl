@@ -19,9 +19,11 @@ public enum RCLDatasetStatus {
 	REJECTED_EDITABLE("REJECTED EDITABLE", Messages.get("rejected.editable")),
 	REJECTED("REJECTED", Messages.get("rejected")),
 	REJECTION_SENT("REJECTION_SENT", Messages.get("rejection.sent")),
+	REJECTION_FAILED("REJECTION_FAILED", Messages.get("rejection.failed")),
 	DELETED("DELETED", Messages.get("deleted")),
 	SUBMITTED("SUBMITTED", Messages.get("submitted")),
 	SUBMISSION_SENT("SUBMISSION_SENT", Messages.get("submission.sent")),
+	SUBMISSION_FAILED("SUBMISSION_FAILED", Messages.get("submission.failed")),
 	ACCEPTED_DWH("ACCEPTED DWH", Messages.get("accepted.dwh")),
 	UPDATED_BY_DATA_RECEIVER("UPLOADED_BY_DATA_RECEIVER", Messages.get("uploaded.receiver")),
 	OTHER("OTHER", Messages.get("other"));  // error state
@@ -98,7 +100,8 @@ public enum RCLDatasetStatus {
 	 * @return
 	 */
 	public boolean canBeMadeEditable() {
-		return this == VALID || this == VALID_WITH_WARNINGS 
+		return this == VALID || this == REJECTION_FAILED || this == SUBMISSION_FAILED 
+				|| this == VALID_WITH_WARNINGS 
 				|| this == REJECTED_EDITABLE || this == REJECTED 
 				|| this == UPLOAD_FAILED || this == DELETED || this == LOCALLY_VALIDATED;
 	}
@@ -112,7 +115,8 @@ public enum RCLDatasetStatus {
 	 * @return
 	 */
 	public boolean canBeRejected() {
-		return this == VALID || this == VALID_WITH_WARNINGS; 
+		return this == VALID || this == REJECTION_FAILED || 
+				this == SUBMISSION_FAILED || this == VALID_WITH_WARNINGS; 
 	}
 	
 	/**
@@ -120,7 +124,8 @@ public enum RCLDatasetStatus {
 	 * @return
 	 */
 	public boolean canBeRefreshed() {
-		return this == VALID || this == VALID_WITH_WARNINGS || this == REJECTION_SENT
+		return this == VALID
+				|| this == VALID_WITH_WARNINGS || this == REJECTION_SENT
 				|| this == REJECTED_EDITABLE || this == UPLOADED
 				|| this == SUBMISSION_SENT || this == SUBMITTED;
 	}
@@ -132,6 +137,7 @@ public enum RCLDatasetStatus {
 	public boolean canDisplayAck() {
 		return this == UPLOAD_FAILED || this == DRAFT 
 				|| this == REJECTED || this == VALID 
+				|| this == REJECTION_FAILED || this == SUBMISSION_FAILED 
 				|| this == VALID_WITH_WARNINGS || this == REJECTED_EDITABLE;
 	}
 	
@@ -140,7 +146,8 @@ public enum RCLDatasetStatus {
 	 * @return
 	 */
 	public boolean canBeSubmitted() {
-		return this == VALID || this == VALID_WITH_WARNINGS; 
+		return this == VALID || this == VALID_WITH_WARNINGS 
+				|| this == REJECTION_FAILED || this == SUBMISSION_FAILED ; 
 	}
 	
 	/**
@@ -156,7 +163,7 @@ public enum RCLDatasetStatus {
 	 * @return
 	 */
 	public boolean canGetAck() {
-		return this == RCLDatasetStatus.UPLOADED || this == SUBMISSION_SENT
+		return this == UPLOADED || this == SUBMISSION_SENT
 				|| this == REJECTION_SENT;
 	}
 
@@ -172,6 +179,32 @@ public enum RCLDatasetStatus {
 				|| this == UPDATED_BY_DATA_RECEIVER
 				|| this == SUBMISSION_SENT
 				|| this == REJECTION_SENT;
+	}
+	
+	/**
+	 * Get the failed version of a status
+	 * @param status
+	 * @return
+	 */
+	public static RCLDatasetStatus getFailedVersionOf(RCLDatasetStatus status) {
+		
+		RCLDatasetStatus failedStatus = null;
+		
+		switch(status) {
+		case UPLOADED:
+			failedStatus = RCLDatasetStatus.UPLOAD_FAILED;
+			break;
+		case SUBMISSION_SENT:
+			failedStatus = RCLDatasetStatus.SUBMISSION_FAILED;
+			break;
+		case REJECTION_SENT:
+			failedStatus = RCLDatasetStatus.REJECTION_FAILED;
+			break;
+		default:
+			break;
+		}
+		
+		return failedStatus;
 	}
 
 	/**
