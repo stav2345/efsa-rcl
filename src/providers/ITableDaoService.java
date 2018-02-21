@@ -56,6 +56,15 @@ public interface ITableDaoService {
 	public TableRowList getByParentId(TableSchema schema, String parentTable, int parentId, boolean solveFormulas, String order);
 	
 	/**
+	 * Delete all the records with the same parent id in the selected schema.
+	 * @param schema
+	 * @param parentTable
+	 * @param parentId
+	 * @return
+	 */
+	public boolean deleteByParentId(TableSchema schema, String parentTable, int parentId);
+	
+	/**
 	 * Get rows by string field value
 	 * @param schema
 	 * @param fieldName

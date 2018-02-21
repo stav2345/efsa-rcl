@@ -61,6 +61,11 @@ public class TableDaoService implements ITableDaoService {
 	}
 	
 	@Override
+	public boolean deleteByParentId(TableSchema schema, String parentTable, int parentId) {
+		return dao.deleteByParentId(schema, parentTable, parentId);
+	}
+	
+	@Override
 	public boolean deleteByStringField(TableSchema schema, String fieldName, String value) {
 		return dao.deleteByStringField(schema, fieldName, value);
 	}

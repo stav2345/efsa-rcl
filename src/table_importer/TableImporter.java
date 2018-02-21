@@ -2,7 +2,7 @@ package table_importer;
 
 import java.util.Collection;
 
-import table_database.TableDao;
+import providers.ITableDaoService;
 import table_relations.Relation;
 import table_skeleton.TableRow;
 import xlsx_reader.TableSchema;
@@ -15,6 +15,12 @@ import xlsx_reader.TableSchema;
  */
 public abstract class TableImporter {
 
+	private ITableDaoService daoService;
+	
+	public TableImporter(ITableDaoService daoService) {
+		this.daoService = daoService;
+	}
+	
 	/**
 	 * Copy all the children of a parent table into the children
 	 * of another parent table.
@@ -25,30 +31,30 @@ public abstract class TableImporter {
 	public void copyByParent(TableSchema childSchema, 
 			TableRow parentToCopy, TableRow parentToWrite) {
 		
-		TableDao dao = new TableDao();
-		
+		System.out.println("BEFORE INJECT " + parentToWrite);
 		String parentTable = parentToCopy.getSchema().getSheetName();
 		int parentToCopyId = parentToCopy.getDatabaseId();
 		
 		// load all the rows of the parent we want to copy
-		Collection<TableRow> rowsToCopy = dao.getByParentId(childSchema, parentTable, parentToCopyId);
+		Collection<TableRow> rowsToCopy = daoService.getByParentId(childSchema, parentTable, parentToCopyId, true);
 		
 		// remove all the rows from the parent we want to override
-		TableDao writeDao = new TableDao();
 		int parentToWriteId = parentToWrite.getDatabaseId();
-		writeDao.deleteByParentId(childSchema,parentTable, parentToWriteId);
+		daoService.deleteByParentId(childSchema, parentTable, parentToWriteId);
 		
 		// for each copied row, insert it into the
 		// parentToWrite table
 		for (TableRow row : rowsToCopy) {
 			
-			// set as new parent the parentToWrite parent
-			Relation.injectParent(parentToWrite, row);
+			TableRow copiedRow = new TableRow(row.getSchema());
+			copiedRow.copyValues(row);
 			
-			filterRowData(row);
+			// set as new parent the parentToWrite parent
+			Relation.injectParent(parentToWrite, copiedRow);
+			filterRowData(copiedRow);
 			
 			// add the row
-			writeDao.add(row);
+			daoService.add(copiedRow);
 		}
 	}
 	

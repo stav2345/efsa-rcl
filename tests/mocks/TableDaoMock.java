@@ -59,24 +59,8 @@ public class TableDaoMock implements ITableDao {
 
 	@Override
 	public boolean deleteByParentId(TableSchema schema, String parentTable, int parentId) {
-		
-		Iterator<TableRow> iterator = db.iterator();
-		
-		boolean hasUpdated = false;
-		
-		while(iterator.hasNext()) {
-			
-			TableRow row = iterator.next();
-			
-			TableRow parent = row.getParent(TableSchemaList.getByName(parentTable));
-			
-			if (parent.getDatabaseId() == parentId) {
-				iterator.remove();
-				hasUpdated = true;
-			}
-		}
-		
-		return hasUpdated;
+		TableRowList rows = getByParentId(schema, parentTable, parentId);
+		return delete(rows);
 	}
 
 	@Override
