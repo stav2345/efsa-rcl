@@ -631,7 +631,12 @@ public class TableRow implements Checkable {
 			if (!column.isPutInOutput(this) || (!column.isMandatory(this) && rowValue.isEmpty()))
 				continue;
 
-			String node = getXmlNode(column.getXmlTag(), this.get(column.getId()).getCode());
+			TableCell value = this.get(column.getId());
+			
+			if (value == null)
+				continue;
+			
+			String node = getXmlNode(column.getXmlTag(), value.getCode());
 
 			// write the node
 			sb.append(node);

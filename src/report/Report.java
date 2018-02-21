@@ -2,6 +2,7 @@ package report;
 
 import app_config.AppPaths;
 import dataset.RCLDatasetStatus;
+import providers.ITableDaoService;
 import table_database.TableDao;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
@@ -132,8 +133,8 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * Delete all the versions of the report from the database
 	 * @return
 	 */
-	public boolean deleteAllVersions() {
-		return deleteAllVersions(this.getSenderId());
+	public boolean deleteAllVersions(ITableDaoService daoService) {
+		return deleteAllVersions(daoService, this.getSenderId());
 	}
 	
 	/**
@@ -141,10 +142,9 @@ public abstract class Report extends TableRow implements EFSAReport {
 	 * @param senderId
 	 * @return
 	 */
-	public static boolean deleteAllVersions(String senderId) {
+	public static boolean deleteAllVersions(ITableDaoService daoService, String senderId) {
 		// delete the old versions of the report (the one with the same senderId)
-		TableDao dao = new TableDao();
-		return dao.deleteByStringField(TableSchemaList.getByName(AppPaths.REPORT_SHEET), 
+		return daoService.deleteByStringField(TableSchemaList.getByName(AppPaths.REPORT_SHEET), 
 				AppPaths.REPORT_SENDER_ID, senderId);
 	}
 	

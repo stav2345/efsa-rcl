@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import formula.Formula;
 import formula.FormulaException;
 import formula.FormulaSolver;
+import table_skeleton.TableCell;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import xlsx_reader.TableHeaders.XlsxHeader;
@@ -18,6 +19,50 @@ public class FormulaService implements IFormulaService {
 	
 	public FormulaService(ITableDaoService daoService) {
 		this.daoService = daoService;
+	}
+	
+
+	@Override
+	public void initialize(TableRow row) {
+		for (TableColumn col : row.getSchema()) {
+			initialize(row, col.getId());
+		}
+	}
+	
+	@Override
+	public void initialize(TableRow row, String colId) {
+		
+		TableColumn col = row.getSchema().getById(colId);
+		
+		// skip foreign keys
+		if (col.isForeignKey())
+			return;
+		
+		TableCell sel = new TableCell();
+		FormulaSolver solver = new FormulaSolver(row, daoService);
+
+		try {
+			Formula label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
+			sel.setLabel(label.getSolvedFormula());
+		} catch (FormulaException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot solve formula for column=" + colId, e);
+		}
+
+		try {
+			Formula code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
+			
+			if (col.getPicklistKey() == null || col.getPicklistKey().isEmpty())
+				sel.setCode(code.getSolvedFormula());
+			else
+				sel = row.getTableColumnValue(code.getSolvedFormula(), col.getPicklistKey());
+			
+		} catch (FormulaException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot solve formula for column=" + colId, e);
+		}
+
+		row.put(col.getId(), sel);
 	}
 	
 	@Override

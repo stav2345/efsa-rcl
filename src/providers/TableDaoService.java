@@ -59,4 +59,9 @@ public class TableDaoService implements ITableDaoService {
 	public boolean delete(TableSchema schema, int rowId) {
 		return dao.delete(schema, rowId);
 	}
+	
+	@Override
+	public boolean deleteByStringField(TableSchema schema, String fieldName, String value) {
+		return dao.deleteByStringField(schema, fieldName, value);
+	}
 }

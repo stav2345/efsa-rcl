@@ -33,6 +33,42 @@ public class TableVersion {
 		return Integer.valueOf(version);
 	}
 	
+	public static String getPreviousVersion(String versionCode) {
+		
+		// if starting from no version, add the first version
+		if (versionCode == null || versionCode.isEmpty()) {
+			return getFirstVersion();
+		}
+		
+		String newVersionCode = null;
+		
+		try {
+			
+			// get the current version (integer)
+			int versionNumber = Integer.valueOf(versionCode);
+			
+			// increase the version number by 1
+			versionNumber--;
+			
+			if (versionNumber < 0)
+				return null;
+			
+			// convert to string
+			newVersionCode = String.valueOf(versionNumber);
+			
+			// add padding if needed to always get two numbers
+			if (versionNumber < 10) {
+				newVersionCode = "0" + newVersionCode;
+			}
+		}
+		catch (NumberFormatException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot decrement version. Expected number, found=" + versionCode, e);
+		}
+		
+		return newVersionCode;
+	}
+	
 	/**
 	 * Create a new version formatted as:
 	 * 01, 02, 03, ..., 10, 11, ..., 99

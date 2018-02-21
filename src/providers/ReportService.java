@@ -64,11 +64,11 @@ public class ReportService implements IReportService {
 	
 	private IGetAck getAck;
 	private IGetDatasetsList<IDataset> getDatasetsList;
-	private ITableDaoService daoService;
+	protected ITableDaoService daoService;
 	private ISendMessage sendMessage;
 	private IGetDataset getDataset;
 	
-	private IFormulaService formulaService;
+	protected IFormulaService formulaService;
 	
 	public ReportService(IGetAck getAck, 
 			IGetDatasetsList<IDataset> getDatasetsList, 
@@ -88,7 +88,7 @@ public class ReportService implements IReportService {
 	public ITableDaoService getDaoService() {
 		return daoService;
 	}
-	
+
 	/**
 	 * Get all the mandatory fields that are not filled
 	 * @return
@@ -162,7 +162,7 @@ public class ReportService implements IReportService {
 
 			// get the previous report version to process amendments
 			try(ReportXmlBuilder creator = new ReportXmlBuilder(report, 
-					messageConfig, report.getRowIdFieldName());) {
+					messageConfig, report.getRowIdFieldName(), daoService, formulaService);) {
 				
 				creator.setProgressListener(progressListener);
 				
@@ -345,6 +345,40 @@ public class ReportService implements IReportService {
 	public TableRowList getAllVersions(String senderId) {
 		return daoService.getByStringField(TableSchemaList.getByName(AppPaths.REPORT_SHEET), 
 				AppPaths.REPORT_SENDER_ID, senderId);
+	}
+	
+	/**
+	 * Get the previous version of a report
+	 * @param report
+	 * @return
+	 */
+	public TableRow getPreviousVersion(EFSAReport report) {
+		
+		String currentVersion = report.getVersion();
+		
+		// compute the previous version
+		String previousVersion = TableVersion.getPreviousVersion(currentVersion);
+		
+		// no previous version
+		if (previousVersion == null)
+			return null;
+		
+		// get all the report versions
+		TableRowList allVersions = getAllVersions(report.getSenderId());
+
+		// search the previous
+		TableRow prev = null;
+		for (TableRow current: allVersions) {
+
+			String version = current.getCode(AppPaths.REPORT_VERSION);
+			
+			if (version.equals(previousVersion)) {
+				prev = current;
+				break;
+			}
+		}
+		
+		return prev;
 	}
 	
 	@Override

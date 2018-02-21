@@ -78,4 +78,13 @@ public interface ITableDaoService {
 	 * @return
 	 */
 	public boolean delete(TableSchema schema, int rowId);
+	
+	/**
+	 * Delete all the records in the schema which match the string field
+	 * @param schema
+	 * @param fieldName
+	 * @param value
+	 * @return
+	 */
+	public boolean deleteByStringField(TableSchema schema, String fieldName, String value);
 }

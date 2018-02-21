@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import dataset.IDataset;
 import dataset.RCLDatasetStatus;
+import providers.ITableDaoService;
 import table_skeleton.TableRow;
 
 /**
@@ -21,7 +22,7 @@ public interface EFSAReport extends IDataset {
 	 * a .xml file.
 	 * @return
 	 */
-	public Collection<TableRow> getRecords();
+	public Collection<TableRow> getRecords(ITableDaoService daoService);
 
 	/**
 	 * Force the report to be editable
@@ -56,13 +57,13 @@ public interface EFSAReport extends IDataset {
 	 * Get all the report versions that are present locally
 	 * @return
 	 */
-	public ReportList getAllVersions();
+	public ReportList getAllVersions(ITableDaoService daoService);
 	
 	/**
 	 * Get the previous local version of the report if present
 	 * @return
 	 */
-	public EFSAReport getPreviousVersion();
+	public EFSAReport getPreviousVersion(ITableDaoService daoService);
 	
 	/**
 	 * Check if the version of the report is the first one
@@ -75,7 +76,7 @@ public interface EFSAReport extends IDataset {
 	 * the database
 	 * @return true if ok
 	 */
-	public boolean deleteAllVersions();
+	public boolean deleteAllVersions(ITableDaoService daoService);
 	
 	/**
 	 * Get the current local status of the report

@@ -22,4 +22,19 @@ public interface IFormulaService {
 	 * @param row
 	 */
 	public void updateFormulas(TableRow row);
+	
+	/**
+	 * Initialize the row with the default values
+	 * note that this will override all the values of the row
+	 * with their default values!
+	 */
+	public void initialize(TableRow row);
+	
+	/**
+	 * Initialize the values of the row solving the
+	 * default values formulas
+	 * @param row
+	 * @param colId
+	 */
+	public void initialize(TableRow row, String colId);
 }

@@ -11,6 +11,8 @@ import org.xml.sax.SAXException;
 import message.MessageConfigBuilder;
 import message_creator.MessageXmlBuilder;
 import progress_bar.ProgressListener;
+import providers.IFormulaService;
+import providers.ITableDaoService;
 import report.EFSAReport;
 import report.ReportException;
 import table_skeleton.TableRow;
@@ -22,6 +24,9 @@ public class ReportXmlBuilder implements AutoCloseable {
 	private String rowIdField;
 	private ProgressListener progressListener;
 	
+	private ITableDaoService daoService;
+	private IFormulaService formulaService;
+	
 	/**
 	 * Send a report to the DCF
 	 * @param report report which will be exported
@@ -32,11 +37,14 @@ public class ReportXmlBuilder implements AutoCloseable {
 	 * @throws ParserConfigurationException 
 	 */
 	public ReportXmlBuilder(EFSAReport report, MessageConfigBuilder messageConfig, 
-			String rowIdField) {
+			String rowIdField, ITableDaoService daoService, IFormulaService formulaService) {
 
 		this.report = report;
 		this.messageConfig = messageConfig;
 		this.rowIdField = rowIdField;
+		
+		this.daoService = daoService;
+		this.formulaService = formulaService;
 	}
 	
 	public void setProgressListener(ProgressListener progressListener) {
@@ -101,7 +109,7 @@ public class ReportXmlBuilder implements AutoCloseable {
 		
 		// otherwise extract also the previous version
 
-		EFSAReport previousReport = report.getPreviousVersion();
+		EFSAReport previousReport = report.getPreviousVersion(daoService);
 		
 		if (previousReport == null) {
 			throw new ReportException("Cannot export report " 
@@ -136,10 +144,10 @@ public class ReportXmlBuilder implements AutoCloseable {
 	private void extractSingleVersion(EFSAReport report) {
 		
 		// for each row
-		for (TableRow record : report.getRecords()) {
+		for (TableRow record : report.getRecords(daoService)) {
 			
 			// update all the record formulas
-			record.updateFormulas();
+			formulaService.updateFormulas(record);
 
 			// get the row id from the record
 			String rowId = record.getCode(rowIdField);
