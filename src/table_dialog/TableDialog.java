@@ -613,7 +613,7 @@ public abstract class TableDialog {
 			rows = dao.getAll(schema);
 		else
 			rows = dao.getByParentId(schema, parentFilter.getSchema().getSheetName(), 
-					parentFilter.getDatabaseId());
+					parentFilter.getDatabaseId(), true);
 
 		return rows;
 	}

@@ -439,7 +439,7 @@ public class TableRow implements Checkable {
 	 * (Compute all the automatic values)
 	 */
 	public void updateFormulas() {
-		
+
 		// solve the formula for default code and default value
 		FormulaSolver solver = new FormulaSolver(this);
 		
@@ -521,7 +521,15 @@ public class TableRow implements Checkable {
 	 */
 	public TableCell getTableColumnValue(String code, String picklistKey) {
 		
-		Selection sel = XmlLoader.getByPicklistKey(picklistKey).getElementByCode(code);
+		XmlContents picklist = XmlLoader.getByPicklistKey(picklistKey);
+		
+		if (picklist == null) {
+			LOGGER.warn("Cannot pick the value " + code + " from list " + picklistKey 
+					+ ". The picklist does not exist.");
+			return new TableCell();
+		}
+		
+		Selection sel = picklist.getElementByCode(code);
 		
 		if (sel == null) {
 			

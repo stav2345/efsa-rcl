@@ -381,6 +381,11 @@ public class TableColumn implements Comparable<TableColumn> {
 
 		XmlContents contents = XmlLoader.getByPicklistKey(picklistKey);
 
+		if (contents == null) {
+			LOGGER.error("Cannot get picklist " + picklistKey + ". The file was not found");
+			return null;
+		}
+		
 		// if no filter, then we have a single list,
 		// and we get just the first list
 		if (picklistFilter == null || picklistFilter.isEmpty()) {

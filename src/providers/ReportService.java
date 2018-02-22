@@ -275,6 +275,10 @@ public class ReportService implements IReportService {
 			}
 		}
 		
+		// get the send operation
+		ReportSendOperation op = getSendOperation(report, dcfDataset);
+		messageConfig.setOpType(op.getOpType());
+		
 		this.exportAndSend(report, messageConfig, progressListener);
 	}
 	

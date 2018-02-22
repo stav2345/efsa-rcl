@@ -124,6 +124,8 @@ public abstract class ReportActions {
 		FormProgressBar progressBarDialog = new FormProgressBar(shell, Messages.get("send.progress.title"));
 		progressBarDialog.open();
 		
+		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
+		
 		Dataset dataset;
 		try {
 			dataset = reportService.getLatestDataset(report);
@@ -131,9 +133,12 @@ public abstract class ReportActions {
 			e.printStackTrace();
 			progressBarDialog.close();
 			LOGGER.error("Cannot send report=" + report.getSenderId(), e);
+			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 			manageException(e, ReportAction.SEND);
 			return;
 		}
+		
+		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		
 		if (dataset != null) {
 			try {

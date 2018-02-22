@@ -6,6 +6,8 @@ import java.util.Collection;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import message.MessageConfigBuilder;
@@ -18,6 +20,8 @@ import report.ReportException;
 import table_skeleton.TableRow;
 
 public class ReportXmlBuilder implements AutoCloseable {
+	
+	private static final Logger LOGGER = LogManager.getLogger(ReportXmlBuilder.class);
 	
 	private EFSAReport report;
 	private MessageConfigBuilder messageConfig;
@@ -94,6 +98,8 @@ public class ReportXmlBuilder implements AutoCloseable {
 	public File exportReport() throws IOException, ParserConfigurationException, 
 		SAXException, ReportException {
 		
+		LOGGER.info("Exporting report " + report);
+		
 		clearTable();
 		
 		// extract the report into the comparisons table
@@ -101,13 +107,17 @@ public class ReportXmlBuilder implements AutoCloseable {
 		
 		String latestVersion = report.getVersion();
 		
+		LOGGER.debug("The version of the report is " + latestVersion);
+		
 		setProgress(40);
 		
 		// if baseline, just extract it and export it
 		if (report.isBaselineVersion()) {
+			LOGGER.info("Export finished since the report does not have amended versions");
 			setProgress(100);
+			File file = createXmlFile();
 			clearTable();
-			return createXmlFile();
+			return file;
 		}
 		
 		// otherwise extract also the previous version
@@ -150,6 +160,8 @@ public class ReportXmlBuilder implements AutoCloseable {
 		
 		// for each row
 		for (TableRow record : report.getRecords(daoService)) {
+		
+			LOGGER.debug("Adding to the DATASET_COMPARISON table the record " + record);
 			
 			// update all the record formulas
 			formulaService.updateFormulas(record);
