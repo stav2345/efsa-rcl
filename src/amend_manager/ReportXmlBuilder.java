@@ -18,7 +18,7 @@ import report.ReportException;
 import table_skeleton.TableRow;
 
 public class ReportXmlBuilder implements AutoCloseable {
-
+	
 	private EFSAReport report;
 	private MessageConfigBuilder messageConfig;
 	private String rowIdField;
@@ -99,11 +99,14 @@ public class ReportXmlBuilder implements AutoCloseable {
 		// extract the report into the comparisons table
 		extractSingleVersion(report);
 		
+		String latestVersion = report.getVersion();
+		
 		setProgress(40);
 		
 		// if baseline, just extract it and export it
 		if (report.isBaselineVersion()) {
 			setProgress(100);
+			clearTable();
 			return createXmlFile();
 		}
 		
@@ -120,10 +123,12 @@ public class ReportXmlBuilder implements AutoCloseable {
 		// extract also the previous report
 		extractSingleVersion(previousReport);
 		
+		String oldVersion = previousReport.getVersion();
+		
 		setProgress(60);
 		
 		// solve the amendments of the two versions
-		solveDuplications();
+		solveDuplications(latestVersion, oldVersion);
 		
 		setProgress(80);
 		
@@ -157,7 +162,7 @@ public class ReportXmlBuilder implements AutoCloseable {
 			
 			// create the dataset comparison object
 			DatasetComparison comp = new DatasetComparison(rowId, version, record.toXml(false));
-			
+
 			// save it into the comparison table
 			DatasetComparisonDao dao = new DatasetComparisonDao();
 			dao.add(comp);
@@ -167,11 +172,11 @@ public class ReportXmlBuilder implements AutoCloseable {
 	/**
 	 * Solve the duplications and set the amendments
 	 */
-	private void solveDuplications() {
+	private void solveDuplications(String latestVersion, String oldVersion) {
 		
 		removeOldRecordVersions();
-		setUpdateAmendment();
-		setDeleteAmendment();
+		setUpdateAmendment(latestVersion, oldVersion);
+		setDeleteAmendment(latestVersion, oldVersion);
 	}
 	
 	/**
@@ -216,7 +221,7 @@ public class ReportXmlBuilder implements AutoCloseable {
 	/**
 	 * Set the update amendment to the updated row
 	 */
-	private void setUpdateAmendment() {
+	private void setUpdateAmendment(String latestVersion, String oldVersion) {
 		
 		StringBuilder query = new StringBuilder();
 		
@@ -224,19 +229,15 @@ public class ReportXmlBuilder implements AutoCloseable {
 		query.append("update APP.DATASET_COMPARISON ")
 			.append("set XML_RECORD = XML_RECORD || '<amType>U</amType>',")
 			.append("AM_TYPE = 'U' ")
-			.append("where VERSION in (")
-				.append("select MAX(VERSION) ")
-				.append("from APP.DATASET_COMPARISON")
-			.append(")")
-			.append("and ")
+			.append("where VERSION = ")
+			.append("'").append(latestVersion).append("'")
+			.append(" and ")
 			.append("ROW_ID in (")
 				.append("select ROW_ID ")
 				.append("from APP.DATASET_COMPARISON ")
-				.append("where VERSION in (")
-					.append("select MIN(VERSION) ")
-					.append("from APP.DATASET_COMPARISON ")
-				.append(")")
-				.append("and ROW_ID in (")  // avoid to set amType = U for new records
+				.append("where VERSION = ")
+				.append("'").append(oldVersion).append("'")
+				.append(" and ROW_ID in (")  // avoid to set amType = U for new records
 					.append("select ROW_ID ")
 					.append("from APP.DATASET_COMPARISON ")
 					.append("group by ROW_ID ")
@@ -246,7 +247,6 @@ public class ReportXmlBuilder implements AutoCloseable {
 		
 		DatasetComparisonDao dao = new DatasetComparisonDao();
 		dao.executeQuery(query.toString());
-		
 		
 		// then delete the old record versions related
 		// to the just changed records
@@ -267,26 +267,22 @@ public class ReportXmlBuilder implements AutoCloseable {
 	 * Set the delete amendment for records that are present
 	 * just in the older version (i.e. they were deleted)
 	 */
-	private void setDeleteAmendment() {
+	private void setDeleteAmendment(String latestVersion, String oldVersion) {
 
 		StringBuilder query = new StringBuilder();
 		
-		// set update amendment
+		// set delete amendment
 		query.append("update APP.DATASET_COMPARISON ")
 			.append("set XML_RECORD = XML_RECORD || '<amType>D</amType>',")
 			.append("AM_TYPE = 'D' ")
-			.append("where VERSION in (")
-				.append("select MIN(VERSION) ")
-				.append("from APP.DATASET_COMPARISON")
-			.append(")")
-			.append("and ")
+			.append("where VERSION = ")
+			.append("'").append(oldVersion).append("'")
+			.append(" and ")
 			.append("ROW_ID not in (")
 				.append("select ROW_ID ")
 				.append("from APP.DATASET_COMPARISON ")
-				.append("where VERSION in (")
-					.append("select MAX(VERSION) ")
-					.append("from APP.DATASET_COMPARISON")
-				.append(")")
+				.append("where VERSION = ")
+				.append("'").append(latestVersion).append("'")
 			.append(")");
 		
 		DatasetComparisonDao dao = new DatasetComparisonDao();

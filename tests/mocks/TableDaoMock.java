@@ -139,11 +139,9 @@ public class TableDaoMock implements ITableDao {
 		
 		if (list.isEmpty())
 			return true;
-		
-		TableSchema schema = list.get(0).getSchema();
-		
+
 		for(TableRow row: list)
-			delete(schema, row.getDatabaseId());
+			delete(row.getSchema(), row.getDatabaseId());
 		
 		return true;
 	}
@@ -183,7 +181,7 @@ public class TableDaoMock implements ITableDao {
 		
 		TableRowList list = new TableRowList();
 		for(TableRow row: db) {
-			if (row.getSchema().equals(schema) && row.get(fieldName).equals(value))
+			if (row.getSchema().equals(schema) && row.getCode(fieldName).equals(value))
 				list.add(row);
 		}
 		
