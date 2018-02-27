@@ -365,7 +365,12 @@ public class TableDao implements ITableDao {
 			}
 			else {
 				
-				String value = rs.getString(column.getId());
+				String value = null;
+				
+				try {
+					value = rs.getString(column.getId());
+				}
+				catch(SQLException e) {}
 
 				// if no value go to the next field
 				if (value == null)

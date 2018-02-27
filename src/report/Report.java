@@ -75,7 +75,7 @@ public abstract class Report extends TableRow implements EFSAReport {
 	}
 	
 	public void setStatus(String status) {
-		this.put(AppPaths.REPORT_PREVIOUS_STATUS, this.getRCLStatus().getLabel());
+		this.put(AppPaths.REPORT_PREVIOUS_STATUS, this.getRCLStatus().getStatus());
 		this.put(AppPaths.REPORT_STATUS, status);
 	}
 	

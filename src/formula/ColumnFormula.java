@@ -86,4 +86,9 @@ public class ColumnFormula implements IFormula {
 		
 		return solvedFormula;
 	}
+	
+	@Override
+	public String toString() {
+		return "column=" + columnId + "; formula=" + formula + "; fieldType=" + fieldType;
+	}
 }

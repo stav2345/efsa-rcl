@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 
 import ack.DcfAck;
 import ack.IDcfAckLog;
+import ack.MessageValResCode;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
 import app_config.BooleanValue;
@@ -736,51 +737,47 @@ public class ReportService implements IReportService {
 			return m;
 		}
 		
-		// if ack is ready then check if the report status
-		// is the same as the one in the get dataset list
-		if (ack.isReady()) {
+		if (!ack.isReady()) {
+			// warn the user, the ack cannot be retrieved yet
+			String title = Messages.get("warning.title");
+			String message = Messages.get("ack.processing");
+			int style = SWT.ICON_INFORMATION;
+			Message m = Warnings.create(title, message, style);
+			m.setCode("WARN500");
+			return m;
+		}
+		
+		IDcfAckLog log = ack.getLog();
+		
+		boolean discarded = ack.getLog().getMessageValResCode() == MessageValResCode.DISCARDED;
+		
+		// if discarded or KO
+		if (discarded || !log.isOk()) {
 			
-			IDcfAckLog log = ack.getLog();
-			
-			// if TRXOK
-			if (log.isOk()) {
-				
-				this.updateStatusWithAck(report, ack);
-				
-				RCLDatasetStatus status = RCLDatasetStatus
-						.fromDcfStatus(log.getDatasetStatus());
-				
-				// if no dataset retrieved for the current report
-				if (!status.existsInDCF()) {
+			// mark status as failed
+			RCLDatasetStatus failedStatus = RCLDatasetStatus.getFailedVersionOf(
+					report.getRCLStatus());
 
-					// warn the user, the ack cannot be retrieved yet
-					String title = Messages.get("success.title");
-					String message = Messages.get("ack.invalid", 
-							status.getLabel());
-					int style = SWT.ICON_ERROR;
-
-					Message m = Warnings.create(title, message, style);
-					m.setCode("ERR804");
-					
-					return m;
-				}
-
-				return alignReportStatusWithDCF(report);
+			if (failedStatus != null) {
+				report.setStatus(failedStatus);
+				
+				// permanently save data
+				daoService.update(report);
 			}
-			else {
 			
-				// mark the status of the report accordingly
-				// since the refresh status discovered a TRXKO ack
-				RCLDatasetStatus failedStatus = RCLDatasetStatus.getFailedVersionOf(
-						report.getRCLStatus());
-
-				if (failedStatus != null) {
-					report.setStatus(failedStatus);
-					
-					// permanently save data
-					daoService.update(report);
-				}
+			if (discarded) {
 				
+				String title = Messages.get("error.title");
+				String message = Messages.get("ack.discarded", 
+						ack.getLog().getMessageValResText());
+				
+				int style = SWT.ICON_ERROR;
+				Message m = Warnings.create(title, message, style);
+				m.setCode("ERR807");
+				
+				return m;
+			}
+			else if (!log.isOk()) {
 				
 				// errors
 				if (log.hasErrors()) {
@@ -799,16 +796,30 @@ public class ReportService implements IReportService {
 				}
 			}
 		}
-		else {
+		
+		// here log can only be OK
+
+		this.updateStatusWithAck(report, ack);
+		
+		RCLDatasetStatus status = RCLDatasetStatus
+				.fromDcfStatus(log.getDatasetStatus());
+		
+		// if no dataset retrieved for the current report
+		if (!status.existsInDCF()) {
 
 			// warn the user, the ack cannot be retrieved yet
-			String title = Messages.get("warning.title");
-			String message = Messages.get("ack.processing");
-			int style = SWT.ICON_INFORMATION;
+			String title = Messages.get("error.title");
+			String message = Messages.get("ack.invalid", 
+					status.getLabel());
+			int style = SWT.ICON_ERROR;
+
 			Message m = Warnings.create(title, message, style);
-			m.setCode("WARN500");
+			m.setCode("ERR804");
+			
 			return m;
 		}
+
+		return alignReportStatusWithDCF(report);
 	}
 	
 	/**

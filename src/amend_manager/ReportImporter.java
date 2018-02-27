@@ -53,25 +53,15 @@ public abstract class ReportImporter {
 	 * @param versionField name of the field which contains the dataset version
 	 * using the format value.version, as FR1704.01 (senderDatasetId.version)
 	 */
-	public ReportImporter(DatasetList datasetVersions, 
-			String rowIdField, String versionField, IReportService reportService, 
+	public ReportImporter(String rowIdField, String versionField, IReportService reportService, 
 			ITableDaoService daoService) {
 		
 		this.processedDatasets = 1;
 		
-		this.datasetVersions = datasetVersions;
 		this.rowIdField = rowIdField;
 		this.versionField =  versionField;
 		this.daoService = daoService;
 		this.reportService = reportService;
-		
-		// get the sender id of the dataset versions
-		if (!datasetVersions.isEmpty()) {
-			senderDatasetId = datasetVersions.get(0).getDecomposedSenderId();
-		}
-		else {
-			throw new IllegalArgumentException("Cannot import an empty dataset list");
-		}
 	}
 	
 	/**
@@ -121,6 +111,18 @@ public abstract class ReportImporter {
 		populatedDataset.setId(populatedDataset.getOperation().getDatasetId());
 		
 		return populatedDataset;
+	}
+	
+	public void setDatasetVersions(DatasetList datasetVersions) {
+		this.datasetVersions = datasetVersions;
+		
+		// get the sender id of the dataset versions
+		if (!datasetVersions.isEmpty()) {
+			senderDatasetId = datasetVersions.get(0).getDecomposedSenderId();
+		}
+		else {
+			throw new IllegalArgumentException("Cannot import an empty dataset list");
+		}
 	}
 	
 	/**
@@ -220,6 +222,25 @@ public abstract class ReportImporter {
 			this.progressListener.progressCompleted();
 		
 		LOGGER.info("Report downloader ended for report=" + senderDatasetId);
+	}
+	
+	/**
+	 * Import a dataset from an .xml file. Note that amendments are not processed
+	 * with this method, therefore it can be used only with the first
+	 * version of a report.
+	 * @param file
+	 * @throws XMLStreamException
+	 * @throws IOException
+	 * @throws FormulaException
+	 * @throws ParseException
+	 */
+	public void importFirstDatasetVersion(File file) throws XMLStreamException, IOException, 
+		FormulaException, ParseException {
+		
+		this.importDatasetFile(file);
+		Dataset d = reportService.datasetFromFile(file);
+		importDatasetMetadata(d);
+		this.createLocalReport();
 	}
 	
 	/**

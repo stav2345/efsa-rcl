@@ -47,8 +47,9 @@ public class DatasetComparisonDao {
 			stmt.executeUpdate();
 		}
 		catch (SQLException e) {
-			e.printStackTrace();
-			LOGGER.error("Cannot add a new dataset comparison=" + comp, e);
+			
+			//e.printStackTrace();
+			//LOGGER.error("Cannot add a new dataset comparison=" + comp, e);
 		}
 	}
 	
