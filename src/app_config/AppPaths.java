@@ -41,6 +41,9 @@ public class AppPaths {
 	public static final String REPORT_MONTH = "reportMonth";
 	public static final String REPORT_SENDER_ID = "reportSenderId";
 	public static final String REPORT_MESSAGE_ID = "reportMessageId";
+	public static final String REPORT_LAST_MESSAGE_ID = "reportLastMessageId";
+	public static final String REPORT_LAST_MODIFYING_MESSAGE_ID = "reportLastModifyingMessageId";
+	public static final String REPORT_LAST_VALIDATION_MESSAGE_ID = "reportLastValidationMessageId";
 	public static final String REPORT_DATASET_ID = "reportDatasetId";
 	public static final String REPORT_STATUS = "reportStatus";
 	public static final String REPORT_PREVIOUS_STATUS = "reportPreviousStatus";

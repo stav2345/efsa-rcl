@@ -37,6 +37,36 @@ public abstract class Report extends TableRow implements EFSAReport {
 		this.put(AppPaths.REPORT_MESSAGE_ID, id);
 	}
 	
+	@Override
+	public String getLastMessageId() {
+		return this.getCode(AppPaths.REPORT_LAST_MESSAGE_ID);
+	}
+	
+	@Override
+	public void setLastMessageId(String msgId) {
+		this.put(AppPaths.REPORT_LAST_MESSAGE_ID, msgId);
+	}
+	
+	@Override
+	public String getLastModifyingMessageId() {
+		return this.getCode(AppPaths.REPORT_LAST_MODIFYING_MESSAGE_ID);
+	}
+	
+	@Override
+	public void setLastModifyingMessageId(String msgId) {
+		this.put(AppPaths.REPORT_LAST_MODIFYING_MESSAGE_ID, msgId);
+	}
+	
+	@Override
+	public String getLastValidationMessageId() {
+		return this.getCode(AppPaths.REPORT_LAST_VALIDATION_MESSAGE_ID);
+	}
+	
+	@Override
+	public void setLastValidationMessageId(String msgId) {
+		this.put(AppPaths.REPORT_LAST_VALIDATION_MESSAGE_ID, msgId);
+	}
+	
 	public String getId() {
 		return this.getCode(AppPaths.REPORT_DATASET_ID);
 	}

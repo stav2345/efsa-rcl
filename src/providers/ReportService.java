@@ -552,105 +552,6 @@ public class ReportService implements IReportService {
 		
 		return new RCLError(code, oldReport);
 	}
-
-	/**
-	 * Get the report status comparing the local status
-	 * and the one in dcf. Change also the status if needed
-	 * @param report
-	 * @return
-	 * @throws DetailedSOAPException
-	 * @throws ReportException
-	 */
-	private RCLDatasetStatus getRealReportStatus(Report report) throws DetailedSOAPException, ReportException {
-
-		// get the dataset related to the report from the
-		// GetDatasetList request
-		Dataset dataset = this.getLatestDataset(report);
-		
-		// if not dataset is retrieved
-		if (dataset == null) {
-			return report.getRCLStatus();
-		}
-		
-		// if equal, ok
-		if (dataset.getRCLStatus() == report.getRCLStatus())
-			return report.getRCLStatus();
-		
-		// if the report is submitted
-		if (report.getRCLStatus() == RCLDatasetStatus.SUBMITTED 
-				&& (dataset.getRCLStatus() == RCLDatasetStatus.ACCEPTED_DWH 
-				|| dataset.getRCLStatus() == RCLDatasetStatus.REJECTED_EDITABLE)) {
-
-			report.setStatus(dataset.getRCLStatus());
-			
-			daoService.update(report);
-		}
-		else {
-
-			// if not in status submitted
-			switch(dataset.getRCLStatus()) {
-			// if deleted/rejected then make the report editable
-			case DELETED:
-			case REJECTED:
-
-				// put the report in draft (status automatically changed)
-				report.makeEditable();
-				daoService.update(report);
-				
-				return dataset.getRCLStatus();
-				//break;
-
-				// otherwise inconsistent status
-			default:
-				break;
-			}
-			return dataset.getRCLStatus();
-		}
-
-		return report.getRCLStatus();
-	}
-
-	/**
-	 * Update the local status with the one in the ack
-	 * @param report
-	 * @param ack
-	 * @return
-	 */
-	public RCLDatasetStatus updateStatusWithAck(Report report, DcfAck ack) {
-		
-		// if we have something in the ack
-		if (ack.isReady()) {
-
-			if (ack.getLog().isOk()) {
-
-				// save id
-				String datasetId = ack.getLog().getDatasetId();
-				report.setId(datasetId);
-
-				// save status
-				RCLDatasetStatus status = RCLDatasetStatus.fromDcfStatus(
-						ack.getLog().getDatasetStatus());
-
-				report.setStatus(status);
-
-				// permanently save data
-				daoService.update(report);
-
-				LOGGER.info("Ack successful for message id " + report.getMessageId() + ". Retrieved datasetId=" 
-						+ datasetId + " with status=" + report.getRCLStatus());
-			}
-			else {
-
-				// Reset the status with the previous if possible
-				if(report.getPreviousStatus() != null) {
-					report.setStatus(report.getPreviousStatus());
-					daoService.update(report);
-				}
-			}
-		}
-
-		return report.getRCLStatus();
-	}
 	
 	/**
 	 * Given a report and its state, get the operation
@@ -712,17 +613,7 @@ public class ReportService implements IReportService {
 	 * @param listener
 	 */
 	public Message refreshStatus(Report report) {
-		
-		// if the report status is not able of
-		// getting an ack, then simply align its status
-		// with the one in dcf
-		if (!report.getRCLStatus().canGetAck()) {
-			return alignReportStatusWithDCF(report);
-		}
 
-		// else if local status UPLOADED, SUBMISSION_SENT, REJECTION_SENT
-
-		// if no connection return
 		DcfAck ack = null;
 		try {
 			ack = this.getAckOf(report.getMessageId());
@@ -740,6 +631,7 @@ public class ReportService implements IReportService {
 			return m;
 		}
 		
+		// if processing
 		if (!ack.isReady()) {
 			// warn the user, the ack cannot be retrieved yet
 			String title = Messages.get("warning.title");
@@ -801,106 +693,73 @@ public class ReportService implements IReportService {
 		}
 		
 		// here log can only be OK
-
-		this.updateStatusWithAck(report, ack);
 		
-		RCLDatasetStatus status = RCLDatasetStatus
-				.fromDcfStatus(log.getDatasetStatus());
-		
-		// if no dataset retrieved for the current report
-		if (!status.existsInDCF()) {
-
-			// warn the user, the ack cannot be retrieved yet
-			String title = Messages.get("error.title");
-			String message = Messages.get("ack.invalid", 
-					status.getLabel());
-			int style = SWT.ICON_ERROR;
-
-			Message m = Warnings.create(title, message, style);
-			m.setCode("ERR804");
-			
-			return m;
-		}
-
-		return alignReportStatusWithDCF(report);
-	}
-	
-	/**
-	 * Update the report status with the dataset contained in the DCF
-	 * @param shell
-	 * @param report
-	 * @throws ReportException 
-	 * @throws DetailedSOAPException 
-	 */
-	public Message alignReportStatusWithDCF(Report report) {
-
-		Message mb = null;
-
+		Dataset dcfDataset;
 		try {
-
-			RCLDatasetStatus oldStatus = report.getRCLStatus();
-			RCLDatasetStatus newStatus = this.getRealReportStatus(report);
-			
-			// if we have the same status then ok stop
-			// we have the report updated
-			if (oldStatus == newStatus) {
-				mb = Warnings.create(Messages.get("success.title"), 
-						Messages.get("refresh.status.success", newStatus.getLabel()), 
-								SWT.ICON_INFORMATION);
-				mb.setCode("OK500");
-			}
-
-			// if the report was in status submitted
-			// and in dcf ACCEPTED_DWH or REJECTED_EDITABLE
-			else if (oldStatus == RCLDatasetStatus.SUBMITTED && 
-					(newStatus == RCLDatasetStatus.ACCEPTED_DWH 
-						|| newStatus == RCLDatasetStatus.REJECTED_EDITABLE)) {
-
-				mb = Warnings.create(Messages.get("success.title"), 
-						Messages.get("refresh.status.success", newStatus.getLabel()), 
-						SWT.ICON_INFORMATION);
-				mb.setCode("OK500");
-			}
-			else {
-
-				// otherwise if report is not in status submitted
-				// check dcf status
-				switch(newStatus) {
-				case DELETED:
-				case REJECTED:
-
-					mb = Warnings.create(Messages.get("warning.title"), Messages.get("refresh.auto.draft", 
-							newStatus.getLabel(), RCLDatasetStatus.DRAFT.getLabel()), SWT.ICON_WARNING);
-					mb.setCode("WARN501");
-					break;
-
-					// otherwise inconsistent status
-				default:
-					
-					mb = Warnings.createFatal(Messages.get("refresh.error", newStatus.getLabel(), 
-							PropertiesReader.getSupportEmail()), report);
-					mb.setCode("ERR501");
-					break;
-				}
-			}
-		}
-		catch (DetailedSOAPException e) {
+			dcfDataset = this.getLatestDataset(report);
+		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
-			LOGGER.error("Cannot refresh status", e);
-			mb = Warnings.createSOAPWarning(e);
-
-		} catch (ReportException e) {
-			e.printStackTrace();
-			
-			LOGGER.error("Cannot refresh status", e);
-			
-			mb = Warnings.createFatal(Messages.get("refresh.failed.no.senderId", 
-					PropertiesReader.getSupportEmail()), report);
-			
-			mb.setCode("ERR700");
+			LOGGER.error("Cannot get the dataset of the report=" + report.getSenderId(), e);
+			return Warnings.createSOAPWarning(e);
 		}
-
-		// if we have an error show it and stop the process
+		
+		// if deleted in DCF, auto draft and remove message information
+		if (dcfDataset.getRCLStatus() == RCLDatasetStatus.DELETED) {
+			
+			report.makeEditable();
+			report.remove(AppPaths.REPORT_MESSAGE_ID);
+			report.remove(AppPaths.REPORT_LAST_MESSAGE_ID);
+			report.remove(AppPaths.REPORT_LAST_MODIFYING_MESSAGE_ID);
+			report.remove(AppPaths.REPORT_LAST_VALIDATION_MESSAGE_ID);
+			this.daoService.update(report);
+			
+			Message mb = Warnings.create(Messages.get("warning.title"), Messages.get("refresh.auto.draft", 
+					dcfDataset.getRCLStatus().getLabel(), RCLDatasetStatus.DRAFT.getLabel()), SWT.ICON_WARNING);
+			mb.setCode("WARN501");
+			
+			return mb;
+		}
+		
+		// if the data in DCF are actually consistent with the ones locally stored
+		// update status with the one in DCF
+		if (dcfDataset.getLastModifyingMessageId().equals(report.getLastModifyingMessageId())) {
+			
+			// update status with dataset status
+			report.setStatus(dcfDataset.getRCLStatus());
+			this.daoService.update(report);
+			
+			Message mb = Warnings.create(Messages.get("success.title"), 
+					Messages.get("refresh.status.success", dcfDataset.getRCLStatus().getLabel()), 
+					SWT.ICON_INFORMATION);
+			mb.setCode("OK500");
+			
+			return mb;
+		}
+		
+		// otherwise, inconsistency
+		
+		Message mb;
+		switch(dcfDataset.getStatus()) {
+		case REJECTED:
+		case REJECTED_EDITABLE:
+		case VALID:
+		case VALID_WITH_WARNINGS:
+			// auto draft
+			mb = Warnings.create(Messages.get("error.title"), 
+					Messages.get("refresh.inconsistent.auto.draft", dcfDataset.getLastModifyingMessageId(),
+							dcfDataset.getRCLStatus().getLabel(), RCLDatasetStatus.DRAFT.getLabel()), 
+					SWT.ICON_ERROR);
+			mb.setCode("ERR504");
+			break;
+		default:
+			// inconsistency error
+			mb = Warnings.createFatal(Messages.get("refresh.inconsistent.unmodifiable", 
+					dcfDataset.getLastModifyingMessageId(), dcfDataset.getRCLStatus().getLabel()), 
+					report, dcfDataset);
+			mb.setCode("ERR505");
+			break;
+		}
+		
 		return mb;
 	}
 	
