@@ -8,6 +8,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import amend_manager.AmendException;
 import dataset.Dataset;
 import message.MessageConfigBuilder;
 import message.SendMessageException;
@@ -44,7 +45,7 @@ public class ReportExportAndSendThread extends Thread {
 		try {
 			reportService.send(report, dcfDataset, messageConfig, progressListener);
 		} catch (DetailedSOAPException | IOException | ParserConfigurationException | SAXException
-				| SendMessageException | ReportException e) {
+				| SendMessageException | ReportException | AmendException e) {
 
 			e.printStackTrace();
 

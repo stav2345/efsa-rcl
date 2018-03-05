@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import ack.DcfAck;
 import ack.IDcfAckLog;
 import ack.MessageValResCode;
+import amend_manager.AmendException;
 import amend_manager.ReportXmlBuilder;
 import app_config.AppPaths;
 import app_config.BooleanValue;
@@ -148,12 +149,12 @@ public class ReportService implements IReportService {
 	}
 	
 	public File export(Report report, MessageConfigBuilder messageConfig) 
-			throws IOException, ParserConfigurationException, SAXException, ReportException {
+			throws IOException, ParserConfigurationException, SAXException, ReportException, AmendException {
 		return this.export(report, messageConfig, null);
 	}
 	
 	public File export(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
-			throws ParserConfigurationException, SAXException, IOException, ReportException {
+			throws ParserConfigurationException, SAXException, IOException, ReportException, AmendException {
 		
 		if (messageConfig.needEmptyDataset())
 			return ReportXmlBuilder.createEmptyReport(messageConfig);
@@ -246,7 +247,7 @@ public class ReportService implements IReportService {
 	
 	public void send(Report report, Dataset dcfDataset, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
 			throws DetailedSOAPException, IOException, ParserConfigurationException, SAXException, 
-			SendMessageException, ReportException {
+			SendMessageException, ReportException, AmendException {
 		
 		// Update the report dataset id if it was found in the DCF
 		// (Required if we are overwriting an existing report)
@@ -290,11 +291,12 @@ public class ReportService implements IReportService {
 	 * @throws SAXException
 	 * @throws SendMessageException
 	 * @throws ReportException 
+	 * @throws AmendException 
 	 * @throws SOAPException
 	 */
 	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
 			throws IOException, ParserConfigurationException, 
-		SAXException, SendMessageException, DetailedSOAPException, ReportException {
+		SAXException, SendMessageException, DetailedSOAPException, ReportException, AmendException {
 
 		// export the report and get an handle to the exported file
 		File file = this.export(report, messageConfig, progressListener);
@@ -339,10 +341,11 @@ public class ReportService implements IReportService {
 	 * @throws SAXException
 	 * @throws SendMessageException
 	 * @throws ReportException
+	 * @throws AmendException 
 	 */
 	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig) 
 			throws DetailedSOAPException, IOException, ParserConfigurationException, 
-			SAXException, SendMessageException, ReportException {
+			SAXException, SendMessageException, ReportException, AmendException {
 		return this.exportAndSend(report, messageConfig, null);
 	}
 	

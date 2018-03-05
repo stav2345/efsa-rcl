@@ -94,9 +94,10 @@ public class ReportXmlBuilder implements AutoCloseable {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws ReportException
+	 * @throws AmendException 
 	 */
 	public File exportReport() throws IOException, ParserConfigurationException, 
-		SAXException, ReportException {
+		SAXException, ReportException, AmendException {
 		
 		LOGGER.info("Exporting report " + report);
 		
@@ -167,7 +168,7 @@ public class ReportXmlBuilder implements AutoCloseable {
 			formulaService.updateFormulas(record);
 
 			// get the row id from the record
-			String rowId = record.getCode(rowIdField);
+			String rowId = record.getLabel(rowIdField);
 			
 			// get the version
 			String version = report.getVersion();
@@ -183,12 +184,18 @@ public class ReportXmlBuilder implements AutoCloseable {
 	
 	/**
 	 * Solve the duplications and set the amendments
+	 * @throws AmendException 
 	 */
-	private void solveDuplications(String latestVersion, String oldVersion) {
+	private void solveDuplications(String latestVersion, String oldVersion) throws AmendException {
+		
+		DatasetComparisonDao dao = new DatasetComparisonDao();
 		
 		removeOldRecordVersions();
 		setUpdateAmendment(latestVersion, oldVersion);
 		setDeleteAmendment(latestVersion, oldVersion);
+		
+		if (dao.getAll().isEmpty())
+			throw new AmendException("Cannot create .xml file with no data");
 	}
 	
 	/**

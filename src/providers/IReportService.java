@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamException;
 import org.xml.sax.SAXException;
 
 import ack.DcfAck;
+import amend_manager.AmendException;
 import dataset.Dataset;
 import dataset.DatasetList;
 import dataset.NoAttachmentException;
@@ -115,7 +116,7 @@ public interface IReportService {
 	 */
 	public void send(Report report, Dataset dcfDataset, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
 			throws DetailedSOAPException, IOException, ParserConfigurationException, SAXException, 
-			SendMessageException, ReportException;
+			SendMessageException, ReportException, AmendException;
 	
 	/**
 	 * Export a report in .xml file
@@ -128,7 +129,7 @@ public interface IReportService {
 	 * @throws ReportException
 	 */
 	public File export(Report report, MessageConfigBuilder messageConfig) 
-			throws IOException, ParserConfigurationException, SAXException, ReportException;
+			throws IOException, ParserConfigurationException, SAXException, ReportException, AmendException;
 	
 	/**
 	 * Export a report into an .xml file tracking the progresses
@@ -142,7 +143,7 @@ public interface IReportService {
 	 * @throws ReportException
 	 */
 	public File export(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
-			throws ParserConfigurationException, SAXException, IOException, ReportException;
+			throws ParserConfigurationException, SAXException, IOException, ReportException, AmendException;
 	
 	/**
 	 * Export and send the report with the required operation type. It allows tracking progresses.
@@ -158,7 +159,7 @@ public interface IReportService {
 	 */
 	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener) 
 			throws IOException, ParserConfigurationException, SAXException, SendMessageException, 
-			DetailedSOAPException, ReportException;
+			DetailedSOAPException, ReportException, AmendException;
 	
 	/**
 	 * Export and send the report with the required operation type.
@@ -173,7 +174,7 @@ public interface IReportService {
 	 */
 	public MessageResponse exportAndSend(Report report, MessageConfigBuilder messageConfig) 
 			throws DetailedSOAPException, IOException, ParserConfigurationException, 
-			SAXException, SendMessageException, ReportException;
+			SAXException, SendMessageException, ReportException, AmendException;
 	
 	/**
 	 * Download a dataset using its dataset id
