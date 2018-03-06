@@ -709,8 +709,12 @@ public class TableRow implements Checkable {
 	 * @param row
 	 */
 	public void copyValues(TableRow row) {
-		for (String key : row.values.keySet()) {
-			this.put(key, row.get(key));
+		for (String key: row.values.keySet()) {
+			
+			TableCell cell = row.get(key);
+			TableCell copy = new TableCell(cell.getCode(), cell.getLabel());
+			
+			this.put(key, copy);
 		}
 	}
 	

@@ -153,12 +153,6 @@ public class Formula {
 		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.OR);
 		command = replaceFormulasWithSolution(list, command, false);
 		
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF);
-		command = replaceFormulasWithSolution(list, command, false);
-
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF_NOT_NULL);
-		command = replaceFormulasWithSolution(list, command, false);
-
 		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.SUM);
 		command = replaceFormulasWithSolution(list, command, false);
 		
@@ -166,6 +160,12 @@ public class Formula {
 		command = replaceFormulasWithSolution(list, command, false);
 		
 		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.END_TRIM);
+		command = replaceFormulasWithSolution(list, command, false);
+		
+		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF);
+		command = replaceFormulasWithSolution(list, command, false);
+
+		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF_NOT_NULL);
 		command = replaceFormulasWithSolution(list, command, false);
 		
 		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.HASH);
