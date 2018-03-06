@@ -299,6 +299,8 @@ public abstract class ReportImporter {
 	 */
 	private void processAmendments() {
 		deleteNullifiedRecords();
+		deleteOldVersionsOfRecords();
+		deleteRemovedRecords();
 	}
 
 	/**
@@ -309,6 +311,27 @@ public abstract class ReportImporter {
 		StringBuilder query = new StringBuilder();
 		query.append("delete from APP.DATASET_COMPARISON ")
 			.append("where IS_NULLIFIED = '1'");
+		
+		DatasetComparisonDao dao = new DatasetComparisonDao();
+		dao.executeQuery(query.toString());
+	}
+	
+	private void deleteOldVersionsOfRecords() {
+		
+		StringBuilder query = new StringBuilder();
+		query.append("delete from APP.DATASET_COMPARISON ")
+			.append("where ROW_ID || VERSION not in (")
+			.append("select ROW_ID || MAX(VERSION) from APP.DATASET_COMPARISON group by ROW_ID)");
+		
+		DatasetComparisonDao dao = new DatasetComparisonDao();
+		dao.executeQuery(query.toString());
+	}
+	
+	private void deleteRemovedRecords() {
+		
+		StringBuilder query = new StringBuilder();
+		query.append("delete from APP.DATASET_COMPARISON ")
+			.append("where AM_TYPE = 'D'");
 		
 		DatasetComparisonDao dao = new DatasetComparisonDao();
 		dao.executeQuery(query.toString());

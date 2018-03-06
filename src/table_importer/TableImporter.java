@@ -31,7 +31,6 @@ public abstract class TableImporter {
 	public void copyByParent(TableSchema childSchema, 
 			TableRow parentToCopy, TableRow parentToWrite) {
 		
-		System.out.println("BEFORE INJECT " + parentToWrite);
 		String parentTable = parentToCopy.getSchema().getSheetName();
 		int parentToCopyId = parentToCopy.getDatabaseId();
 		
