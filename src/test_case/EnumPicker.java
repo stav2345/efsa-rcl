@@ -22,6 +22,9 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class EnumPicker<E extends Enum<E>> {
 
+	private String title;
+	private String okBtnText;
+	
 	private Shell parent;
 	private Shell dialog;
 	private Enum<E> selectedEnum;
@@ -37,10 +40,21 @@ public class EnumPicker<E extends Enum<E>> {
 		this.defaultValue = defaultValue;
 	}
 	
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	public void setConfirmText(String okBtnText) {
+		this.okBtnText = okBtnText;
+	}
+	
 	private void create() {
 
 		this.dialog = new Shell(parent);
-		dialog.setText("Select value");
+		
+		if (this.title != null)
+			dialog.setText(this.title);
+		
 		dialog.setLayout(new GridLayout(1,false));
 		
 		final ComboViewer c = new ComboViewer(dialog, SWT.READ_ONLY);
@@ -77,7 +91,11 @@ public class EnumPicker<E extends Enum<E>> {
 	    	c.getCombo().select(0);
 	    
 	    Button button = new Button(dialog, SWT.PUSH);
-	    button.setText("OK");
+	    
+	    if (okBtnText != null)
+	    	button.setText(okBtnText);
+	    else
+	    	button.setText("Ok");
 	    
 	    button.addSelectionListener(new SelectionListener() {
 			

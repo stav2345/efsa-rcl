@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPException;
@@ -34,13 +35,13 @@ import dataset.RCLDatasetStatus;
 import formula.FormulaException;
 import global_utils.Message;
 import global_utils.Warnings;
-import html_viewer.HtmlViewer;
 import i18n_messages.Messages;
 import message.MessageConfigBuilder;
 import message.MessageResponse;
 import message.SendMessageException;
 import message_creator.OperationType;
 import progress_bar.ProgressListener;
+import report.DisplayAckResult;
 import report.EFSAReport;
 import report.Report;
 import report.ReportException;
@@ -214,12 +215,14 @@ public class ReportService implements IReportService {
 
 			// save the message id
 			report.setMessageId(response.getMessageId());
+			report.setLastMessageId(response.getMessageId());
 			
 			// update report status based on the request operation type
 			switch(requiredSendOp) {
 			case INSERT:
 			case REPLACE:
 				newStatus = RCLDatasetStatus.UPLOADED;
+				report.setLastModifyingMessageId(response.getMessageId());
 				break;
 			case REJECT:
 				newStatus = RCLDatasetStatus.REJECTION_SENT;
@@ -299,7 +302,17 @@ public class ReportService implements IReportService {
 		SAXException, SendMessageException, DetailedSOAPException, ReportException, AmendException {
 
 		// export the report and get an handle to the exported file
-		File file = this.export(report, messageConfig, progressListener);
+		File file;
+		try {
+			file = this.export(report, messageConfig, progressListener);
+		} catch (AmendException e1) {
+
+			// upload failed if errors in the amendments
+			report.setStatus(RCLDatasetStatus.UPLOAD_FAILED);
+			this.daoService.update(report);
+			
+			throw e1;
+		}
 
 		MessageResponse response;
 		try {
@@ -563,7 +576,7 @@ public class ReportService implements IReportService {
 	 * @throws ReportException 
 	 * @throws DetailedSOAPException 
 	 */
-	public ReportSendOperation getSendOperation(Report report, Dataset dcfDataset) throws DetailedSOAPException, ReportException {
+	public ReportSendOperation getSendOperation(Report report, Dataset dcfDataset) throws DetailedSOAPException {
 		
 		OperationType opType = OperationType.NOT_SUPPORTED;
 		
@@ -764,36 +777,33 @@ public class ReportService implements IReportService {
 	}
 	
 	/**
-	 * Display an ack in the browser
-	 * @param shell
-	 * @param report
+	 * Download the ack file related to the message id
+	 * @param messageId
+	 * @return
+	 * @throws DetailedSOAPException
 	 */
-	public Message displayAck(String messageId) {
+	private DisplayAckResult downloadAckFile(String messageId) throws DetailedSOAPException {
 		
-		// if no message id found
-		if (messageId == null || messageId.isEmpty()) {
-			Message m = Warnings.create(Messages.get("error.title"), 
-					Messages.get("ack.no.message.id"), SWT.ICON_ERROR);
-			m.setCode("ERR800");
-			return m;
-		}
+		DcfAck ack = getAckOf(messageId);
 		
-		// if no connection return
-		DcfAck ack = null;
-		try {
-			ack = getAckOf(messageId);
-		} catch (DetailedSOAPException e) {
-			e.printStackTrace();
-			LOGGER.error("Cannot get ack for messageId=" + messageId, e);
-			return Warnings.createSOAPWarning(e);
-		}
-
 		// if no ack return
 		if (ack == null || !ack.isReady() || ack.getLog() == null) {
+			
+			if (ack != null && !ack.isReady()) {
+				
+				// warn the user, the ack cannot be retrieved yet
+				String title = Messages.get("warning.title");
+				String message = Messages.get("ack.processing");
+				Message m = Warnings.create(title, message, SWT.ICON_INFORMATION);
+				m.setCode("WARN500");
+				
+				return new DisplayAckResult(messageId, m);
+			}
+			
 			String message = Messages.get("ack.not.available");
 			Message m = Warnings.create(Messages.get("error.title"), message, SWT.ICON_ERROR);
 			m.setCode("ERR803");
-			return m;
+			return new DisplayAckResult(messageId, m);
 		}
 		
 		// get the raw log to send the .xml to the browser
@@ -817,13 +827,137 @@ public class ReportService implements IReportService {
 			Message m = Warnings.create(Messages.get("error.title"), 
 					Messages.get("ack.file.not.found"), SWT.ICON_ERROR);
 			m.setCode("ERR802");
-			return m;
+			return new DisplayAckResult(messageId, m);
 		}
 		
-		// open the ack in the browser to see it formatted
-		HtmlViewer viewer = new HtmlViewer();
-		viewer.open(targetFile);
+		// correct execution
+		return new DisplayAckResult(messageId, targetFile);
+	}
+	
+	/**
+	 * Display an ack in the browser
+	 * @param shell
+	 * @param report
+	 */
+	public DisplayAckResult displayAck(EFSAReport report) {
 		
-		return null;
+		String localMessageId = report.getMessageId();
+		String datasetId = report.getId();
+		
+		// if no dataset id
+		if (datasetId == null || datasetId.isEmpty()) {
+			
+			// if no message id found
+			if (localMessageId == null || localMessageId.isEmpty()) {
+				
+				Message m = Warnings.create(Messages.get("error.title"), 
+						Messages.get("ack.no.message.id"), SWT.ICON_ERROR);
+				m.setCode("ERR800");
+				
+				return new DisplayAckResult(m);
+			}
+			
+			// use local message id to display ack
+			try {
+				return downloadAckFile(localMessageId);
+			} catch (DetailedSOAPException e) {
+				e.printStackTrace();
+				LOGGER.error("Cannot get ack for messageId=" + localMessageId, e);
+				return new DisplayAckResult(Warnings.createSOAPWarning(e));
+			}
+		}
+		
+		// if dataset id is present
+		
+		// do get dataset list
+		Dataset dataset = null;
+		try {
+			dataset = this.getLatestDataset(report);
+		} catch (DetailedSOAPException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot get dataset in GetDatasetList for datasetId=" + datasetId, e);
+			return new DisplayAckResult(Warnings.createSOAPWarning(e));
+		}
+		
+		// if no dataset return error
+		if (dataset == null) {
+			String message = Messages.get("dataset.not.available");
+			Message m = Warnings.create(Messages.get("error.title"), message, SWT.ICON_ERROR);
+			m.setCode("ERR808");
+			return new DisplayAckResult(m);
+		}
+
+		Message warning = null;
+		String targetMessageId = null;
+		
+		int dcfLastModifying = Integer.valueOf(dataset.getLastModifyingMessageId());
+		int localLastModifying = Integer.valueOf(report.getLastModifyingMessageId());
+		int localMessageIdInteger = Integer.valueOf(localMessageId);
+		
+		// if dcf has a greater modifying message id => data inconsistency
+		if (dcfLastModifying > localLastModifying) {
+			targetMessageId = localMessageId;
+
+			warning = Warnings.createFatal(
+					Messages.get("ack.modification.outdated", dataset.getLastModifyingMessageId()), 
+					SWT.ICON_WARNING, report, dataset);
+			warning.setCode("WARN800");
+		}
+		else {
+			
+			if (localLastModifying == localMessageIdInteger) {
+				
+				// use last validation message id in this case
+				targetMessageId = dataset.getLastValidationMessageId();
+				
+				// if greater, warning!
+				int dcfLastValidation = Integer.valueOf(dataset.getLastValidationMessageId());
+
+				if (dcfLastValidation > localLastModifying) {
+
+					warning = Warnings.create(Messages.get("warning.title"), 
+							Messages.get("ack.validation.outdated"), 
+							SWT.ICON_WARNING);
+					warning.setCode("WARN801");
+				}
+			}
+			else {
+				targetMessageId = localMessageId;  // use the local if not equal
+			}
+		}
+		
+		// if no target id found
+		if (targetMessageId == null || targetMessageId.isEmpty()) {
+			Message m = Warnings.create(Messages.get("error.title"), 
+					Messages.get("ack.no.message.id"), SWT.ICON_ERROR);
+			m.setCode("ERR800");
+			return new DisplayAckResult(m);
+		}
+		
+		// get the ack
+		DisplayAckResult result;
+		try {
+			result = downloadAckFile(targetMessageId);
+		} catch (DetailedSOAPException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot get ack for messageId=" + targetMessageId, e);
+			return new DisplayAckResult(Warnings.createSOAPWarning(e));
+		}
+
+		// add warning if present
+		if (warning != null) {
+			String ackMsgId = result.getDcfMessageId();
+			File file = result.getDownloadedAck();
+
+			// respect the time order of messages in the list
+			List<Message> ackMessages = result.getMessages();
+			List<Message> messages = new ArrayList<>();
+			messages.add(warning);
+			messages.addAll(ackMessages);
+			
+			result = new DisplayAckResult(ackMsgId, messages, file);
+		}
+
+		return result;
 	}
 }

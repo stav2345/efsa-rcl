@@ -65,4 +65,9 @@ public class Message {
 		
 		return mb.open();
 	}
+	
+	@Override
+	public String toString() {
+		return code + " " + message;
+	}
 }

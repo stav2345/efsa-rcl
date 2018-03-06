@@ -106,9 +106,13 @@ public abstract class ReportImporter {
 		File file = reportService.download(datasetId);
 		Dataset populatedDataset = reportService.datasetFromFile(file);
 		
+		// add the get datasets list metadata to the dataset object
 		populatedDataset.setStatus(dataset.getRCLStatus());
 		populatedDataset.setSenderId(dataset.getSenderId());
 		populatedDataset.setId(populatedDataset.getOperation().getDatasetId());
+		populatedDataset.setLastMessageId(dataset.getLastMessageId());
+		populatedDataset.setLastModifyingMessageId(dataset.getLastModifyingMessageId());
+		populatedDataset.setLastValidationMessageId(dataset.getLastValidationMessageId());
 		
 		return populatedDataset;
 	}

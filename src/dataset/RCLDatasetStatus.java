@@ -230,6 +230,10 @@ public enum RCLDatasetStatus {
 	
 	public static RCLDatasetStatus fromDcfStatus(DcfDatasetStatus status) {
 		
+		if (status == null) {
+			throw new IllegalArgumentException("Cannot get rcl status from null");
+		}
+		
 		RCLDatasetStatus newStatus;
 		
 		switch(status) {

@@ -20,6 +20,7 @@ import email.Email;
 import report.EFSAReport;
 import report.Report;
 import table_database.Database;
+import user.User;
 
 /**
  * Class to read an xml used to store the properties
@@ -108,7 +109,7 @@ public class PropertiesReader {
 		return getValue(TECH_SUPPORT_EMAIL_PROPERTY);
 	}
 	
-	private static String solveKeywords(String input, IDataset... reports) {
+	private static String solveKeywords(String input, User user, IDataset... reports) {
 		
 		if (input == null)
 			return null;
@@ -118,7 +119,7 @@ public class PropertiesReader {
 		StringBuilder sb = new StringBuilder();
 		
 		if (reports.length > 0) {
-			sb.append("Involved reports:\\n");
+			sb.append("Involved reports/datasets:\\n");
 		}
 		
 		for (IDataset report : reports) {
@@ -129,21 +130,31 @@ public class PropertiesReader {
 			if (report instanceof EFSAReport)
 				sb.append("\\nMessage id=").append(((EFSAReport)report).getMessageId());
 			
-				sb.append("\\nDataset id=")
+				sb
+				.append("\\nLast message id=")
+				.append(report.getLastMessageId())
+				
+				.append("\\nLast modifying message id=")
+				.append(report.getLastModifyingMessageId())
+				
+				.append("\\nDataset id=")
 				.append(report.getId())
+				
 				.append("\\nStatus=")
 				.append(report.getRCLStatus().getStatus())
+				
 				.append("\\nStatus step=").append(report.getRCLStatus().getStep());
 		}
 		
 		reportDiagnostic = sb.toString();
-
 		
 		String solved = input
 				.replace("%appVersion", getAppVersion())
 				.replace("%appName", getAppName())
 				.replace("%minDbVersion", getMinRequiredDbVersion())
-				.replace("%report", reportDiagnostic);
+				.replace("%report", reportDiagnostic)
+				.replace("%username", user.getUsername())
+				.replace("%userdata", user.getData().toString());
 		
 		String dbVersion = new Database().getVersion();
 		if (dbVersion != null)
@@ -172,6 +183,8 @@ public class PropertiesReader {
 	
 	public static boolean openMailPanel(IDataset... reports) {
 		
+		User user = User.getInstance();
+		
 		String subj = getSupportEmailSubject();
 		String body = getSupportEmailBody();
 		String address = getSupportEmail();
@@ -181,8 +194,8 @@ public class PropertiesReader {
 			return false;
 		}
 		
-		subj = solveKeywords(subj, reports);
-		body = solveKeywords(body, reports);
+		subj = solveKeywords(subj, user, reports);
+		body = solveKeywords(body, user, reports);
 		
 		Email mail = new Email(subj, body, ";", address);
 		

@@ -46,7 +46,6 @@ public class DownloadReportDialog extends DatasetListDialog implements IDownload
 	}
 	
 	public void setDatasetsList(DatasetList datasetsList) {
-		
 		allValidStatusDatasets = datasetsList.getDownloadableDatasets(validSenderIdPattern);
 		
 		allValidStatusAndLatestVersionsDatasets = datasetsList.getDownloadableDatasetsLatestVersions(validSenderIdPattern);

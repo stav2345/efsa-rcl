@@ -18,6 +18,7 @@ import message.MessageConfigBuilder;
 import message.MessageResponse;
 import message.SendMessageException;
 import progress_bar.ProgressListener;
+import report.DisplayAckResult;
 import report.EFSAReport;
 import report.Report;
 import report.ReportException;
@@ -214,5 +215,5 @@ public interface IReportService {
 	 * @param messageId
 	 * @return
 	 */
-	public Message displayAck(String messageId);
+	public DisplayAckResult displayAck(EFSAReport report);
 }
