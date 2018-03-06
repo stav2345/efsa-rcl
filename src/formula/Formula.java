@@ -255,10 +255,13 @@ public class Formula {
 			throws FormulaException {
 		
 		String command = text;
+		
 		for (IFormula f : formulas) {
 			
 			String solved = useRow ? f.solve(row) : f.solve();
-			command = command.replace(f.getUnsolvedFormula(), solved);
+			
+			if (solved != null)
+				command = command.replace(f.getUnsolvedFormula(), solved);
 		}
 		
 		return command;

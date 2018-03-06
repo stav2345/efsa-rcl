@@ -543,12 +543,13 @@ public class TableView {
 		// update the edited values
 		oldRow.copyValues(row);
 
-		// update also the formulas using the new values
-		oldRow.updateFormulas();
-
-		// save in db the changed values
-		if (saveInDb)
+		if (saveInDb) {
+			// update also the formulas using the new values
+			oldRow.updateFormulas();
+	
+			// save in db the changed values
 			oldRow.update();
+		}
 		
 		this.tableViewer.refresh(row);
 
