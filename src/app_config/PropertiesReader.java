@@ -152,8 +152,10 @@ public class PropertiesReader {
 				.replace("%appVersion", getAppVersion())
 				.replace("%appName", getAppName())
 				.replace("%minDbVersion", getMinRequiredDbVersion())
-				.replace("%report", reportDiagnostic)
-				.replace("%username", user.getUsername())
+				.replace("%report", reportDiagnostic);
+		
+		if (user != null)
+			solved = solved.replace("%username", user.getUsername())
 				.replace("%userdata", user.getData().toString());
 		
 		String dbVersion = new Database().getVersion();

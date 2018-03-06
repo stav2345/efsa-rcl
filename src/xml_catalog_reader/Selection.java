@@ -68,7 +68,8 @@ public class Selection {
 		}
 		else if (arg0 instanceof TableCell) {
 			TableCell other = (TableCell) arg0;
-			return other.getCode().equals(code);
+			return other != null && other.getCode() != null 
+					&& other.getCode().equals(code);
 		}
 		else
 			return super.equals(arg0);

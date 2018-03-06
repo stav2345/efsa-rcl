@@ -530,7 +530,7 @@ public class TableView {
 	 * Refresh a single row of the table
 	 * @param row
 	 */
-	public void refreshAndSave(TableRow row) {
+	public void refreshAndSave(TableRow row, boolean saveInDb) {
 		
 		TableRow oldRow = this.tableElements.getElementById(row.getDatabaseId());
 		
@@ -547,7 +547,8 @@ public class TableView {
 		oldRow.updateFormulas();
 
 		// save in db the changed values
-		oldRow.update();
+		if (saveInDb)
+			oldRow.update();
 		
 		this.tableViewer.refresh(row);
 

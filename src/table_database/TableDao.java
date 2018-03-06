@@ -159,7 +159,7 @@ public class TableDao implements ITableDao {
 			String value = colValue.getCode();
 			
 			// if no code is found, use the label
-			if (value.isEmpty())
+			if (value == null || value.isEmpty())
 				value = colValue.getLabel();
 
 			// If we have a relation ID => then convert into integer

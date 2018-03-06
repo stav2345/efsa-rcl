@@ -517,12 +517,12 @@ public class DialogBuilder {
 	 * Refresh a row of the table
 	 * @param row
 	 */
-	public void refreshAndSave(TableRow row) {
+	public void refreshAndSave(TableRow row, boolean saveInDb) {
 		
 		if (table == null)
 			return;
 		
-		this.table.refreshAndSave(row);
+		this.table.refreshAndSave(row, saveInDb);
 	}
 	
 	public void replace(TableRow row) {

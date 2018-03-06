@@ -76,7 +76,7 @@ public class TableCell {
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return code.isEmpty() && label.isEmpty();
+		return (code == null || code.isEmpty()) && (label == null || label.isEmpty());
 	}
 	
 	@Override

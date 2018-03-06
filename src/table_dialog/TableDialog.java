@@ -198,10 +198,7 @@ public abstract class TableDialog {
 					editorListener.editEnded(row, field, changed);
 				
 				if (changed) {
-					if (autoSave)
-						panel.getTable().refreshAndSave(row);
-					else
-						panel.getTable().refresh(row);
+					panel.getTable().refreshAndSave(row, autoSave);
 				}
 				
 				if (saveButton != null)
@@ -297,7 +294,7 @@ public abstract class TableDialog {
 			return;
 		
 		for (TableRow row : rows)
-			panel.refreshAndSave(row);
+			panel.refreshAndSave(row, true);
 	}
 	
 	/**
@@ -404,8 +401,8 @@ public abstract class TableDialog {
 	 * Refresh a single row of the table
 	 * @param row
 	 */
-	public void refreshAndSave(TableRow row) {
-		this.panel.refreshAndSave(row);
+	public void refreshAndSave(TableRow row, boolean saveInDb) {
+		this.panel.refreshAndSave(row, saveInDb);
 	}
 	
 	public void refresh(TableRow row) {
