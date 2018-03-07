@@ -209,20 +209,22 @@ public class ReportService implements IReportService {
 		
 		RCLDatasetStatus newStatus;
 		
+		// save the message id
+		report.setMessageId(response.getMessageId());
+		report.setLastMessageId(response.getMessageId());
+		
+		if (requiredSendOp == OperationType.INSERT || requiredSendOp == OperationType.REPLACE)
+			report.setLastModifyingMessageId(response.getMessageId());
+		
 		// if correct response then save the message id
 		// into the report
 		if (response.isCorrect()) {
-
-			// save the message id
-			report.setMessageId(response.getMessageId());
-			report.setLastMessageId(response.getMessageId());
 			
 			// update report status based on the request operation type
 			switch(requiredSendOp) {
 			case INSERT:
 			case REPLACE:
 				newStatus = RCLDatasetStatus.UPLOADED;
-				report.setLastModifyingMessageId(response.getMessageId());
 				break;
 			case REJECT:
 				newStatus = RCLDatasetStatus.REJECTION_SENT;
