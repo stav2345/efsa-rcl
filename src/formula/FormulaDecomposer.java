@@ -128,7 +128,7 @@ public class FormulaDecomposer {
 			// save attribute and value
 			out.add(new AttributeElement(split[0], split[1]));
 		}
-		
+
 		return out;
 	}
 	

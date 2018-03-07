@@ -127,20 +127,20 @@ public abstract class Report extends TableRow implements EFSAReport {
 	}
 	
 	public String getYear() {
-		return this.getCode(AppPaths.REPORT_YEAR);
+		return this.getCode(AppPaths.REPORT_YEAR_COL);
 	}
 	
 	public void setYear(String year) {
-		this.put(AppPaths.REPORT_YEAR, 
+		this.put(AppPaths.REPORT_YEAR_COL, 
 				getTableColumnValue(year, AppPaths.YEARS_LIST));
 	}
 	
 	public String getMonth() {
-		return this.getCode(AppPaths.REPORT_MONTH);
+		return this.getCode(AppPaths.REPORT_MONTH_COL);
 	}
 	
 	public void setMonth(String month) {
-		this.put(AppPaths.REPORT_MONTH, 
+		this.put(AppPaths.REPORT_MONTH_COL, 
 				getTableColumnValue(month, AppPaths.MONTHS_LIST));
 	}
 	

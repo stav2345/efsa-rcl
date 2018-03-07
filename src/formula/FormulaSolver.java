@@ -79,7 +79,7 @@ public class FormulaSolver {
 		// solve all the formulas starting from the
 		// formulas with 0 dependencies
 		for (Formula formula : formulas) {
-			
+
 			// solve the formula and get the resolved text
 			String solvedFormula = formula.solve();
 			

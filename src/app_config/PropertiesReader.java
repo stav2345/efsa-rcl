@@ -1,7 +1,9 @@
 package app_config;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -171,10 +173,22 @@ public class PropertiesReader {
 				if (log == null)
 					return solved;
 
-				// add date
-				String logData = new String(Files.readAllBytes(Paths.get(log.getAbsolutePath())));
-				
-				solved = solved.replace("%appLog", logData);
+			    try(FileReader in = new FileReader(log);) {
+			    	
+			    	try(BufferedReader br = new BufferedReader(in);) {
+			    		
+			    		String line;
+					    while ((line = br.readLine()) != null) {
+					        solved = solved.replace("%appLog", line + "\n%appLog");  // append every line
+					    }
+					    
+					    solved = solved.replace("%appLog", "");  // remove last placeholder
+					    
+					    br.close();
+			    	}
+			    	in.close();
+			    }
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

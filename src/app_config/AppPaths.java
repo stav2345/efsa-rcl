@@ -37,8 +37,8 @@ public class AppPaths {
 	public static final String CHILDREN_CONTAIN_ERRORS_COL = "childrenContainErrors";
 
 	public static final String REPORT_SHEET = "Report";
-	public static final String REPORT_YEAR = "reportYear";
-	public static final String REPORT_MONTH = "reportMonth";
+	public static final String REPORT_YEAR_COL = "reportYear";
+	public static final String REPORT_MONTH_COL = "reportMonth";
 	public static final String REPORT_SENDER_ID = "reportSenderId";
 	public static final String REPORT_MESSAGE_ID = "reportMessageId";
 	public static final String REPORT_LAST_MESSAGE_ID = "reportLastMessageId";

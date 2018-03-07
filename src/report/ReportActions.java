@@ -121,9 +121,6 @@ public abstract class ReportActions {
 	 */
 	public void send(MessageConfigBuilder messageConfig, Listener listener) {
 		
-		FormProgressBar progressBarDialog = new FormProgressBar(shell, Messages.get("send.progress.title"));
-		progressBarDialog.open();
-		
 		shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
 		
 		Dataset dataset;
@@ -131,7 +128,6 @@ public abstract class ReportActions {
 			dataset = reportService.getLatestDataset(report);
 		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
-			progressBarDialog.close();
 			LOGGER.error("Cannot send report=" + report.getSenderId(), e);
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 			manageException(e, ReportAction.SEND);
@@ -145,20 +141,20 @@ public abstract class ReportActions {
 				boolean goOn = showSendWarning(shell, dataset);
 				
 				if (!goOn) {
-					progressBarDialog.close();
 					return;
 				}
 				
 			} catch (NotOverwritableDcfDatasetException e) {
 				e.printStackTrace();
 				
-				progressBarDialog.close();
-				
 				LOGGER.error("Cannot send report=" + report.getSenderId(), e);
 				manageException(e, ReportAction.SEND);
 				return;
 			}
 		}
+		
+		FormProgressBar progressBarDialog = new FormProgressBar(shell, Messages.get("send.progress.title"));
+		progressBarDialog.open();
 		
 		// start the sender thread
 		ReportExportAndSendThread sender = new ReportExportAndSendThread(report, dataset, messageConfig, reportService);

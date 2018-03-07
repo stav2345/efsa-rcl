@@ -33,6 +33,7 @@ public class FunctionFormula implements IFormula {
 	public static final String OR = "OR";
 	
 	private String formula;
+	private String solvedFormula;
 	private String functionName;
 	private List<String> operands;
 
@@ -47,6 +48,10 @@ public class FunctionFormula implements IFormula {
 		return formula;
 	}
 
+	public String getSolvedFormula() {
+		return solvedFormula;
+	}
+	
 	@Override
 	public void compile() throws FormulaException {
 		
@@ -111,6 +116,8 @@ public class FunctionFormula implements IFormula {
 		default:
 			throw new FormulaException("Function not supported: " + formula);
 		}
+		
+		this.solvedFormula = solvedFormula;
 		
 		return solvedFormula;
 	}
@@ -294,6 +301,8 @@ public class FunctionFormula implements IFormula {
 		String hashAlgorithm = operands.get(0);
 		String value = operands.get(1);
 		
+		LOGGER.debug("Computing HASH function of=" + value);
+		
 		byte[] byteArray = value.getBytes();
 		byte[] digest;
 		try {
@@ -350,6 +359,17 @@ public class FunctionFormula implements IFormula {
 		String stringComp = result ? BooleanValue.getTrueValue() : BooleanValue.getFalseValue();
 		
 		return stringComp;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+			return this.getUnsolvedFormula() + " => " + this.solve() + " with operands " + operands;
+		} catch (FormulaException e) {
+			e.printStackTrace();
+		}
+		
+		return "ERROR";
 	}
 	
 	public static void main(String[] args) throws FormulaException {
