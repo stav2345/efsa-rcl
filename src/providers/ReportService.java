@@ -430,7 +430,7 @@ public class ReportService implements IReportService {
 		getDatasetsList.getList(config.getEnvironment(), User.getInstance(), 
 				PropertiesReader.getDataCollectionCode(dcYear), output);
 		
-		return output.filterBySenderId(senderDatasetId + AppPaths.REPORT_VERSION_REGEX);
+		return output.filterBySenderId(senderDatasetId);
 	}
 
 	@Override
@@ -449,11 +449,9 @@ public class ReportService implements IReportService {
 	}
 
 	@Override
-	public Dataset getLatestDataset(String senderDatasetId, String dcYear) throws DetailedSOAPException {
+	public Dataset getDataset(String senderDatasetId, String dcYear) throws DetailedSOAPException {
 
 		DatasetList datasets = getDatasetsOf(senderDatasetId, dcYear);
-		datasets = datasets.filterOldVersions();
-
 		IDataset mostRecent = datasets.getMostRecentDataset();
 
 		if (mostRecent == null)
@@ -463,13 +461,19 @@ public class ReportService implements IReportService {
 	}
 
 	@Override
-	public Dataset getLatestDataset(EFSAReport report) throws DetailedSOAPException {
+	public Dataset getDataset(EFSAReport report) throws DetailedSOAPException {
 
+		// the report does not have sender id and version together, therefore
+		// we need to merge them
+		String senderDatasetId = TableVersion.mergeNameAndVersion(report.getSenderId(), 
+				report.getVersion());
+		
 		// use the dataset id if we have it
 		if (report.getId() != null && !report.getId().isEmpty())
-			return getDatasetById(report.getSenderId(), report.getYear(), report.getId());
-		else
-			return getLatestDataset(report.getSenderId(), report.getYear());
+			return getDatasetById(senderDatasetId, report.getYear(), report.getId());
+		else {
+			return getDataset(senderDatasetId, report.getYear());
+		}
 	}
 	
 	@Override
@@ -496,7 +500,7 @@ public class ReportService implements IReportService {
 			return new RCLError("WARN304");
 		}
 		
-		Dataset oldReport = getLatestDataset(report);
+		Dataset oldReport = getDataset(report);
 		
 		// if the report already exists
 		// with the selected sender dataset id
@@ -711,11 +715,19 @@ public class ReportService implements IReportService {
 		
 		Dataset dcfDataset;
 		try {
-			dcfDataset = this.getLatestDataset(report);
+			dcfDataset = this.getDataset(report);
 		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot get the dataset of the report=" + report.getSenderId(), e);
 			return Warnings.createSOAPWarning(e);
+		}
+		
+		// if no dataset return error
+		if (dcfDataset == null) {
+			String message = Messages.get("dataset.not.available");
+			Message m = Warnings.create(Messages.get("error.title"), message, SWT.ICON_ERROR);
+			m.setCode("ERR808");
+			return m;
 		}
 		
 		// if deleted in DCF, auto draft and remove message information
@@ -740,7 +752,9 @@ public class ReportService implements IReportService {
 		if (dcfDataset.getLastModifyingMessageId().equals(report.getLastModifyingMessageId())) {
 			
 			// update status with dataset status
+			// update dataset id
 			report.setStatus(dcfDataset.getRCLStatus());
+			report.setId(dcfDataset.getId());
 			this.daoService.update(report);
 			
 			Message mb = Warnings.create(Messages.get("success.title"), 
@@ -760,6 +774,7 @@ public class ReportService implements IReportService {
 		case VALID:
 		case VALID_WITH_WARNINGS:
 			// auto draft
+			report.makeEditable();
 			mb = Warnings.create(Messages.get("error.title"), 
 					Messages.get("refresh.inconsistent.auto.draft", dcfDataset.getLastModifyingMessageId(),
 							dcfDataset.getRCLStatus().getLabel(), RCLDatasetStatus.DRAFT.getLabel()), 
@@ -874,7 +889,7 @@ public class ReportService implements IReportService {
 		// do get dataset list
 		Dataset dataset = null;
 		try {
-			dataset = this.getLatestDataset(report);
+			dataset = this.getDataset(report);
 		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot get dataset in GetDatasetList for datasetId=" + datasetId, e);

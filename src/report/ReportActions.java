@@ -125,7 +125,7 @@ public abstract class ReportActions {
 		
 		Dataset dataset;
 		try {
-			dataset = reportService.getLatestDataset(report);
+			dataset = reportService.getDataset(report);
 		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot send report=" + report.getSenderId(), e);

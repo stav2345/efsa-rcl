@@ -81,7 +81,7 @@ public interface IReportService {
 	 * @return
 	 * @throws DetailedSOAPException
 	 */
-	public Dataset getLatestDataset(String senderDatasetId, String dcYear) throws DetailedSOAPException;
+	public Dataset getDataset(String senderDatasetId, String dcYear) throws DetailedSOAPException;
 	
 	/**
 	 * Get the latest dataset of the report using its dataset id if possible,
@@ -90,7 +90,7 @@ public interface IReportService {
 	 * @return
 	 * @throws DetailedSOAPException
 	 */
-	public Dataset getLatestDataset(EFSAReport report) throws DetailedSOAPException;
+	public Dataset getDataset(EFSAReport report) throws DetailedSOAPException;
 	
 	/**
 	 * Get which send operation will be used if a send action is performed

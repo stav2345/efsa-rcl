@@ -104,6 +104,7 @@ public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList
 	
 	/**
 	 * Get the most recent dataset of the list
+	 * using the datasets id
 	 * @return
 	 */
 	public IDataset getMostRecentDataset() {
