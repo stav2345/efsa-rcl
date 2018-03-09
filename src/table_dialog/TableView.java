@@ -162,10 +162,10 @@ public class TableView {
 
 			String label = col.getLabel();
 
-			// if the mandatory depends on the row
-			if (col.isConditionallyMandatory())
+			// if the mandatory depends on the row (and it is not a formula)
+			if (col.isConditionallyMandatory() && !col.isComposite())
 				label = label + Messages.get("conditionally.mandatory.column.marker");
-			else if (!col.isMandatory())  // if optional
+			else if (!col.isMandatory() && !col.isComposite())  // if optional
 				label = label + Messages.get("optional.column.marker");
 
 			columnViewer.getColumn().setText(label);
@@ -542,6 +542,7 @@ public class TableView {
 
 		// update the edited values
 		oldRow.copyValues(row);
+		row.updateFormulas();
 
 		if (saveInDb) {
 			// update also the formulas using the new values
@@ -550,7 +551,7 @@ public class TableView {
 			// save in db the changed values
 			oldRow.update();
 		}
-		
+
 		this.tableViewer.refresh(row);
 
 		// call listener
