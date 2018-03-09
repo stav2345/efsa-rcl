@@ -180,6 +180,19 @@ public class DialogBuilder {
 	}
 	
 	/**
+	 * Add an hidden label (it will be shown by calling {@link #setLabelText(String, String)})
+	 * @param code
+	 * @return
+	 */
+	public DialogBuilder addLabelToComposite(String code, String text, String compositeCode) {
+		
+		addLabelToComposite(code, compositeCode);
+		setLabelText(code, text);
+		
+		return this;
+	}
+	
+	/**
 	 * Set the label text
 	 * @param code
 	 * @param text
