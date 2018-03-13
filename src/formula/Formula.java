@@ -127,7 +127,7 @@ public class Formula {
 		//if (column.equals("contextId") && fieldHeader.equals("labelFormula"))
 		//	LOGGER.debug("Solving formula=" + value + " Solving formulas=" + header);
 		
-		//if ((column.equals("sampAnId")) && fieldHeader.equals("labelFormula"))
+		//if ((column.equals("tseIndexCase")) && fieldHeader.equals("codeFormula"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
 		//System.out.println("TIME for " + header + " => " 
 		//		+ (System.currentTimeMillis() - debugTime)/1000.00 + " seconds");

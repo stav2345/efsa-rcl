@@ -284,7 +284,6 @@ public class DatasetList extends ArrayList<IDataset> implements IDcfDatasetsList
 	public DatasetList getDownloadableDatasets(String validSenderIdPattern) {
 		
 		Collection<RCLDatasetStatus> statusFilter = new ArrayList<>();
-		statusFilter.add(RCLDatasetStatus.REJECTED_EDITABLE);
 		statusFilter.add(RCLDatasetStatus.REJECTED);
 		statusFilter.add(RCLDatasetStatus.PROCESSING);
 		statusFilter.add(RCLDatasetStatus.DELETED);

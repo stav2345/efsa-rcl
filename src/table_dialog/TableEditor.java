@@ -220,7 +220,6 @@ public class TableEditor extends EditingSupport {
 			break;
 
 		case PICKLIST:
-
 			Selection sel = (Selection) value;
 			TableCell newSelection = new TableCell(sel);
 			row.put(column.getId(), newSelection);

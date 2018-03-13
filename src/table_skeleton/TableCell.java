@@ -30,6 +30,12 @@ public class TableCell {
 		this.code = sel.getCode();
 		this.label = sel.getDescription();
 		this.changed = true;
+		
+		if (code == null)
+			code = "";
+		
+		if (label == null)
+			label = "";
 	}
 	
 	
@@ -40,8 +46,13 @@ public class TableCell {
 		// empty code means that we do not
 		// need the field => we set the label
 		// as code
-		if (code == null || code.isEmpty())
-			this.code = label;
+		if (code == null || code.isEmpty()) {
+			
+			if (label != null)
+				this.code = label;
+			else
+				this.code = "";
+		}
 		
 		this.changed = true;
 	}

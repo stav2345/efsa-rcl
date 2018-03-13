@@ -400,38 +400,44 @@ public class TableRow implements Checkable {
 	 * @param f
 	 * @param fieldHeader
 	 */
-	public void update(Formula f, String fieldHeader) {
+	public void update(TableColumn col, String value, String fieldHeader) {
 		
 		// skip editable columns
-		if (f.getColumn().isEditable(this))
+		if (col.isEditable(this))
 			return;
 		
 		XlsxHeader h = XlsxHeader.fromString(fieldHeader);
 		
 		if (h == null)
 			return;
-		
-		TableCell colVal = this.get(f.getColumn().getId());
-		
-		// if no value found, initialize
-		if (colVal == null)
-			colVal = new TableCell();
 
-		if (h == XlsxHeader.CODE_FORMULA && !f.getSolvedFormula().isEmpty()) {
-			colVal.setCode(f.getSolvedFormula());
+		if (h == XlsxHeader.CODE_FORMULA && !col.getCodeFormula().isEmpty()) {
+
+			if (value.isEmpty())
+				this.put(col.getId(), new TableCell());
+			else
+				this.put(col.getId(), value);
 		}
-		else if (h == XlsxHeader.LABEL_FORMULA && !f.getSolvedFormula().isEmpty()) {
-			colVal.setLabel(f.getSolvedFormula());
+		else if (h == XlsxHeader.LABEL_FORMULA && !col.getLabelFormula().isEmpty()) {
+			
+			
+			TableCell colVal = this.get(col.getId());
+
+			// if no value found, initialize
+			if (colVal == null)
+				colVal = new TableCell();
+			
+			colVal.setLabel(value);
 			
 			// if the field has not a code formula and it is not a pick-list, then
 			// update the code using the label
-			if (!f.getColumn().isPicklist() && f.getColumn().getCodeFormula().isEmpty())
-				colVal.setCode(f.getSolvedFormula());
+			if (!col.isPicklist() && col.getCodeFormula().isEmpty())
+				colVal.setCode(value);
+			
+			this.put(col.getId(), colVal);
 		}
 		else // else do nothing
 			return;
-
-		this.put(f.getColumn().getId(), colVal);
 	}
 	
 	/**

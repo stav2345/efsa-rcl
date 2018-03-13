@@ -82,12 +82,12 @@ public class FormulaSolver {
 
 			// solve the formula and get the resolved text
 			String solvedFormula = formula.solve();
-			
+
 			// skip if no value is found
-			if (solvedFormula == null || solvedFormula.isEmpty())
+			if (solvedFormula == null)
 				continue;
-			
-			row.update(formula, fieldHeader);
+
+			row.update(formula.getColumn(), solvedFormula, fieldHeader);
 			
 			// save solved formula
 			solvedFormulas.add(formula);
