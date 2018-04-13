@@ -270,6 +270,13 @@ public class TableRow implements Checkable {
 		values.put(key, value);
 	}
 	
+	public void put(String key, int value) {
+		
+		String v = String.valueOf(value);
+		
+		this.put(key, new TableCell(v, v));
+	}
+	
 	/**
 	 * Put a string into the data, only for raw columns not picklists
 	 * If it is a picklist please provide instead of the label the code

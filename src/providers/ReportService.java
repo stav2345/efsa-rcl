@@ -649,6 +649,42 @@ public class ReportService implements IReportService {
 			m.setCode("ERR803");
 			return m;
 		}
+
+		// failed ack
+		if (ack.hasFault() || ack.isDenied()) {
+			// mark status as failed
+			RCLDatasetStatus failedStatus = RCLDatasetStatus.getFailedVersionOf(
+					report.getRCLStatus());
+
+			if (failedStatus != null) {
+				report.setStatus(failedStatus);
+				
+				// permanently save data
+				daoService.update(report);
+			}
+		}
+		
+		// If the ack has a fault error
+		if (ack.hasFault()) {
+			String message = Messages.get("ack.fault", 
+					PropertiesReader.getSupportEmail());
+			
+			int style = SWT.ICON_ERROR;
+			Message m = Warnings.createFatal(message, style, report);
+			m.setCode("ERR809");
+			return m;
+		}
+		
+		// If access denied
+		if (ack.isDenied()) {
+			String message = Messages.get("ack.denied", 
+					PropertiesReader.getSupportEmail());
+			
+			int style = SWT.ICON_ERROR;
+			Message m = Warnings.createFatal(message, style, report);
+			m.setCode("ERR810");
+			return m;
+		}
 		
 		// if processing
 		if (!ack.isReady()) {

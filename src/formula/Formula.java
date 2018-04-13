@@ -93,7 +93,7 @@ public class Formula {
 			return "";
 		
 		String value = formula;
-		
+
 		// solve special characters
 		value = solveKeywords(value);
 		value = solveRowKeywords(value);
@@ -124,8 +124,8 @@ public class Formula {
 	}
 	
 	private void print(String value, String header) {
-		//if (column.equals("contextId") && fieldHeader.equals("labelFormula"))
-		//	LOGGER.debug("Solving formula=" + value + " Solving formulas=" + header);
+		if (column.equals("contextId") && fieldHeader.equals("labelFormula"))
+			LOGGER.info("Solving formula=" + value + " Solving formulas=" + header);
 		
 		//if ((column.equals("tseIndexCase")) && fieldHeader.equals("codeFormula"))
 		//	System.out.println("column " + column + " " + header + " => " + value);
@@ -146,30 +146,27 @@ public class Formula {
 		
 		String command = value;
 		
-		// and/or before the if!!
-		FormulaList list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.AND);
-		command = replaceFormulasWithSolution(list, command, false);
+		String[] functionsOrder = new String[] {
+				FunctionFormula.AND,
+				FunctionFormula.OR,
+				FunctionFormula.SUM,
+				FunctionFormula.ZERO_PADDING,
+				FunctionFormula.END_TRIM,
+				FunctionFormula.IF,
+				FunctionFormula.IF_NOT_NULL,
+				FunctionFormula.HASH
+		};
 		
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.OR);
-		command = replaceFormulasWithSolution(list, command, false);
+		for (String function: functionsOrder) {
+			
+			FormulaList list = FormulaFinder.findFunctionFormulas(command, function);
+			
+			if (!list.isEmpty()) {
+				command = replaceFormulasWithSolution(list, command, false);
+				print(command, function);
+			}
+		}
 		
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.SUM);
-		command = replaceFormulasWithSolution(list, command, false);
-		
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.ZERO_PADDING);
-		command = replaceFormulasWithSolution(list, command, false);
-		
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.END_TRIM);
-		command = replaceFormulasWithSolution(list, command, false);
-		
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF);
-		command = replaceFormulasWithSolution(list, command, false);
-
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.IF_NOT_NULL);
-		command = replaceFormulasWithSolution(list, command, false);
-		
-		list = FormulaFinder.findFunctionFormulas(command, FunctionFormula.HASH);
-		command = replaceFormulasWithSolution(list, command, false);
 		return command;
 	}
 	

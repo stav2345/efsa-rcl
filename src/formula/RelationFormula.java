@@ -1,5 +1,8 @@
 package formula;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import app_config.AppPaths;
 import providers.ITableDaoService;
 import table_relations.Relation;
@@ -13,6 +16,8 @@ import table_skeleton.TableRow;
  */
 public class RelationFormula implements IFormula {
 
+	private static final Logger LOGGER = LogManager.getLogger(RelationFormula.class);
+	
 	private String formula;
 	private String parentTable;
 	private String parentColumnId;
@@ -91,6 +96,7 @@ public class RelationFormula implements IFormula {
 		TableCell colVal = row.get(r.getForeignKey());
 
 		if (colVal == null) {
+			LOGGER.warn("No value was found for relation " + r + " for formula " + formula + " in " + row);
 			return "";
 			//throw new FormulaException("Formula: " + formula + ": No parent data found for " + r + " in the row " + row);
 		}

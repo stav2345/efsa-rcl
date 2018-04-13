@@ -127,7 +127,7 @@ public class Relation {
 		// if we are not requiring the same parentId
 		// update cache
 		if (lastUsedId == null || parentId != lastUsedId) {
-			
+
 			// get the first (and unique) value related to this
 			// relation from the parent data
 			parentValueCache.put(parent, daoService.getById(getParentSchema(), parentId));

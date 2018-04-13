@@ -86,7 +86,7 @@ public class FormulaSolver {
 			// skip if no value is found
 			if (solvedFormula == null)
 				continue;
-
+			
 			row.update(formula.getColumn(), solvedFormula, fieldHeader);
 			
 			// save solved formula
