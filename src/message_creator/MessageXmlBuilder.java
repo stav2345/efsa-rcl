@@ -9,8 +9,8 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

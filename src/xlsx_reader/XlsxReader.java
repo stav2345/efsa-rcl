@@ -81,6 +81,7 @@ public abstract class XlsxReader implements Closeable {
 	 * Read the excel workbook
 	 * @throws IOException
 	 */
+	@SuppressWarnings("deprecation")
 	public void read(String sheetName) throws IOException {
 
 		Sheet firstSheet = workbook.getSheet(sheetName);

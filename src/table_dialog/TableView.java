@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -156,17 +156,16 @@ public class TableView {
 
 		// set width according to type and label
 		columnViewer.getColumn().setWidth(getColumnWidth(col));
-
+		
 		// set text
 		if (col.getLabel() != null) {
 
 			String label = col.getLabel();
 
 			// if the mandatory depends on the row (and it is not a formula)
-			if (col.isConditionallyMandatory() && !col.isComposite())
+			//if (col.isConditionallyMandatory() && !col.isComposite()) {
+			if (col.isMandatory() && !col.isComposite()) 
 				label = label + Messages.get("conditionally.mandatory.column.marker");
-			else if (!col.isMandatory() && !col.isComposite())  // if optional
-				label = label + Messages.get("optional.column.marker");
 
 			columnViewer.getColumn().setText(label);
 		}

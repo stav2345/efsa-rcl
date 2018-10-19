@@ -9,8 +9,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import table_database.Database;
 
@@ -23,6 +23,8 @@ public class DatasetComparisonDao {
 	 * @param comp
 	 */
 	public void add(DatasetComparison comp) {
+		
+		System.out.println(comp.getRowId()+", "+comp.getVersion()+", "+comp.getXmlRecord()+", "+comp.getAmType()+", "+comp.getIsNullified());
 		
 		String query = "insert into APP.DATASET_COMPARISON (ROW_ID, VERSION, XML_RECORD, AM_TYPE, IS_NULLIFIED) values (?,?,?,?,?)";
 
@@ -48,8 +50,8 @@ public class DatasetComparisonDao {
 		}
 		catch (SQLException e) {
 			
-			//e.printStackTrace();
-			//LOGGER.error("Cannot add a new dataset comparison=" + comp, e);
+			e.printStackTrace();
+			LOGGER.error("Cannot add a new dataset comparison=" + comp, e);
 		}
 	}
 	

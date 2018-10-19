@@ -14,8 +14,8 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import dataset.Dataset;
 import table_skeleton.TableVersion;
@@ -231,9 +231,10 @@ public class DatasetComparisonParser implements AutoCloseable {
 			input.close();
 	}
 	
-	/*public static void main(String[] args) throws IOException, XMLStreamException {
+	/*
+	public static void main(String[] args) throws IOException, XMLStreamException {
 		
-		String filename = "C:\\Users\\avonva\\Desktop\\DatasetExport_11104_2017-11-13 09-57-36.xml";
+		String filename = "C:\\Users\\shahaal\\Desktop\\DatasetExport.xml";
 		File file = new File(filename);
 		
 		DatasetComparisonParser parser = new DatasetComparisonParser(file, "senderDatasetId", "resId");
@@ -241,7 +242,8 @@ public class DatasetComparisonParser implements AutoCloseable {
 		DatasetComparison comp;
 		while ((comp = parser.next()) != null) {
 			//parser.next();
-			System.out.println(comp.getIsNullified());
+			System.out.println(comp.toString());
+			System.out.println(comp.getIsNullified();
 		}
 		
 		parser.close();

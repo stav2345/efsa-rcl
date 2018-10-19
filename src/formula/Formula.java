@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import providers.ITableDaoService;
 import table_skeleton.TableColumn;
@@ -45,6 +45,7 @@ public class Formula {
 		this.row = row;
 		this.column = column;
 		this.fieldHeader = fieldHeader;
+		System.out.println(row+", "+column+", "+fieldHeader);
 		this.formula = column.getFieldByHeader(fieldHeader);
 		
 		this.daoService = daoService;

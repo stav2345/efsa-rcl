@@ -1,0 +1,16 @@
+/i18n_messages/
+/mocks/
+/providers/
+/report/
+/report_validator/
+/table_database/
+/table_dialog/
+/table_importer/
+/table_list/
+/table_relations/
+/table_skeleton/
+/test_case/
+/user/
+/xlsx_reader/
+/xml_catalog_reader/
+/amend_manager/

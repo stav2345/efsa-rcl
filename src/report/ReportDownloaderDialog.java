@@ -69,7 +69,7 @@ public abstract class ReportDownloaderDialog {
 				filteredOutput.add(dc);
 			}
 		}
-		
+
 		return filteredOutput;
 	}
 	

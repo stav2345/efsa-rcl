@@ -6,8 +6,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import table_relations.Relation;
 import table_relations.RelationList;
