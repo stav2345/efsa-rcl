@@ -269,7 +269,6 @@ public class TableColumn implements Comparable<TableColumn> {
 	private String solveFormula(TableRow row, String headerName) throws FormulaException {
 		
 		FormulaSolver solver = new FormulaSolver(row);
-		
 		Formula formula = solver.solve(this, headerName);
 
 		// check the solved formula

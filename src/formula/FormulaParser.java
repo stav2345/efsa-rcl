@@ -9,7 +9,7 @@ import xlsx_reader.TableHeaders.XlsxHeader;
 
 /**
  * Parse the formulas of the row and return them
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class FormulaParser {
@@ -30,7 +30,7 @@ public class FormulaParser {
 	 * @return
 	 */
 	public Formula parse(TableColumn column, String columnField) {
-
+		System.out.println("shahaal called from parse( , )");
 		Formula formula = new Formula(row, column, columnField, daoService);
 		return formula;
 	}
@@ -46,10 +46,10 @@ public class FormulaParser {
 
 		ArrayList<Formula> formulas = new ArrayList<>();
 
+		System.out.println("shahaal called from parse( )");
 		// for each column of the schema create the formula
-		for (TableColumn column : row.getSchema()) {
+		for (TableColumn column : row.getSchema())
 			formulas.add(new Formula(row, column, columnField, daoService));
-		}
 		
 		return formulas;
 	}

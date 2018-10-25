@@ -50,7 +50,7 @@ public class TableSchemaList extends ArrayList<TableSchema> {
 
 				// get parsed schema
 				TableSchema schema = parser.getSchema();
-
+				
 				// add to cache
 				list.add(schema);
 			}

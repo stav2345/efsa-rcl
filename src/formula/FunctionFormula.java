@@ -16,7 +16,7 @@ import table_skeleton.TableRow;
 /**
  * Manage and solve all the function that uses the syntax:
  * functionName(op1,op2,op3,...)
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class FunctionFormula implements IFormula {

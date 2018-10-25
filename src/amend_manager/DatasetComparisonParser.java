@@ -22,7 +22,7 @@ import table_skeleton.TableVersion;
 
 /**
  * Parser for the .xml dataset and return it into the {@link Dataset} object
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class DatasetComparisonParser implements AutoCloseable {
@@ -95,23 +95,23 @@ public class DatasetComparisonParser implements AutoCloseable {
 			// actions based on the node type
 			switch(event.getEventType()) {
 
-			// if starting xml node
-			case XMLStreamConstants.START_ELEMENT:
-				start(event);
-				break;
-
-			// if looking the xml contents
-			case XMLStreamConstants.CHARACTERS:
-				parseCharacters(event);
-				break;
-
-			// if ending xml node
-			case  XMLStreamConstants.END_ELEMENT:
-				end(event);
-				break;
+				// if starting xml node
+				case XMLStreamConstants.START_ELEMENT:
+					start(event);
+					break;
+	
+				// if looking the xml contents
+				case XMLStreamConstants.CHARACTERS:
+					parseCharacters(event);
+					break;
+	
+				// if ending xml node
+				case  XMLStreamConstants.END_ELEMENT:
+					end(event);
+					break;
 			}
 		}
-		
+
 		return this.datasetComp;
 	}
 	

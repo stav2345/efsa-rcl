@@ -16,7 +16,7 @@ import table_skeleton.TableRow;
  * Class which models a generic formula which can be inserted in the
  * .xlsx configuration files for creating ReportTable.
  * The formula can also be solved by invoking {@link #solve()}
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class Formula {
@@ -34,6 +34,7 @@ public class Formula {
 	
 	private ITableDaoService daoService;
 	
+	
 	//private long debugTime;
 	
 	public Formula(TableRow row, TableColumn column, 
@@ -45,13 +46,14 @@ public class Formula {
 		this.row = row;
 		this.column = column;
 		this.fieldHeader = fieldHeader;
-		System.out.println(row+", "+column+", "+fieldHeader);
 		this.formula = column.getFieldByHeader(fieldHeader);
 		
 		this.daoService = daoService;
 		
 		this.dependenciesCount = 0;
+
 		evalDependencies();
+
 	}
 	
 	/**
@@ -94,10 +96,12 @@ public class Formula {
 			return "";
 		
 		String value = formula;
-
+		
 		// solve special characters
 		value = solveKeywords(value);
 		value = solveRowKeywords(value);
+		
+		//System.out.println("shahaal "+value);
 		
 		print(value, "KEYWORDS");
 
@@ -316,6 +320,9 @@ public class Formula {
 		// Check columns dependencies
 		for (TableColumn col : row.getSchema()) {
 			
+			System.out.println("shahaal ---- "+col.getId()+" - "+row.getSchema().getSheetName());
+			break;
+			/*
 			// evaluate the dependency just for different columns
 			// this avoid recursive definitions
 			if (!col.equals(column)) {
@@ -329,7 +336,10 @@ public class Formula {
 				// also evaluate the column to check if there are nested
 				// dependencies
 				if (numOfDep > 0) {
-					
+
+					//if(column.getFieldByHeader(fieldHeader).contains("IF((%type.code==RGT),,AT06A)"))
+					//	System.out.println("shahaal field header "+column.getFieldByHeader(fieldHeader));
+
 					// evaluate column dependencies recursively
 					Formula child = new Formula(row, col, fieldHeader, daoService);
 					
@@ -337,7 +347,7 @@ public class Formula {
 					// number of dependencies
 					dependencies = dependencies + child.getDependenciesCount();
 				}
-			}
+			}*/
 		}
 		
 		this.dependenciesCount = dependencies;

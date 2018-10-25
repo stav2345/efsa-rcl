@@ -186,7 +186,7 @@ public class RowCreatorViewer {
 	/**
 	 * Listener which is called when the selection changes or
 	 * when the button is pressed.
-	 * @author avonva
+	 * @author avonva && shahaal
 	 *
 	 */
 	public interface CatalogChangedListener {

@@ -2,7 +2,6 @@ package table_skeleton;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -27,7 +26,7 @@ import xml_catalog_reader.XmlLoader;
 /**
  * Generic element of a {@link Report}.
  * 
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class TableRow implements Checkable {
@@ -419,9 +418,11 @@ public class TableRow implements Checkable {
 	 * @param fieldHeader
 	 */
 	public void update(TableColumn col, String value, String fieldHeader) {
-
-		// skip editable columns
-		if (col.isEditable(this))
+		
+		// old: skip editable columns 
+		// shahaal new: skip editable and not conditionally mandatory columns
+		// because otherwise empty cell when importing old reports in the new version
+		if (col.isEditable(this)&&col.isMandatory())
 			return;
 
 		XlsxHeader h = XlsxHeader.fromString(fieldHeader);
@@ -461,6 +462,8 @@ public class TableRow implements Checkable {
 	 */
 	public void updateFormulas() {
 
+
+		System.out.println("shahaal called from updateFormulas()");
 		// solve the formula for default code and default value
 		FormulaSolver solver = new FormulaSolver(this);
 
@@ -473,12 +476,13 @@ public class TableRow implements Checkable {
 			LOGGER.error("Cannot solve row formulas", e);
 		}
 
+		/*
 		try {
 			solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
 		} catch (FormulaException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot solve row formulas", e);
-		}
+		}*/
 	}
 
 	/**
@@ -528,7 +532,7 @@ public class TableRow implements Checkable {
 
 		RowStatus status = RowStatus.OK;
 
-		// AlbyDev da rivedere!
+		// shahaal da rivedere!
 		if (!arePureMandatoryFilled())
 			status = RowStatus.MANDATORY_MISSING;
 		else if (!areMandatoryFilled())

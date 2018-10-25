@@ -1,6 +1,7 @@
 package xlsx_reader;
 
 import java.io.Closeable;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,6 +17,14 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import app_config.BooleanValue;
+
+/**
+ * Read the configuration of tables
+ * from the .xlsx. Output all the columns in the {@code schema}
+ * variable, accessible by {@link #getSchema()}.
+ * @author avonva && shahaal
+ *
+ */
 
 public abstract class XlsxReader implements Closeable {
 
@@ -81,7 +90,6 @@ public abstract class XlsxReader implements Closeable {
 	 * Read the excel workbook
 	 * @throws IOException
 	 */
-	@SuppressWarnings("deprecation")
 	public void read(String sheetName) throws IOException {
 
 		Sheet firstSheet = workbook.getSheet(sheetName);
@@ -93,7 +101,7 @@ public abstract class XlsxReader implements Closeable {
 			
 			if (row.getRowNum() != 0)
 				startRow(row);
-			
+
 			Iterator<Cell> cellIterator = row.cellIterator();
 			
 			while (cellIterator.hasNext()) {
@@ -110,14 +118,14 @@ public abstract class XlsxReader implements Closeable {
 				
 				String value = null;
 
-				switch (cell.getCellType()) {
-				case Cell.CELL_TYPE_STRING:
+				switch (cell.getCellTypeEnum()) {
+				case STRING:
 					value = cell.getStringCellValue();
 					break;
-				case Cell.CELL_TYPE_BOOLEAN:
+				case BOOLEAN:
 					value = String.valueOf(cell.getBooleanCellValue());
 					break;
-				case Cell.CELL_TYPE_NUMERIC:
+				case NUMERIC:
 					
 					double number = cell.getNumericCellValue();
 					
@@ -130,8 +138,11 @@ public abstract class XlsxReader implements Closeable {
 					}
 					
 					break;
+					
+				default:
+					break;
 				}
-				
+
 				processCell(headers.get(cell.getColumnIndex()), value);
 			}
 			

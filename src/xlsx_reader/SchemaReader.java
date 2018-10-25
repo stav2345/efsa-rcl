@@ -11,7 +11,7 @@ import xlsx_reader.TableHeaders.XlsxHeader;
  * Read the configuration of tables
  * from the .xlsx. Output all the columns in the {@code schema}
  * variable, accessible by {@link #getSchema()}.
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class SchemaReader extends XlsxReader {

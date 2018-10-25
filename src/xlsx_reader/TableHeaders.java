@@ -24,6 +24,7 @@ public class TableHeaders {
 		LABEL_FORMULA("labelFormula"),
 		PUT_IN_OUTPUT("putInOutput"),
 		ORDER("order"),
+		
 		NATURAL_KEY("naturalKey");
 		
 		private String headerName;

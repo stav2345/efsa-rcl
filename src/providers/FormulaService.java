@@ -69,7 +69,6 @@ public class FormulaService implements IFormulaService {
 	public String solve(TableRow row, TableColumn column, XlsxHeader columnProperty) throws FormulaException {
 
 		FormulaSolver solver = new FormulaSolver(row, daoService);
-		
 		Formula formula = solver.solve(column, columnProperty.getHeaderName());
 
 		return formula.getSolvedFormula();
@@ -77,7 +76,8 @@ public class FormulaService implements IFormulaService {
 	
 	@Override
 	public void updateFormulas(TableRow row) {
-		
+
+		System.out.println("shahaal called from updateFormulas( tb )");
 		// solve the formula for default code and default value
 		FormulaSolver solver = new FormulaSolver(row, daoService);
 		

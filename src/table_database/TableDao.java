@@ -26,7 +26,7 @@ import xml_catalog_reader.XmlLoader;
  * that follow a {@link TableSchema}. These tables are automatically
  * generated starting from the excel file, therefore the dao
  * adapts the query using their structure.
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class TableDao implements ITableDao {
@@ -147,14 +147,30 @@ public class TableDao implements ITableDao {
 			TableColumn col = row.getSchema().get(i);
 			
 			TableCell colValue = row.get(col.getId());
-			
+
+			//shahaal here I can flag the columns which are null
+			/*
 			if (colValue == null) {
+				
+				if(col.getId()==CustomStrings.AN_METH_TYPE_COL) {
+					//set its default value
+					colValue=
+				}
+				
 				LOGGER.info("No value found for " + col.getId() 
 					+ " in table " + row.getSchema().getSheetName() + ". Putting an empty value.");
 				
 				colValue = new TableCell();
+			}*/
+			
+			if (colValue == null) {
+				
+				LOGGER.info("No value found for " + col.getId() 
+				+ " in table " + row.getSchema().getSheetName() + ". Putting an empty value.");
+			
+				colValue = new TableCell();
 			}
-
+			
 			// save always the code
 			String value = colValue.getCode();
 			

@@ -75,10 +75,10 @@ public class ColumnFormula implements IFormula {
 		
 		switch (fieldType) {
 		case "code":
-			solvedFormula = emptyValue ? colSchema.getCodeFormula() : colValue.getCode();
+			solvedFormula = emptyValue ? colSchema.getCodeFormula() : colValue.getCode();			
 			break;
 		case "label":
-			solvedFormula = emptyValue ? colSchema.getLabelFormula() : colValue.getLabel();
+			solvedFormula = emptyValue ? colSchema.getLabelFormula() : colValue.getLabel();			
 			break;
 		default:
 			throw new FormulaException("Field type " + fieldType + " not recognized.");

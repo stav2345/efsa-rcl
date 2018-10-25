@@ -1,6 +1,5 @@
 /i18n_messages/
 /mocks/
-/providers/
 /report/
 /report_validator/
 /table_database/
@@ -13,4 +12,6 @@
 /user/
 /xlsx_reader/
 /xml_catalog_reader/
+/formula/
+/providers/
 /amend_manager/

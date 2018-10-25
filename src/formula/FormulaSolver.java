@@ -16,7 +16,7 @@ import xlsx_reader.TableSchema;
  * Class which solves the formulas included in the columns schema
  * default values. In particular, the formulas are solved such that the dependencies
  * across different columns are managed.
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class FormulaSolver {
@@ -45,9 +45,9 @@ public class FormulaSolver {
 	 */
 	public Formula solve(TableColumn column, String fieldHeader) throws FormulaException {
 
+		System.out.println("shahaal called from solve( , )");
 		// get all the formulas
 		FormulaParser parser = new FormulaParser(row, daoService);
-		
 		Formula formula = parser.parse(column, fieldHeader);
 		formula.solve();
 
@@ -65,6 +65,8 @@ public class FormulaSolver {
 	 * @throws FormulaException 
 	 */
 	public ArrayList<Formula> solveAll(String fieldHeader) throws FormulaException {
+
+		System.out.println("shahaal called from solveAll( )");
 		
 		ArrayList<Formula> solvedFormulas = new ArrayList<>();
 		
@@ -80,13 +82,14 @@ public class FormulaSolver {
 		// formulas with 0 dependencies
 		for (Formula formula : formulas) {
 
+			//System.out.println("shahaal "+fieldHeader+", "+formula.getFormula()+", "+formula.getColumn().getId());
 			// solve the formula and get the resolved text
 			String solvedFormula = formula.solve();
 
 			// skip if no value is found
-			if (solvedFormula == null)
+			if (solvedFormula == null || solvedFormula.isEmpty())
 				continue;
-			
+
 			row.update(formula.getColumn(), solvedFormula, fieldHeader);
 			
 			// save solved formula
