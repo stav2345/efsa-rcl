@@ -33,7 +33,8 @@ public class Formula {
 	private int dependenciesCount;
 	
 	private ITableDaoService daoService;
-	
+
+	//private int colCounter=0;
 	
 	//private long debugTime;
 	
@@ -317,21 +318,25 @@ public class Formula {
 		
 		int dependencies = 0;
 		
+		//System.out.print("\nshahaal ");
+		
 		// Check columns dependencies
 		for (TableColumn col : row.getSchema()) {
 			
-			System.out.println("shahaal ---- "+col.getId()+" - "+row.getSchema().getSheetName());
-			break;
-			/*
+			//System.out.print(colCounter+" - ");
+			
 			// evaluate the dependency just for different columns
 			// this avoid recursive definitions
 			if (!col.equals(column)) {
-				
+
 				int numOfDep = isDependentBy(col, formula);
 				
 				// add number of occurrences as dependencies
 				dependencies = dependencies + numOfDep;
-
+				
+				//shahaal increment the colCounter
+				//colCounter++;
+				
 				// if we have dependencies (i.e. we found a %column...)
 				// also evaluate the column to check if there are nested
 				// dependencies
@@ -347,13 +352,14 @@ public class Formula {
 					// number of dependencies
 					dependencies = dependencies + child.getDependenciesCount();
 				}
-			}*/
+			}
 		}
-		
+		//System.out.println();
 		this.dependenciesCount = dependencies;
 		
 		// save cache
 		dependenciesCache.put(cell, dependencies);
+		
 	}
 	
 	private class Cell {

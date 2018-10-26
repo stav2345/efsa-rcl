@@ -41,6 +41,7 @@ public class FormulaService implements IFormulaService {
 		TableCell sel = new TableCell();
 		FormulaSolver solver = new FormulaSolver(row, daoService);
 
+		//shahaal: default_value removed, use default code instead!
 		try {
 			Formula label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
 			sel.setLabel(label.getSolvedFormula());
@@ -77,7 +78,6 @@ public class FormulaService implements IFormulaService {
 	@Override
 	public void updateFormulas(TableRow row) {
 
-		System.out.println("shahaal called from updateFormulas( tb )");
 		// solve the formula for default code and default value
 		FormulaSolver solver = new FormulaSolver(row, daoService);
 		
@@ -90,6 +90,7 @@ public class FormulaService implements IFormulaService {
 			LOGGER.error("Cannot solve row formulas", e);
 		}
 		
+		//shahaal: removed solve formula by label, code should be used instead!
 		try {
 			solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
 		} catch (FormulaException e) {

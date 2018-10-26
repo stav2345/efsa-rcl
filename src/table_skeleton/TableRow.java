@@ -375,13 +375,14 @@ public class TableRow implements Checkable {
 		TableCell sel = new TableCell();
 		FormulaSolver solver = new FormulaSolver(this);
 
+		/*shahaal: default_value removed, use default code instead!
 		try {
 			Formula label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
 			sel.setLabel(label.getSolvedFormula());
 		} catch (FormulaException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot solve formula for column=" + colId, e);
-		}
+		}*/
 
 		try {
 			Formula code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
@@ -462,8 +463,8 @@ public class TableRow implements Checkable {
 	 */
 	public void updateFormulas() {
 
-
-		System.out.println("shahaal called from updateFormulas()");
+		//System.out.println("shahaal called from updateFormulas()");
+		
 		// solve the formula for default code and default value
 		FormulaSolver solver = new FormulaSolver(this);
 
@@ -476,13 +477,13 @@ public class TableRow implements Checkable {
 			LOGGER.error("Cannot solve row formulas", e);
 		}
 
-		/*
+		//shahaal: removed solev formula by label, code should be used instead!
 		try {
 			solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
 		} catch (FormulaException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot solve row formulas", e);
-		}*/
+		}
 	}
 
 	/**

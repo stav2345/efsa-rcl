@@ -20,7 +20,7 @@ import xml_catalog_reader.XmlLoader;
 
 /**
  * Column class which models the property of a single column of a {@link TableView}
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class TableColumn implements Comparable<TableColumn> {
@@ -229,7 +229,9 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public boolean isEditable(TableSchema schema, Collection<TableRow> parents) {
-
+		
+		//System.out.println("shahaal called from isEditable( , )");
+		
 		// no parents => no formula to be solved
 		if (parents.isEmpty())
 			return BooleanValue.isTrue(editable);
@@ -248,6 +250,9 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public boolean isEditable(TableRow row) {
+		
+		//System.out.println("shahaal called from isEditable( )");
+		
 		return isTrue(row, XlsxHeader.EDITABLE.getHeaderName());
 	}
 	
@@ -268,6 +273,8 @@ public class TableColumn implements Comparable<TableColumn> {
 	 */
 	private String solveFormula(TableRow row, String headerName) throws FormulaException {
 		
+		//System.out.println("shahaal called from solveFormula( , )");
+		
 		FormulaSolver solver = new FormulaSolver(row);
 		Formula formula = solver.solve(this, headerName);
 
@@ -282,6 +289,8 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	private boolean isTrue(TableRow row, String headerName) {
+		
+		//System.out.println("shahaal called from isTrue( , )");
 		
 		String solvedFormula;
 		try {
@@ -321,6 +330,8 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public String getPicklistFilter(TableRow row) {
+		
+		//System.out.println("shahaal called from getPicklistFilter( )");
 		
 		try {
 			return solveFormula(row, XlsxHeader.PICKLIST_FILTER.getHeaderName());
@@ -403,6 +414,9 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public boolean isVisible(TableRow row) {
+		
+		//System.out.println("shahaal called from isVisible( )");
+		
 		return isTrue(row, XlsxHeader.VISIBLE.getHeaderName());
 	}
 	
@@ -415,6 +429,8 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public boolean isVisible(TableSchema schema, Collection<TableRow> parents) {
+		
+		//System.out.println("shahaal called from isVisible( , )");
 		
 		// no parents => no formula to be solved
 		if (parents.isEmpty())
@@ -434,6 +450,7 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public boolean isMandatory(TableRow row) {
+		//System.out.println("shahaal called from isMandatory( ) ");
 		
 		// if no data are provided, just check simple field
 		if (row == null)
@@ -483,6 +500,8 @@ public class TableColumn implements Comparable<TableColumn> {
 	 * @return
 	 */
 	public boolean isPutInOutput(TableRow row) {
+		//System.out.println("shahaal called from isPutInOut( )");
+		
 		return xmlTag != null && !xmlTag.replaceAll(" ", "").isEmpty() 
 				&& isTrue(row, XlsxHeader.PUT_IN_OUTPUT.getHeaderName());
 	}

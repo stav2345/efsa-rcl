@@ -45,7 +45,6 @@ public class FormulaSolver {
 	 */
 	public Formula solve(TableColumn column, String fieldHeader) throws FormulaException {
 
-		System.out.println("shahaal called from solve( , )");
 		// get all the formulas
 		FormulaParser parser = new FormulaParser(row, daoService);
 		Formula formula = parser.parse(column, fieldHeader);
@@ -65,8 +64,6 @@ public class FormulaSolver {
 	 * @throws FormulaException 
 	 */
 	public ArrayList<Formula> solveAll(String fieldHeader) throws FormulaException {
-
-		System.out.println("shahaal called from solveAll( )");
 		
 		ArrayList<Formula> solvedFormulas = new ArrayList<>();
 		
