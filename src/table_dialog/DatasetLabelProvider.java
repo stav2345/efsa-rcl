@@ -10,7 +10,7 @@ import table_skeleton.TableVersion;
 
 /**
  * Label provider of the {@link Dataset}
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class DatasetLabelProvider extends ColumnLabelProvider {

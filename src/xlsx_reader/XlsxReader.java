@@ -118,7 +118,7 @@ public abstract class XlsxReader implements Closeable {
 				
 				String value = null;
 
-				switch (cell.getCellTypeEnum()) {
+				switch (cell.getCellType()) {
 				case STRING:
 					value = cell.getStringCellValue();
 					break;

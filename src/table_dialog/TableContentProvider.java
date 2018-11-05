@@ -7,7 +7,7 @@ import table_skeleton.TableRowList;
 
 /**
  * Content provider of the {@link TableView}
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class TableContentProvider implements IStructuredContentProvider {

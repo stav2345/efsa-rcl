@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * Allow selecting an operation type
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class EnumPicker<E extends Enum<E>> {

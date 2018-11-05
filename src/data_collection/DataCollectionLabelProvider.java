@@ -11,7 +11,7 @@ import dataset.Dataset;
 
 /**
  * Label provider of the {@link Dataset}
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class DataCollectionLabelProvider extends ColumnLabelProvider {

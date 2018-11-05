@@ -11,7 +11,7 @@ import table_skeleton.TableRow;
 
 /**
  * Label provider of the {@link TableView}
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class TableLabelProvider extends ColumnLabelProvider {

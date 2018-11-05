@@ -27,7 +27,7 @@ import xml_catalog_reader.XmlLoader;
  * The data are retrieved from the .xml in the data folder.
  * Please specify in {@link #getSelectionListId()} the code of the
  * .xml which contains the list of interest (see {@link CatalogLists})
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class CatalogComboViewer {
