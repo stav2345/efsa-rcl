@@ -164,7 +164,7 @@ public class TableView {
 
 			// if the mandatory depends on the row (and it is not a formula)
 			//if (col.isConditionallyMandatory() && !col.isComposite()) {
-			if (col.isMandatory() && !col.isComposite()) 
+			if (col.isMandatory())//) && !col.isComposite()) 
 				label = label + Messages.get("conditionally.mandatory.column.marker");
 
 			columnViewer.getColumn().setText(label);

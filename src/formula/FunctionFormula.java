@@ -31,12 +31,13 @@ public class FunctionFormula implements IFormula {
 	public static final String HASH = "HASH";
 	public static final String AND = "AND";
 	public static final String OR = "OR";
+	public static final String NEXT = "NEXT";
 	
 	private String formula;
 	private String solvedFormula;
 	private String functionName;
 	private List<String> operands;
-
+	
 	public FunctionFormula(String formula) throws FormulaException {
 		this.formula = formula;
 		this.operands = new ArrayList<>();
@@ -54,14 +55,15 @@ public class FunctionFormula implements IFormula {
 	
 	@Override
 	public void compile() throws FormulaException {
-		
+
 		// split on the first bracket to get the function name
 		String split[] = formula.split("\\(");
-		
+
+		//shahaal: qui ce un problema
 		if (split.length != 2) {
 			throw new FormulaException("Wrong function formula: " + formula);
 		}
-		
+
 		// get the function name
 		this.functionName = split[0];
 
@@ -87,7 +89,7 @@ public class FunctionFormula implements IFormula {
 	public String solve() throws FormulaException {
 		
 		String solvedFormula = null;
-		
+
 		switch(this.functionName.toUpperCase()) {
 		case ZERO_PADDING:
 			solvedFormula = solvePadding();
@@ -112,6 +114,9 @@ public class FunctionFormula implements IFormula {
 			break;
 		case OR:
 			solvedFormula = solveOr();
+			break;
+		case NEXT:
+			solvedFormula = solveNext();
 			break;
 		default:
 			throw new FormulaException("Function not supported: " + formula);
@@ -359,6 +364,23 @@ public class FunctionFormula implements IFormula {
 		String stringComp = result ? BooleanValue.getTrueValue() : BooleanValue.getFalseValue();
 		
 		return stringComp;
+	}
+	
+	/**
+	 * Solve next functions
+	 * @return
+	 * @throws FormulaException
+	 */
+	private String solveNext() throws FormulaException {
+		
+		if (operands.size() != 1) {
+			throw new FormulaException("Wrong number of parameters " + formula 
+					+ ". Expected 1, found " + operands.size());
+		}
+		
+		//prendi il rowId della riga precedente e incrementa di uno
+		//row.toString();
+		return "";
 	}
 	
 	@Override

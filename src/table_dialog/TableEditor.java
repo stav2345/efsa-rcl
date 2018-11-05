@@ -222,6 +222,16 @@ public class TableEditor extends EditingSupport {
 		case PICKLIST:
 			Selection sel = (Selection) value;
 			TableCell newSelection = new TableCell(sel);
+			
+			//shahaal: reset the cwdExtContext column if country is trigger
+			//shahaal: should be more generic!
+			if(column.getId().contains("country")) {
+				//get the cwdExtContext column at index 1 (starting from 0)
+				String cwdContexCol = row.getSchema().get(1).getId();
+				//put in the row in the cwdExtContext the empty cell
+				row.put(cwdContexCol, new TableCell());
+			}
+			
 			row.put(column.getId(), newSelection);
 			break;
 
@@ -239,6 +249,7 @@ public class TableEditor extends EditingSupport {
 	protected void setValue(Object arg0, Object value) {
 		
 		TableRow row = (TableRow) arg0;
+		
 		// avoid refreshing if same value
 		Object oldValue = getValue(arg0);
 		

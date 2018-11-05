@@ -33,8 +33,6 @@ public class Formula {
 	private int dependenciesCount;
 	
 	private ITableDaoService daoService;
-
-	//private int colCounter=0;
 	
 	//private long debugTime;
 	
@@ -102,8 +100,6 @@ public class Formula {
 		value = solveKeywords(value);
 		value = solveRowKeywords(value);
 		
-		//System.out.println("shahaal "+value);
-		
 		print(value, "KEYWORDS");
 
 		// solve columns values if a row was passed
@@ -160,7 +156,8 @@ public class Formula {
 				FunctionFormula.END_TRIM,
 				FunctionFormula.IF,
 				FunctionFormula.IF_NOT_NULL,
-				FunctionFormula.HASH
+				FunctionFormula.HASH,
+				FunctionFormula.NEXT
 		};
 		
 		for (String function: functionsOrder) {

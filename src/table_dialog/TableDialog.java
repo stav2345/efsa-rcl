@@ -182,7 +182,7 @@ public abstract class TableDialog {
 			
 			@Override
 			public void editStarted() {
-				
+
 				if (editorListener != null)
 					editorListener.editStarted();
 				
@@ -192,7 +192,7 @@ public abstract class TableDialog {
 			
 			@Override
 			public void editEnded(TableRow row, TableColumn field, boolean changed) {
-				
+
 				if (editorListener != null)
 					editorListener.editEnded(row, field, changed);
 				

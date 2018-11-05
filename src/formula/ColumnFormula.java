@@ -1,6 +1,7 @@
 package formula;
 
 import table_skeleton.TableColumn;
+
 import table_skeleton.TableCell;
 import table_skeleton.TableRow;
 
@@ -75,7 +76,11 @@ public class ColumnFormula implements IFormula {
 		
 		switch (fieldType) {
 		case "code":
-			solvedFormula = emptyValue ? colSchema.getCodeFormula() : colValue.getCode();			
+			try {
+				solvedFormula = emptyValue ? colSchema.getCodeFormula() : colValue.getCode();
+			}catch (Exception e) {
+				System.err.println(e);
+			}
 			break;
 		case "label":
 			solvedFormula = emptyValue ? colSchema.getLabelFormula() : colValue.getLabel();			

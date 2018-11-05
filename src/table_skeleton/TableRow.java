@@ -375,14 +375,14 @@ public class TableRow implements Checkable {
 		TableCell sel = new TableCell();
 		FormulaSolver solver = new FormulaSolver(this);
 
-		/*shahaal: default_value removed, use default code instead!
+		//shahaal: default_value removed, use default code instead!
 		try {
 			Formula label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
 			sel.setLabel(label.getSolvedFormula());
 		} catch (FormulaException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot solve formula for column=" + colId, e);
-		}*/
+		}
 
 		try {
 			Formula code = solver.solve(col, XlsxHeader.DEFAULT_CODE.getHeaderName());
@@ -421,11 +421,15 @@ public class TableRow implements Checkable {
 	public void update(TableColumn col, String value, String fieldHeader) {
 		
 		// old: skip editable columns 
-		// shahaal new: skip editable and not conditionally mandatory columns
+		// shahaal new: skip editable, empty cells which are mandatory on condMand.
 		// because otherwise empty cell when importing old reports in the new version
-		if (col.isEditable(this)&&col.isMandatory())
+		if (col.isEditable(this)&&(col.isMandatory() || col.isConditionallyMandatory())&&!this.getCode(col.getId()).isEmpty())
 			return;
-
+		
+		//if (col.isEditable(this)&&
+		//		(!col.isMandatory() || !this.getCode(col.getId()).isEmpty()))
+		//	return;
+			
 		XlsxHeader h = XlsxHeader.fromString(fieldHeader);
 
 		if (h == null)

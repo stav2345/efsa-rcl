@@ -79,7 +79,6 @@ public class FormulaSolver {
 		// formulas with 0 dependencies
 		for (Formula formula : formulas) {
 
-			//System.out.println("shahaal "+fieldHeader+", "+formula.getFormula()+", "+formula.getColumn().getId());
 			// solve the formula and get the resolved text
 			String solvedFormula = formula.solve();
 
@@ -87,6 +86,7 @@ public class FormulaSolver {
 			if (solvedFormula == null || solvedFormula.isEmpty())
 				continue;
 
+			//System.out.println("shahaal chiamo update "+formula.getColumn().getId()+", "+solvedFormula+", "+fieldHeader);
 			row.update(formula.getColumn(), solvedFormula, fieldHeader);
 			
 			// save solved formula

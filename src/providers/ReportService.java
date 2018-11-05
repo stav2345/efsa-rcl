@@ -98,6 +98,7 @@ public class ReportService implements IReportService {
 	 * @throws FormulaException 
 	 */
 	public Collection<TableColumn> getMandatoryFieldNotFilled(TableRow row) throws FormulaException {
+		//System.out.println("shahaal getmandatoryfieldnotfilled");
 		
 		Collection<TableColumn> notFilled = new ArrayList<>();
 		
