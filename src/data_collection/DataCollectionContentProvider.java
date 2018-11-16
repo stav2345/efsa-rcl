@@ -3,8 +3,6 @@ package data_collection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import data_collection.DcfDataCollectionsList;
-
 public class DataCollectionContentProvider implements IStructuredContentProvider {
 
 	@Override

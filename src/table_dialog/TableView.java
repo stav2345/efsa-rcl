@@ -131,7 +131,7 @@ public class TableView {
 						+ " is set as visible but it has not a label set.");
 				col.setLabel("MISSING_" + col.getId());
 			}
-
+		
 			// create the column
 			TableViewerColumn columnViewer = createColumn(col);
 
@@ -165,8 +165,12 @@ public class TableView {
 			// if the mandatory depends on the row (and it is not a formula)
 			//if (col.isConditionallyMandatory() && !col.isComposite()) {
 			if (col.isMandatory())//) && !col.isComposite()) 
-				label = label + Messages.get("conditionally.mandatory.column.marker");
+				label = label + Messages.get("mandatory.column.marker");
 
+			//shahaal: if conditional mandatory then put the tilde aside the label
+			if (col.isConditionallyMandatory()) 
+				label = label + Messages.get("conditionally.mandatory.column.marker");
+			
 			columnViewer.getColumn().setText(label);
 		}
 

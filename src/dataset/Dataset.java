@@ -9,9 +9,9 @@ import javax.xml.stream.XMLStreamException;
 
 import config.Config;
 import duplicates_detector.Checkable;
+import soap.DetailedSOAPException;
 import soap.GetDataset;
 import soap.GetDatasetsList;
-import soap.DetailedSOAPException;
 import table_skeleton.TableRow;
 import table_skeleton.TableVersion;
 import user.User;

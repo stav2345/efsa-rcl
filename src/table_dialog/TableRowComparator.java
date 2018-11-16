@@ -2,8 +2,8 @@ package table_dialog;
 
 import java.util.Comparator;
 
-import table_skeleton.TableColumn;
 import table_skeleton.TableCell;
+import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 
 public class TableRowComparator implements Comparator<TableRow> {

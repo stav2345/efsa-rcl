@@ -5,8 +5,8 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
 import i18n_messages.Messages;
-import table_skeleton.TableColumn;
 import table_skeleton.TableCell;
+import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 
 /**

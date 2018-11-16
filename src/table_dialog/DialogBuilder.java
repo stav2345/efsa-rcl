@@ -39,7 +39,7 @@ public class DialogBuilder {
 
 	/**
 	 * How a row should be created.
-	 * @author avonva
+	 * @author avonva && shahaal
 	 *
 	 */
 	public enum RowCreationMode {
@@ -201,6 +201,7 @@ public class DialogBuilder {
 		Label label = (Label) this.getWidget(code);
 		label.setText(text);
 		label.setVisible(true);
+		
 		((GridData) label.getLayoutData()).exclude = false;
 		label.getParent().layout();
 	}

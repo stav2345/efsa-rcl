@@ -31,6 +31,7 @@ public abstract class ReportValidator {
 	 * @throws IOException if cannot save the file
 	 */
 	public File show(Collection<ReportError> errors) throws IOException {
+
 		File html = save(errors);
 		HtmlViewer viewer = new HtmlViewer();
 		viewer.open(html);

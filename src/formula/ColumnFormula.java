@@ -1,8 +1,7 @@
 package formula;
 
-import table_skeleton.TableColumn;
-
 import table_skeleton.TableCell;
+import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 
 /**

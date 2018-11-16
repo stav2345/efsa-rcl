@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" path="config"/>
 	<classpathentry kind="src" path="log4j-config"/>
 	<classpathentry kind="src" path="tests"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DCF webservice framework"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/HttpManager"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Java exception manager"/>
@@ -22,9 +17,13 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/email-generator"/>
-	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.jface_3.14.100.v20180828-0836.jar"/>
 	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.ui.workbench_3.112.0.v20180906-1121.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.swt.win32.win32.x86_64_3.108.0.v20180904-1901.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.jface_3.14.100.v20180828-0836.jar"/>
+	<classpathentry kind="lib" path="D:/PortableApps/eclipse/libs/swt_x32_4.9.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

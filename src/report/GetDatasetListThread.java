@@ -6,8 +6,8 @@ import org.apache.logging.log4j.Logger;
 import config.Config;
 import dataset.DatasetList;
 import dataset.IDataset;
-import soap.GetDatasetsList;
 import soap.DetailedSOAPException;
+import soap.GetDatasetsList;
 import user.IDcfUser;
 
 public class GetDatasetListThread extends Thread {

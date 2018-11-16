@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamException;
 import org.xml.sax.SAXException;
 
 import ack.DcfAck;
+import ack.DcfAckDetailedResId;
 import amend_manager.AmendException;
 import dataset.Dataset;
 import dataset.DatasetList;
@@ -50,6 +51,15 @@ public interface IReportService {
 	 * @throws DetailedSOAPException
 	 */
 	public DcfAck getAckOf(String messageId) throws DetailedSOAPException;
+	
+	/**
+	 * shahaal:
+	 * Get the detailed res id of the report's ack using its message id
+	 * @param detailedResId
+	 * @return
+	 * @throws DetailedSOAPException
+	 */
+	public DcfAckDetailedResId getAckDetailedResIdOf(String detailedResId) throws DetailedSOAPException;
 	
 	/**
 	 * Get all the dataset related to the report using its
@@ -216,4 +226,5 @@ public interface IReportService {
 	 * @return
 	 */
 	public DisplayAckResult displayAck(EFSAReport report);
+
 }
