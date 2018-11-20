@@ -15,6 +15,8 @@ public class AppPaths {
 	public static final String TABLES_SCHEMA_FORMAT = ".xlsx";
 	public static final String TABLES_SCHEMA_FILE = CONFIG_FOLDER + TABLES_SCHEMA_FILENAME + TABLES_SCHEMA_FORMAT;
 	public static final String APP_CONFIG_FILE = CONFIG_FOLDER + "appConfig.xml";
+	public static final String FORMAT_GDE_SCHEMA = CONFIG_FOLDER + "FormatGDESchema.xslt";
+	public static final String TSE_ERROR_DETAILS = CONFIG_FOLDER + "tse_error_details.stx";
 	public static final String MESSAGE_GDE2_XSD = CONFIG_FOLDER + "GDE2_message.xsd";
 	public static final String REPORT_ERRORS_HEAD_FILE = CONFIG_FOLDER + "ReportErrorsHtmlHead.txt";
 	

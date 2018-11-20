@@ -1,10 +1,9 @@
 package providers;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,6 +11,11 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.SOAPException;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,6 +68,16 @@ import user.User;
 import xlsx_reader.TableHeaders.XlsxHeader;
 import xlsx_reader.TableSchemaList;
 
+import net.sf.joost.trax.TransformerFactoryImpl;
+
+/**
+ * Create the class which get the ack from the dcf
+ * write it into a target output file (in temp folder)
+ * display it using the dft browser
+ * 
+ * @author shahaal && avonva
+ *
+ */
 public class ReportService implements IReportService {
 
 	private static final Logger LOGGER = LogManager.getLogger(ReportService.class);
@@ -858,8 +872,9 @@ public class ReportService implements IReportService {
 	 * @throws DetailedSOAPException
 	 */
 	private DisplayAckResult downloadAckFile(String messageId) throws DetailedSOAPException {
-
+		
 		DcfAck ack = getAckOf(messageId);
+		
 		// get the detailed Ack Res Id
 		//DcfAckDetailedResId ackDetailedResId = getAckDetailedResIdOf(messageId);
 		
@@ -884,14 +899,12 @@ public class ReportService implements IReportService {
 		}
 		
 		// get the raw log to send the .xml to the browser
-		//InputStream rawLog = ack.getLog().getRawLog();
 		Config config = new Config();
 		
-		// shahaal: get the file using the detailed ack res id
-		InputStream rawLog = null;
+		// get the file using the detailed ack res id
+		File fileLog= null;
 		try {
-			File fileLog = new GetFile().getFile(config.getEnvironment(), User.getInstance(), ack.getLog().getDetailedAckResId());
-			rawLog = new FileInputStream(fileLog);
+			fileLog = new GetFile().getFile(config.getEnvironment(), User.getInstance(), ack.getLog().getDetailedAckResId());
 		} catch (SOAPException | IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -903,14 +916,12 @@ public class ReportService implements IReportService {
 		File targetFile = new File(filename);
 
 		try {
-			
-			// write the returned file in temp
-			Files.copy(rawLog, targetFile.toPath());
+			// get the stx file which will process the xml one
+			File stxFile = new File(AppPaths.TSE_ERROR_DETAILS);
+			//process the xml file and write it in output
+			processXmlInStx(fileLog, stxFile, targetFile);
 
-			// close input stream
-			rawLog.close();
-
-		} catch (IOException e) {
+		} catch (TransformerException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot copy the ack into local disk (for displaying the html with the browser)", e);
 			Message m = Warnings.create(Messages.get("error.title"), Messages.get("ack.file.not.found"),
@@ -1045,6 +1056,41 @@ public class ReportService implements IReportService {
 		}
 
 		return result;
+	}
+	
+	/**
+	 * shahaal
+	 * get the xml file and pre process it using stx and xlst
+	 *
+	 * NB: Transforms it into html on the fly.
+	 *
+	 * @param file Where to put it.
+	 * @param xml - What to put in it.
+	 * @throws TransformerException 
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 */
+	protected void processXmlInStx(File inputXml, File stxFile, File targetOutput) throws TransformerException {
+		//get the xml and stx source
+		Source xmlSource = new javax.xml.transform.stream.StreamSource(inputXml);
+	    Source stxSource = new javax.xml.transform.stream.StreamSource(stxFile);
+
+	    //initialize the transform class of the joost lib
+	    TransformerFactory transFact = new TransformerFactoryImpl();
+	    Transformer trans = transFact.newTransformer(stxSource);
+		
+		// Transform it straight into the output file in temp
+        try (FileOutputStream stream = new FileOutputStream(targetOutput)) {
+            StreamResult streamRes = new StreamResult(stream);
+            trans.transform(xmlSource, streamRes);
+        } catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    
 	}
 	
 }

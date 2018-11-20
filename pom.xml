@@ -104,5 +104,10 @@
 			<artifactId>org.eclipse.osgi</artifactId>
 			<version>RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>net.sf.joost</groupId>
+			<artifactId>joost</artifactId>
+			<version>0.9.1</version>
+		</dependency>
 	</dependencies>
 </project>

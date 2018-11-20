@@ -56,6 +56,7 @@ public class TableListParser extends XlsxReader {
 		
 		switch(h) {
 		case TABLE_NAME:
+			
 			this.tableName = value;
 			break;
 		case HTML_FILENAME:
