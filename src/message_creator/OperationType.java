@@ -4,7 +4,7 @@ import app_config.AppPaths;
 
 /**
  * Operation types that are used to create a report
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public enum OperationType {
@@ -14,7 +14,9 @@ public enum OperationType {
 	REJECT("Reject", "Reject"),
 	SUBMIT("Submit", "Submit"),
 	TEST("Test", "Insert"),
-	NOT_SUPPORTED("NotSupported", "NotSupported");
+	NOT_SUPPORTED("NotSupported", "NotSupported"),
+	// shahaal, new accepted Dwh status for beta testers
+	ACCEPTED_DWH("Accept dwh", "Accept dwh");
 	
 	private String internalOpType;
 	private String opTypeName;

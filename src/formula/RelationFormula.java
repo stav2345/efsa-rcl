@@ -88,6 +88,7 @@ public class RelationFormula implements IFormula {
 		Relation r = row.getSchema().getRelationByParentTable(parentTable);
 
 		if (r == null) {
+			System.out.println("shahaal row "+row.toString()+", "+parentTable);
 			throw new FormulaException("No such relation found in the " + AppPaths.RELATIONS_SHEET 
 					+ ". Relation required: " + parentTable);
 		}

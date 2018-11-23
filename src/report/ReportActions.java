@@ -28,7 +28,7 @@ import soap.DetailedSOAPException;
  * ToolTSE.vsd file.
  * For downloading reports please use instead {@link ReportDownloaderDialog}.
  * For ack use {@link ReportAckManager}.
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public abstract class ReportActions {	
@@ -70,7 +70,9 @@ public abstract class ReportActions {
 		Exception exceptionOccurred = null;
 		
 		ReportAction action;
-		if (messageConfig.getOpType() == OperationType.SUBMIT)
+		
+		//shahaal, added opt type for beta testers
+		if (messageConfig.getOpType() == OperationType.SUBMIT||messageConfig.getOpType()==OperationType.ACCEPTED_DWH)
 			action = ReportAction.SUBMIT;
 		else if (messageConfig.getOpType() == OperationType.REJECT)
 			action = ReportAction.REJECT;
