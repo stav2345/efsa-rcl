@@ -46,7 +46,6 @@ public class Formula {
 		this.column = column;
 		this.fieldHeader = fieldHeader;
 		this.formula = column.getFieldByHeader(fieldHeader);
-		
 		this.daoService = daoService;
 		
 		this.dependenciesCount = 0;
@@ -126,7 +125,7 @@ public class Formula {
 	}
 	
 	private void print(String value, String header) {
-		if (column.equals("contextId") && fieldHeader.equals("labelFormula"))
+		if (column.equals("sampId") && fieldHeader.equals("labelFormula"))
 			LOGGER.info("Solving formula=" + value + " Solving formulas=" + header);
 		
 		//if ((column.equals("tseIndexCase")) && fieldHeader.equals("codeFormula"))
@@ -204,7 +203,6 @@ public class Formula {
 	 * @throws FormulaException 
 	 */
 	private String solveLogicalOperators(String value) throws FormulaException {
-		
 		FormulaList comparisonFormulas = new FormulaList();
 		
 		// compute equal
@@ -225,7 +223,6 @@ public class Formula {
 	 * @throws FormulaException 
 	 */
 	private String solveKeywords(String value) throws FormulaException {
-
 		FormulaList list = FormulaFinder.findKeywordFormulas(value);
 		return replaceFormulasWithSolution(list, value, false);
 	}
@@ -257,7 +254,6 @@ public class Formula {
 		String command = text;
 		
 		for (IFormula f : formulas) {
-			
 			String solved = useRow ? f.solve(row) : f.solve();
 			
 			if (solved != null)
@@ -340,7 +336,7 @@ public class Formula {
 				if (numOfDep > 0) {
 
 					//if(column.getFieldByHeader(fieldHeader).contains("IF((%type.code==RGT),,AT06A)"))
-					//	System.out.println("shahaal field header "+column.getFieldByHeader(fieldHeader));
+					//System.out.println("shahaal field header "+column.getFieldByHeader(fieldHeader));
 
 					// evaluate column dependencies recursively
 					Formula child = new Formula(row, col, fieldHeader, daoService);

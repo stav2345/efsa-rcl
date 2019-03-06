@@ -126,7 +126,6 @@ public class DatasetComparisonParser implements AutoCloseable {
 		String qName = startElement.getName().getLocalPart();
 
 		this.currentNode = null;
-
 		
 		if (qName.equals("result")) {
 			this.datasetComp = new DatasetComparison();
@@ -234,7 +233,7 @@ public class DatasetComparisonParser implements AutoCloseable {
 	/*
 	public static void main(String[] args) throws IOException, XMLStreamException {
 		
-		String filename = "C:\\Users\\shahaal\\Desktop\\DatasetExport.xml";
+		String filename = "D:/PortableApps/test1.xml";
 		File file = new File(filename);
 		
 		DatasetComparisonParser parser = new DatasetComparisonParser(file, "senderDatasetId", "resId");
@@ -243,7 +242,7 @@ public class DatasetComparisonParser implements AutoCloseable {
 		while ((comp = parser.next()) != null) {
 			//parser.next();
 			System.out.println(comp.toString());
-			System.out.println(comp.getIsNullified();
+			System.out.println(comp.getIsNullified());
 		}
 		
 		parser.close();

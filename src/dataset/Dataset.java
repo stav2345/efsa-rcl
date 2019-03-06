@@ -87,9 +87,8 @@ public class Dataset extends DcfDataset implements IDataset, Checkable {
 			return datasetFile;
 		}
 		
-		Config config = new Config();
 		GetDataset req = new GetDataset();
-		File file = req.getDatasetFile(config.getEnvironment(), User.getInstance(), id);
+		File file = req.getDatasetFile(Config.getEnvironment(), User.getInstance(), id);
 		
 		if (file == null)
 			throw new NoAttachmentException("Cannot find the attachment of the dataset with id=" + id);

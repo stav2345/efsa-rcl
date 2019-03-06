@@ -50,17 +50,17 @@
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>RELEASE</version>
+			<version>[10.14.2.0,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>RELEASE</version>
+			<version>[4.0.0,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
-			<version>RELEASE</version>
+			<version>[4.0.0,)</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.github.virtuald</groupId>
@@ -71,43 +71,62 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml-schemas</artifactId>
-			<version>RELEASE</version>
+			<version>[4.0.0,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
-			<version>RELEASE</version>
+			<version>[3.0.2,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.core.commands</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>RELEASE</version>
+			<version>[3.9.200,)</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>RELEASE</version>
+			<version>[4.12,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>RELEASE</version>
+			<version>[2.11.1,)</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.osgi</artifactId>
-			<version>RELEASE</version>
+			<version>[3.13.100,)</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.joost</groupId>
 			<artifactId>joost</artifactId>
-			<version>0.9.1</version>
+			<version>[0.9.1,)</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>[2.11.1,)</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>[2.6,)</version>
+		</dependency>
+
+		<!-- uncomment for swt 32bit <dependency> <groupId> org.eclipse.swt.org.eclipse.swt.win32.win32.x86.4.3.swt 
+			</groupId> <artifactId>org.eclipse.swt.win32.win32.x86</artifactId> <version>[4.3,)</version> 
+			</dependency> -->
+
+		<!-- uncomment for swt 64bit -->
+		<dependency>
+			<groupId> org.eclipse.swt.org.eclipse.swt.win32.win32.x86_64.4.3.swt 
+			</groupId>
+			<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
+			<version>[4.3,)</version>
+		</dependency>
+		<!-- -->
+
 	</dependencies>
 </project>

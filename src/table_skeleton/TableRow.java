@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import app_config.AppPaths;
 import app_config.BooleanValue;
 import duplicates_detector.Checkable;
@@ -193,7 +191,8 @@ public class TableRow implements Checkable {
 	 * @return
 	 */
 	public TableCell get(String key) {
-		return values.get(key);
+		//shahaal edit, return empty cell as default
+		return values.getOrDefault(key, new TableCell());
 	}
 
 	/**
@@ -466,8 +465,6 @@ public class TableRow implements Checkable {
 	 * automatic values)
 	 */
 	public void updateFormulas() {
-
-		//System.out.println("shahaal called from updateFormulas()");
 		
 		// solve the formula for default code and default value
 		FormulaSolver solver = new FormulaSolver(this);
@@ -481,7 +478,7 @@ public class TableRow implements Checkable {
 			LOGGER.error("Cannot solve row formulas", e);
 		}
 
-		//shahaal: removed solev formula by label, code should be used instead!
+		//shahaal: removed solve formula by label, code should be used instead!
 		try {
 			solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
 		} catch (FormulaException e) {
@@ -499,7 +496,7 @@ public class TableRow implements Checkable {
 		TableDao dao = new TableDao();
 		int id = dao.add(this);
 		this.setId(id);
-
+		
 		return id;
 	}
 
@@ -646,7 +643,7 @@ public class TableRow implements Checkable {
 	 * Check if equal
 	 */
 	public boolean sameAs(Object arg0) {
-
+		
 		if (!(arg0 instanceof TableRow))
 			return false;
 
@@ -666,11 +663,11 @@ public class TableRow implements Checkable {
 
 			// get the current column object
 			TableColumn col = this.schema.getById(key);
-
+			
 			// continue searching if we have not a natural key field
 			if (!col.isNaturalKey())
 				continue;
-
+			
 			// here we are comparing a part of the natural key
 			TableCell value1 = this.get(key);
 			TableCell value2 = other.get(key);

@@ -57,9 +57,8 @@ public class GetDatasetListThread extends Thread {
 		
 		DatasetList output = new DatasetList();
 		
-		Config config = new Config();
 		GetDatasetsList<IDataset> req = new GetDatasetsList<>();
-		req.getList(config.getEnvironment(), user, dcCode, output);
+		req.getList(Config.getEnvironment(), user, dcCode, output);
 
 		return output;
 	}

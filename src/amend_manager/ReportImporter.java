@@ -104,6 +104,7 @@ public abstract class ReportImporter {
 		String datasetId = dataset.getId();
 		
 		File file = reportService.download(datasetId);
+		
 		Dataset populatedDataset = reportService.datasetFromFile(file);
 		
 		// add the get datasets list metadata to the dataset object
@@ -240,7 +241,7 @@ public abstract class ReportImporter {
 	 */
 	public void importFirstDatasetVersion(File file) throws XMLStreamException, IOException, 
 		FormulaException, ParseException {
-		
+
 		this.importDatasetFile(file);
 		Dataset d = reportService.datasetFromFile(file);
 		importDatasetMetadata(d);

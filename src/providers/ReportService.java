@@ -16,6 +16,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,11 +72,11 @@ import xlsx_reader.TableSchemaList;
 import net.sf.joost.trax.TransformerFactoryImpl;
 
 /**
- * Create the class which get the ack from the dcf
- * write it into a target output file (in temp folder)
- * display it using the dft browser
+ * Create the class which get the ack from the dcf write it into a target output
+ * file (in temp folder) display it using the dft browser
  * 
- * @author shahaal && avonva
+ * @author shahaal
+ * @author avonva
  *
  */
 public class ReportService implements IReportService {
@@ -112,7 +113,6 @@ public class ReportService implements IReportService {
 	 * @throws FormulaException
 	 */
 	public Collection<TableColumn> getMandatoryFieldNotFilled(TableRow row) throws FormulaException {
-		// System.out.println("shahaal getmandatoryfieldnotfilled");
 
 		Collection<TableColumn> notFilled = new ArrayList<>();
 
@@ -156,8 +156,7 @@ public class ReportService implements IReportService {
 	@Override
 	public File download(String datasetId) throws DetailedSOAPException, NoAttachmentException {
 
-		Config config = new Config();
-		File file = getDataset.getDatasetFile(config.getEnvironment(), User.getInstance(), datasetId);
+		File file = getDataset.getDatasetFile(Config.getEnvironment(), User.getInstance(), datasetId);
 
 		if (file == null)
 			throw new NoAttachmentException("Cannot find the attachment of the dataset with id=" + datasetId);
@@ -172,19 +171,19 @@ public class ReportService implements IReportService {
 
 	public File export(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener)
 			throws ParserConfigurationException, SAXException, IOException, ReportException, AmendException {
-
-		if (messageConfig.needEmptyDataset())
+		
+		if (messageConfig.needEmptyDataset()) {
 			return ReportXmlBuilder.createEmptyReport(messageConfig);
-		else {
+		} else {
 
 			Relation.emptyCache();
 
 			// get the previous report version to process amendments
 			try (ReportXmlBuilder creator = new ReportXmlBuilder(report, messageConfig, report.getRowIdFieldName(),
 					daoService, formulaService);) {
-
+				
 				creator.setProgressListener(progressListener);
-
+				
 				return creator.exportReport();
 			}
 		}
@@ -192,17 +191,29 @@ public class ReportService implements IReportService {
 
 	/**
 	 * @throws IOException Send the report contained in the file and update the
-	 * report status accordingly. NOTE only for expert users. Otherwise use {@link
-	 * #exportAndSend()} to send the report with an atomic operation. @param
-	 * file @throws SOAPException @throws SendMessageException @throws
+	 *                     report status accordingly. NOTE only for expert users.
+	 *                     Otherwise use {@link #exportAndSend()} to send the report
+	 *                     with an atomic operation.
+	 * @param file
+	 * @throws SOAPException @throws SendMessageException @throws
 	 */
 	private MessageResponse send(File file, OperationType opType) throws DetailedSOAPException, IOException {
 
-		Config config = new Config();
+		MessageResponse response;
 
-		// send the report and get the response to the message
-		MessageResponse response = sendMessage.send(config.getEnvironment(), User.getInstance(), file);
+		if (opType.getOpType().contains("Accept")) {
+			System.out.println(
+					"shahaal accepted and sending with Training!\nShould be removed for security reason after the testing.");
 
+			// TODO this is only for testing accepted DWH
+			// User user = User.getInstance();
+			// user.login("usr", "pswd");
+
+			response = sendMessage.send(Config.getEnvironment(), User.getInstance(), file);
+		} else {
+			// send the report and get the response to the message
+			response = sendMessage.send(Config.getEnvironment(), User.getInstance(), file);
+		}
 		return response;
 	}
 
@@ -422,14 +433,12 @@ public class ReportService implements IReportService {
 			return null;
 		}
 
-		Config config = new Config();
-
 		// get state
-		DcfAck ack = getAck.getAck(config.getEnvironment(), User.getInstance(), messageId);
+		DcfAck ack = getAck.getAck(Config.getEnvironment(), User.getInstance(), messageId);
 
 		return ack;
 	}
-	
+
 	/*
 	 * shahaal: get the detailed res id of the ack
 	 */
@@ -437,13 +446,12 @@ public class ReportService implements IReportService {
 	public DcfAckDetailedResId getAckDetailedResIdOf(String detailedResId) throws DetailedSOAPException {
 
 		// if no message id => the report was never sent
-		if (detailedResId.isEmpty()) 
+		if (detailedResId.isEmpty())
 			return null;
-
-		Config config = new Config();
-
+		
 		// get state
-		DcfAckDetailedResId ack = getAck.getAckDetailedResId(config.getEnvironment(), User.getInstance(), detailedResId);
+		DcfAckDetailedResId ack = getAck.getAckDetailedResId(Config.getEnvironment(), User.getInstance(),
+				detailedResId);
 
 		return ack;
 	}
@@ -452,10 +460,8 @@ public class ReportService implements IReportService {
 	public DatasetList getDatasetsOf(String senderDatasetId, String dcYear) throws DetailedSOAPException {
 
 		DatasetList output = new DatasetList();
-
-		Config config = new Config();
-
-		getDatasetsList.getList(config.getEnvironment(), User.getInstance(),
+		
+		getDatasetsList.getList(Config.getEnvironment(), User.getInstance(),
 				PropertiesReader.getDataCollectionCode(dcYear), output);
 
 		return output.filterBySenderId(senderDatasetId);
@@ -812,26 +818,9 @@ public class ReportService implements IReportService {
 			this.daoService.update(report);
 
 			// shahaal show different status message when refreshing the status
-			Message mb;
-			switch (dcfDataset.getStatus()) {
-
-			case VALID:
-				mb = Warnings.create(Messages.get("success.title"),
-						Messages.get("refresh.status.success", dcfDataset.getRCLStatus().getLabel()),
-						SWT.ICON_INFORMATION);
-				mb.setCode("OK501");
-				break;
-			case VALID_WITH_WARNINGS:
-				mb = Warnings.create(Messages.get("warning.title"),
-						Messages.get("refresh.status.successwithwarn", dcfDataset.getRCLStatus().getLabel()),
-						SWT.ICON_INFORMATION);
-				mb.setCode("WARN501");
-				break;
-			default:
-				mb = Warnings.createFatal(Messages.get("refresh.status.err", dcfDataset.getLastModifyingMessageId(),
-						dcfDataset.getRCLStatus().getLabel()), report, dcfDataset);
-				mb.setCode("ERR501");
-			}
+			Message mb = Warnings.create(Messages.get("success.title"),
+					Messages.get("refresh.status.success", dcfDataset.getRCLStatus().getLabel()), SWT.ICON_INFORMATION);
+			mb.setCode("OK501");
 
 			return mb;
 		}
@@ -871,13 +860,13 @@ public class ReportService implements IReportService {
 	 * @return
 	 * @throws DetailedSOAPException
 	 */
-	private DisplayAckResult downloadAckFile(String messageId) throws DetailedSOAPException {
-		
+	private DisplayAckResult downloadAckFile(String messageId) throws DetailedSOAPException, TransformerException {
+
 		DcfAck ack = getAckOf(messageId);
-		
+
 		// get the detailed Ack Res Id
-		//DcfAckDetailedResId ackDetailedResId = getAckDetailedResIdOf(messageId);
-		
+		// DcfAckDetailedResId ackDetailedResId = getAckDetailedResIdOf(messageId);
+
 		// if no ack return
 		if (ack == null || !ack.isReady() || ack.getLog() == null) {
 
@@ -898,37 +887,26 @@ public class ReportService implements IReportService {
 			return new DisplayAckResult(messageId, m);
 		}
 		
-		// get the raw log to send the .xml to the browser
-		Config config = new Config();
-		
 		// get the file using the detailed ack res id
-		File fileLog= null;
+		File fileLog = null;
 		try {
-			fileLog = new GetFile().getFile(config.getEnvironment(), User.getInstance(), ack.getLog().getDetailedAckResId());
+			fileLog = new GetFile().getFile(Config.getEnvironment(), User.getInstance(),
+					ack.getLog().getDetailedAckResId());
 		} catch (SOAPException | IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 		// write it into a file in the temporary folder
 		// in order to be able to open it in the browser
 		String filename = AppPaths.TEMP_FOLDER + "ack_" + System.currentTimeMillis() + ".xml";
 		File targetFile = new File(filename);
 
-		try {
-			// get the stx file which will process the xml one
-			File stxFile = new File(AppPaths.TSE_ERROR_DETAILS);
-			//process the xml file and write it in output
-			processXmlInStx(fileLog, stxFile, targetFile);
+		// get the stx file which will process the xml one
+		File stxFile = new File(AppPaths.TSE_ERROR_DETAILS);
 
-		} catch (TransformerException e) {
-			e.printStackTrace();
-			LOGGER.error("Cannot copy the ack into local disk (for displaying the html with the browser)", e);
-			Message m = Warnings.create(Messages.get("error.title"), Messages.get("ack.file.not.found"),
-					SWT.ICON_ERROR);
-			m.setCode("ERR802");
-			return new DisplayAckResult(messageId, m);
-		}
+		// process the xml file and write it in output
+		processXmlInStx(fileLog, stxFile, targetFile);
 
 		// correct execution
 		return new DisplayAckResult(messageId, targetFile);
@@ -965,6 +943,9 @@ public class ReportService implements IReportService {
 				e.printStackTrace();
 				LOGGER.error("Cannot get ack for messageId=" + localMessageId, e);
 				return new DisplayAckResult(Warnings.createSOAPWarning(e));
+			} catch (TransformerException e) {
+				e.printStackTrace();
+				LOGGER.error("Cannot get ack for messageId=" + localMessageId, e);
 			}
 		}
 
@@ -1032,13 +1013,16 @@ public class ReportService implements IReportService {
 		}
 
 		// get the ack
-		DisplayAckResult result;
+		DisplayAckResult result = null;
 		try {
 			result = downloadAckFile(targetMessageId);
 		} catch (DetailedSOAPException e) {
 			e.printStackTrace();
 			LOGGER.error("Cannot get ack for messageId=" + targetMessageId, e);
 			return new DisplayAckResult(Warnings.createSOAPWarning(e));
+		} catch (TransformerException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot get ack for messageId=" + targetMessageId, e);
 		}
 
 		// add warning if present
@@ -1057,40 +1041,37 @@ public class ReportService implements IReportService {
 
 		return result;
 	}
-	
+
 	/**
-	 * shahaal
-	 * get the xml file and pre process it using stx and xlst
+	 * shahaal get the xml file and pre process it using stx and xlst
 	 *
 	 * NB: Transforms it into html on the fly.
 	 *
 	 * @param file Where to put it.
-	 * @param xml - What to put in it.
-	 * @throws TransformerException 
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
+	 * @param xml  - What to put in it.
+	 * @throws TransformerException
+	 * @throws IOException
+	 * @throws FileNotFoundException
 	 */
-	protected void processXmlInStx(File inputXml, File stxFile, File targetOutput) throws TransformerException {
-		//get the xml and stx source
-		Source xmlSource = new javax.xml.transform.stream.StreamSource(inputXml);
-	    Source stxSource = new javax.xml.transform.stream.StreamSource(stxFile);
+	protected void processXmlInStx(File inputXml, File stxFile, File targetOutput) {
 
-	    //initialize the transform class of the joost lib
-	    TransformerFactory transFact = new TransformerFactoryImpl();
-	    Transformer trans = transFact.newTransformer(stxSource);
-		
-		// Transform it straight into the output file in temp
-        try (FileOutputStream stream = new FileOutputStream(targetOutput)) {
-            StreamResult streamRes = new StreamResult(stream);
-            trans.transform(xmlSource, streamRes);
-        } catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+		// get the xml and stx source
+		Source xmlSource = new StreamSource(inputXml);
+		Source stxSource = new StreamSource(stxFile);
+		try {
+			// initialize the transform class of the joost lib
+			TransformerFactory transFact = new TransformerFactoryImpl();
+			Transformer trans = transFact.newTransformer(stxSource);
+
+			// Transform it straight into the output file in temp
+			FileOutputStream stream = new FileOutputStream(targetOutput);
+			StreamResult streamRes = new StreamResult(stream);
+			trans.transform(xmlSource, streamRes);
+		} catch (IOException | TransformerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	    
+
 	}
-	
+
 }

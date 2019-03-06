@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -36,7 +35,7 @@ import xlsx_reader.TableSchemaList;
  * This class contains a table which shows all the information
  * related to a summarized information table. In particular,
  * it allows also to change its contents dynamically.
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class TableView {
@@ -56,7 +55,7 @@ public class TableView {
 	private TableViewerColumn validator;         // data validator, only if needed
 
 	private Collection<TableRow> parents;        // parents of the table (tables from which this table was created)
-
+	
 	/**
 	 * Create a report table using a predefined schema for the columns
 	 * @param parent
@@ -120,7 +119,7 @@ public class TableView {
 		}
 
 		for (TableColumn col : schema) {
-
+			
 			// skip non visible columns
 			if (!col.isVisible(schema, parents))
 				continue;
@@ -184,7 +183,7 @@ public class TableView {
 		
 		// add the column schema to the column viewer
 		columnViewer.getColumn().setData(TABLE_COLUMN_DATA_KEY, col);
-		
+
 		return columnViewer;
 	}
 
@@ -327,7 +326,7 @@ public class TableView {
 		
 		return list;
 	}
-
+	
 	/**
 	 * Get the number of elements contained in the table
 	 * @return
@@ -402,6 +401,41 @@ public class TableView {
 			// remove editor if editable is false
 			column.setEditingSupport(editor);
 		}
+
+		/*
+		 * TODO shahaal
+		 * here starting to implement the traverse of the cell in a row with TAB key
+		 
+		tableViewer.getTable().addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				if (arg0.keyCode == SWT.TAB)
+		        {
+		            // There are numerous setSelection methods.  I'll leave this to you. 
+		            //tableViewer.getTable().setSelection(index+=1);
+		            System.out.println("shahaal "+tableViewer.getTable().getSelectionIndex());
+		        }
+			}
+		});
+		
+		tableViewer.getTable().addTraverseListener(new TraverseListener() {
+			
+			@Override
+			public void keyTraversed(TraverseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+		        if (arg0.keyCode == SWT.TAB)
+		        	arg0.doit = false;
+			}
+		});*/
 	}
 
 	/**

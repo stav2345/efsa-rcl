@@ -40,6 +40,7 @@ public abstract class ReportActions {
 		AMEND,
 		REJECT,
 		SUBMIT
+		//ACCEPTED_DWH_BETA
 	}
 	
 	private Shell shell;
@@ -70,10 +71,13 @@ public abstract class ReportActions {
 		Exception exceptionOccurred = null;
 		
 		ReportAction action;
-		
-		//shahaal, added opt type for beta testers
-		if (messageConfig.getOpType() == OperationType.SUBMIT||messageConfig.getOpType()==OperationType.ACCEPTED_DWH)
+
+		if (messageConfig.getOpType() == OperationType.SUBMIT)
 			action = ReportAction.SUBMIT;
+		/* shahaal, uncomment for beta testers
+		 * else if(messageConfig.getOpType()==OperationType.ACCEPTED_DWH_BETA)
+		 * action = ReportAction.ACCEPTED_DWH_BETA;
+		 */
 		else if (messageConfig.getOpType() == OperationType.REJECT)
 			action = ReportAction.REJECT;
 		else

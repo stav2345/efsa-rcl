@@ -88,7 +88,6 @@ public class RelationFormula implements IFormula {
 		Relation r = row.getSchema().getRelationByParentTable(parentTable);
 
 		if (r == null) {
-			System.out.println("shahaal row "+row.toString()+", "+parentTable);
 			throw new FormulaException("No such relation found in the " + AppPaths.RELATIONS_SHEET 
 					+ ". Relation required: " + parentTable);
 		}
@@ -104,7 +103,7 @@ public class RelationFormula implements IFormula {
 
 		// get from the child row the foreign key for the parent
 		String foreignKey = row.get(r.getForeignKey()).getCode();
-
+		
 		// if no foreign key => error
 		if (foreignKey == null || foreignKey.isEmpty()) {
 			throw new FormulaException("No foreign key found for " + r + " in the row " + row);
@@ -119,7 +118,7 @@ public class RelationFormula implements IFormula {
 
 		// get the required field and put it into the formula
 		TableCell parentValue = parent.get(parentColumnId);
-
+		
 		if (parentValue == null) {
 			throw new FormulaException("No parent data value found for " + parentColumnId 
 					+ " in the row " + row + " with parent " + parent);

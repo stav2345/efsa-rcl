@@ -2,13 +2,13 @@ package table_dialog;
 
 import java.io.IOException;
 import java.util.Collection;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +28,7 @@ import table_database.TableDao;
 import table_dialog.DialogBuilder.RowCreationMode;
 import table_dialog.RowCreatorViewer.CatalogChangedListener;
 import table_list.TableMetaData;
+import table_skeleton.TableCell;
 import table_skeleton.TableColumn;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
@@ -99,6 +100,8 @@ public abstract class TableDialog {
 	private boolean autoSave; // if rows should be auto saved in the db
 
 	private EditorListener editorListener;
+	
+	private String type="type";
 
 	/**
 	 * Create a dialog with a {@link HelpViewer}, a {@link TableView} and possibly a
@@ -260,10 +263,11 @@ public abstract class TableDialog {
 				}
 			});
 
-			// shahaal: if we are in the open report panel activate the double click listener
+			// shahaal: if we are in the open report panel activate the double click
+			// listener
 			if (title.equals(Messages.get("open.report.title"))) {
-				
-				//add double click listener on the records
+
+				// add double click listener on the records
 				panel.addDoubleClickListener(new IDoubleClickListener() {
 
 					@Override
@@ -561,7 +565,7 @@ public abstract class TableDialog {
 	 * @param message
 	 * @param icon
 	 */
-	protected int warnUser(String title, String message, int icon) {
+	public int warnUser(String title, String message, int icon) {
 		return Warnings.warnUser(getDialog(), title, message, icon);
 	}
 
@@ -571,7 +575,7 @@ public abstract class TableDialog {
 	 * @param title
 	 * @param message
 	 */
-	protected int warnUser(String title, String message) {
+	public int warnUser(String title, String message) {
 		return Warnings.warnUser(getDialog(), title, message, SWT.ICON_ERROR);
 	}
 
@@ -610,6 +614,49 @@ public abstract class TableDialog {
 		// call external function
 		processNewRow(row);
 	}
+	
+	/**
+	 * shahaal
+	 * create a clone row of the passed row
+	 * @param selectedItem
+	 * @param row
+	 */
+	private void addNewCloneRow(Selection selectedItem, TableRow row) {
+
+		// create a new row and
+		// put the first cell in the row
+		TableRow cloneRow = createNewRow(getSchema(), selectedItem);
+
+		if (cloneRow == null)
+			return;
+
+		// initialize the row fields with default values
+		cloneRow.initialize();
+
+		// insert the row and save also the row id
+		cloneRow.save();
+
+		// initialize the formulas with row id
+		cloneRow.initialize();
+
+		// fill editable fields
+		for(TableColumn col:this.getSchema()) {
+			if(col.isEditable(row))
+				cloneRow.put(col.getId(), row.get(col.getId()));
+		}
+		
+		// update the formulas
+		cloneRow.updateFormulas();
+
+		// update the row with the formulas solved
+		cloneRow.update();
+
+		// add the row to the table
+		add(cloneRow);
+
+		// call external function
+		processNewRow(cloneRow);
+	}
 
 	/**
 	 * Add a row to the table
@@ -625,6 +672,34 @@ public abstract class TableDialog {
 	 */
 	public void removeSelectedRow() {
 		panel.removeSelectedRow();
+	}
+	
+	/**
+	 * shahaal 
+	 * clone the selected rows
+	 */
+	public void cloneSelectedRow() {
+		
+		// return if table null
+		if(panel.getTable()==null)
+			return;
+		
+		//get the selcted elements in the table
+		TableRowList list = panel.getTable().getAllSelectedRows();
+		
+		//return if list empty
+		if (list == null || list.isEmpty())
+			return;
+		
+		for(TableRow row : list) {
+			
+			//get the type of the row
+			TableCell cell=row.get(type);
+			
+			//create a new clone row
+			if(!cell.isEmpty())
+				addNewCloneRow(new Selection(cell), row);
+		}
 	}
 
 	/**
@@ -696,6 +771,14 @@ public abstract class TableDialog {
 	 */
 	public void setEditorListener(EditorListener editorListener) {
 		this.editorListener = editorListener;
+	}
+
+	/**
+	 * shahaal Called if ctr-c/v is pressed when a row is selected
+	 * 
+	 * @param editorListener
+	 */
+	public void addKeyListener(KeyListener keyListener) {
 	}
 
 	/**

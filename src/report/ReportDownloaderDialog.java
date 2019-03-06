@@ -28,6 +28,7 @@ import user.User;
 /**
  * Download a report into the database
  * @author avonva
+ * @author shahaal
  *
  */
 public abstract class ReportDownloaderDialog {
@@ -52,12 +53,10 @@ public abstract class ReportDownloaderDialog {
 	 */
 	private IDcfDataCollectionsList<IDcfDataCollection> getAvailableDcList() throws DetailedSOAPException {
 		
-		Config config = new Config();
-		
 		IDcfDataCollectionsList<IDcfDataCollection> output = new DcfDataCollectionsList();
 		GetDataCollectionsList<IDcfDataCollection> req = new GetDataCollectionsList<>();
 		
-		req.getList(config.getEnvironment(), User.getInstance(), output);
+		req.getList(Config.getEnvironment(), User.getInstance(), output);
 		
 		Collection<String> validDcs = GetAvailableDataCollections.getCodes();
 		

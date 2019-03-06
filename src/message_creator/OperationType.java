@@ -14,9 +14,9 @@ public enum OperationType {
 	REJECT("Reject", "Reject"),
 	SUBMIT("Submit", "Submit"),
 	TEST("Test", "Insert"),
-	NOT_SUPPORTED("NotSupported", "NotSupported"),
+	NOT_SUPPORTED("NotSupported", "NotSupported");
 	// shahaal, new accepted Dwh status for beta testers
-	ACCEPTED_DWH("Accept dwh", "Accept dwh");
+	//ACCEPTED_DWH_BETA("AcceptDwhBeta", "Accept dwh");
 	
 	private String internalOpType;
 	private String opTypeName;
@@ -49,7 +49,7 @@ public enum OperationType {
 	 * @return
 	 */
 	public boolean needEmptyDataset() {
-		return this == REJECT || this == SUBMIT;
+		return this == REJECT || this == SUBMIT; //|| this == OperationType.ACCEPTED_DWH_BETA;
 	}
 	
 	/**

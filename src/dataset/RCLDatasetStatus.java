@@ -101,9 +101,10 @@ public enum RCLDatasetStatus {
 	 */
 	public boolean canBeMadeEditable() {
 		return this == VALID || this == REJECTION_FAILED || this == SUBMISSION_FAILED 
-				|| this == VALID_WITH_WARNINGS 
+				|| this == VALID_WITH_WARNINGS
 				|| this == REJECTED_EDITABLE || this == REJECTED 
-				|| this == UPLOAD_FAILED || this == DELETED || this == LOCALLY_VALIDATED;
+				|| this == UPLOAD_FAILED || this == DELETED || this == LOCALLY_VALIDATED
+				|| this == OTHER;
 	}
 	
 	public boolean canBeChecked() {
@@ -138,7 +139,8 @@ public enum RCLDatasetStatus {
 		return this == UPLOAD_FAILED || this == DRAFT 
 				|| this == REJECTED || this == VALID 
 				|| this == REJECTION_FAILED || this == SUBMISSION_FAILED 
-				|| this == VALID_WITH_WARNINGS || this == REJECTED_EDITABLE;
+				|| this == VALID_WITH_WARNINGS || this == REJECTED_EDITABLE
+				|| this == OTHER;
 	}
 	
 	/**

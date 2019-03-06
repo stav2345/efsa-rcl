@@ -470,7 +470,7 @@ public class DialogBuilder {
 		
 		if (this.table == null)
 			return this;
-		
+
 		this.table.select(index);
 		
 		return this;
@@ -672,7 +672,7 @@ public class DialogBuilder {
 		
 		if (table == null)
 			return;
-		
+
 		table.setInputChangedListener(inputChangedListener);
 	}
 	
@@ -684,7 +684,7 @@ public class DialogBuilder {
 		
 		if (table == null)
 			return;
-		
+
 		this.table.addSelectionChangedListener(listener);
 	}
 	

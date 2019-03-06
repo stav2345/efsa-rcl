@@ -11,6 +11,7 @@ import java.util.List;
  * record are equal or not (we did not override the equal
  * to avoid problems with other processes)
  * @author avonva
+ * @author shahaal
  *
  */
 public class DuplicatesDetector {

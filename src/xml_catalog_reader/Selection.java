@@ -10,7 +10,7 @@ import table_skeleton.TableCell;
 /**
  * Class which models a single node of a configuration .xml file
  * It also represents a single cell of the report (i.e. a value of a column of the report table)
- * @author avonva
+ * @author avonva && shahaal
  *
  */
 public class Selection {
@@ -24,6 +24,17 @@ public class Selection {
 	
 	public Selection() {
 		data = new HashMap<>();
+	}
+	
+	/**
+	 * shahaal
+	 * used when cloning rows
+	 * @param code
+	 * @param label
+	 */
+	public Selection(TableCell cell) {
+		this.code=cell.getCode();
+		this.description = cell.getLabel();
 	}
 	
 	public void setListId(String listId) {

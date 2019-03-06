@@ -133,7 +133,7 @@ public class DatasetMetaDataParser implements Closeable {
 		String qName = startElement.getName().getLocalPart();
 
 		this.currentNode = null;
-		
+
 		switch(qName) {
 		case "header":
 			this.headerBuilder = new HeaderBuilder();
@@ -177,7 +177,9 @@ public class DatasetMetaDataParser implements Closeable {
 		switch(currentBlock) {
 		
 		case HEADER:
+			
 			HeaderNode headerNode = HeaderNode.fromString(currentNode);
+			
 			switch(headerNode) {
 			case TYPE:
 				headerBuilder.setType(contents); break;

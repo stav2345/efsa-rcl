@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -16,7 +17,8 @@ import table_skeleton.TableRow;
 /**
  * Manage and solve all the function that uses the syntax:
  * functionName(op1,op2,op3,...)
- * @author avonva && shahaal
+ * @author avonva
+ * @author shahaal
  *
  */
 public class FunctionFormula implements IFormula {
@@ -55,11 +57,11 @@ public class FunctionFormula implements IFormula {
 	
 	@Override
 	public void compile() throws FormulaException {
-
+		
 		// split on the first bracket to get the function name
 		String split[] = formula.split("\\(");
 
-		//shahaal: qui ce un problema
+		//TODO: to better check
 		if (split.length != 2) {
 			throw new FormulaException("Wrong function formula: " + formula);
 		}
@@ -89,7 +91,7 @@ public class FunctionFormula implements IFormula {
 	public String solve() throws FormulaException {
 		
 		String solvedFormula = null;
-
+		
 		switch(this.functionName.toUpperCase()) {
 		case ZERO_PADDING:
 			solvedFormula = solvePadding();
@@ -116,7 +118,6 @@ public class FunctionFormula implements IFormula {
 			solvedFormula = solveOr();
 			break;
 		case NEXT:
-			System.out.println("shahaal solve next:" +this.functionName.toUpperCase());
 			solvedFormula = solveNext();
 			break;
 		default:
@@ -144,8 +145,6 @@ public class FunctionFormula implements IFormula {
 			throw new FormulaException("Wrong number of parameters " + formula 
 					+ ". Expected 2, found " + operands.size());
 		}
-		
-		//System.out.println("shahaal "+operands.get(0)+", "+operands.get(1));
 		
 		// text which needs to be padded
 		String text = operands.get(0);
@@ -370,24 +369,13 @@ public class FunctionFormula implements IFormula {
 	}
 	
 	/**
-	 * Solve next functions
+	 * shahaal 
+	 * return UUID (Universally Unique Identifier)
 	 * @return
 	 * @throws FormulaException
 	 */
 	private String solveNext() throws FormulaException {
-		
-		System.out.println("shahaal ");
-		for(String operand:operands)
-			System.out.print(" "+operand);
-		
-		if (operands.size() != 1) {
-			throw new FormulaException("Wrong number of parameters " + formula 
-					+ ". Expected 1, found " + operands.size());
-		}
-		
-		//prendi il rowId della riga precedente e incrementa di uno
-		//row.toString();
-		return "";
+		return UUID.randomUUID().toString();
 	}
 	
 	@Override

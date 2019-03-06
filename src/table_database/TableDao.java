@@ -604,6 +604,51 @@ public class TableDao implements ITableDao {
 		
 		return ok;
 	}
+	
+	/**
+	 * shahaal
+	 * add the cloned rows in db
+	 * @param list
+	 * @return
+	 */
+	public boolean addAll(TableRowList list) {
+		
+		boolean ok = true;
+		
+		if (list.isEmpty())
+			return ok;
+		
+		TableSchema schema = list.get(0).getSchema();
+		
+		try (Connection con = Database.getConnection(); 
+				PreparedStatement stmt = con.prepareStatement(getAddQuery(schema), 
+						Statement.RETURN_GENERATED_KEYS);) {
+			
+			int count=0;
+			
+			for(TableRow row:list) {
+				// set the row values in the parameters
+				setParameters(row, stmt, false);
+				
+				// add the batch and increment the counter
+				//stmt.addBatch();
+				count++;
+				
+				// execute the batch
+				if(count==list.size()) {
+					// insert the elements
+					stmt.executeUpdate();
+				}
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			LOGGER.error("Cannot add list of records", e);
+			ok=false;
+		}
+		
+		return ok;
+	}
 
 	/**
 	 * Delete all the records by a database field
