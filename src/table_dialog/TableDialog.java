@@ -79,7 +79,8 @@ import xml_catalog_reader.Selection;
  * already existing shell by setting {@link #createPopUp} accordingly.</li>
  * </ul>
  * 
- * @author avonva && shahaal
+ * @author avonva
+ * @author shahaal
  *
  */
 public abstract class TableDialog {
@@ -245,7 +246,7 @@ public abstract class TableDialog {
 				public void widgetSelected(SelectionEvent arg0) {
 
 					boolean ok = apply(panel.getSchema(), panel.getTableElements(), panel.getSelection());
-
+					
 					if (ok)
 						dialog.close();
 				}
@@ -263,12 +264,11 @@ public abstract class TableDialog {
 				}
 			});
 
-			// shahaal: if we are in the open report panel activate the double click
-			// listener
+			// shahaal: if in "open report" panel activate the double click
 			if (title.equals(Messages.get("open.report.title"))) {
 
 				// add double click listener on the records
-				panel.addDoubleClickListener(new IDoubleClickListener() {
+				this.addTableDoubleClickListener(new IDoubleClickListener() {
 
 					@Override
 					public void doubleClick(DoubleClickEvent arg0) {
@@ -278,7 +278,6 @@ public abstract class TableDialog {
 
 						if (ok)
 							dialog.close();
-
 					}
 				});
 			}

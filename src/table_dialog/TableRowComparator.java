@@ -70,7 +70,7 @@ public class TableRowComparator implements Comparator<TableRow> {
 				// convert boolean to integer
 				compare = result ? 1 : -1;
 			}
-
+			
 			break;
 		default:
 			
