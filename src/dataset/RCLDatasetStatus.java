@@ -5,7 +5,7 @@ import i18n_messages.Messages;
 /**
  * Enumerator that identifies the status of a {@link Dataset}
  * @author avonva
- *
+ * @author shahaal
  */
 public enum RCLDatasetStatus {
 	
@@ -15,7 +15,7 @@ public enum RCLDatasetStatus {
 	VALID("VALID", Messages.get("valid")),
 	UPLOADED("UPLOADED", Messages.get("uploaded")),  // dataset sent but no response received yet 
 	PROCESSING("PROCESSING", Messages.get("processing")),
-	VALID_WITH_WARNINGS("VALID_WITH_WARNINGS", Messages.get("valid.warnings")),
+	VALID_WITH_WARNING("VALID_WITH_WARNING", Messages.get("valid.warning")),
 	REJECTED_EDITABLE("REJECTED EDITABLE", Messages.get("rejected.editable")),
 	REJECTED("REJECTED", Messages.get("rejected")),
 	REJECTION_SENT("REJECTION_SENT", Messages.get("rejection.sent")),
@@ -101,7 +101,7 @@ public enum RCLDatasetStatus {
 	 */
 	public boolean canBeMadeEditable() {
 		return this == VALID || this == REJECTION_FAILED || this == SUBMISSION_FAILED 
-				|| this == VALID_WITH_WARNINGS
+				|| this == VALID_WITH_WARNING
 				|| this == REJECTED_EDITABLE || this == REJECTED 
 				|| this == UPLOAD_FAILED || this == DELETED || this == LOCALLY_VALIDATED
 				|| this == OTHER;
@@ -117,7 +117,7 @@ public enum RCLDatasetStatus {
 	 */
 	public boolean canBeRejected() {
 		return this == VALID || this == REJECTION_FAILED || 
-				this == SUBMISSION_FAILED || this == VALID_WITH_WARNINGS; 
+				this == SUBMISSION_FAILED || this == VALID_WITH_WARNING; 
 	}
 	
 	/**
@@ -126,7 +126,7 @@ public enum RCLDatasetStatus {
 	 */
 	public boolean canBeRefreshed() {
 		return this == VALID
-				|| this == VALID_WITH_WARNINGS || this == REJECTION_SENT
+				|| this == VALID_WITH_WARNING || this == REJECTION_SENT
 				|| this == REJECTED_EDITABLE || this == UPLOADED
 				|| this == SUBMISSION_SENT || this == SUBMITTED;
 	}
@@ -139,7 +139,7 @@ public enum RCLDatasetStatus {
 		return this == UPLOAD_FAILED || this == DRAFT 
 				|| this == REJECTED || this == VALID 
 				|| this == REJECTION_FAILED || this == SUBMISSION_FAILED 
-				|| this == VALID_WITH_WARNINGS || this == REJECTED_EDITABLE
+				|| this == VALID_WITH_WARNING || this == REJECTED_EDITABLE
 				|| this == OTHER;
 	}
 	
@@ -148,7 +148,7 @@ public enum RCLDatasetStatus {
 	 * @return
 	 */
 	public boolean canBeSubmitted() {
-		return this == VALID || this == VALID_WITH_WARNINGS 
+		return this == VALID || this == VALID_WITH_WARNING 
 				|| this == REJECTION_FAILED || this == SUBMISSION_FAILED ; 
 	}
 	
@@ -174,7 +174,7 @@ public enum RCLDatasetStatus {
 	 */
 	public boolean existsInDCF() {
 		return this == VALID 
-				|| this == VALID_WITH_WARNINGS
+				|| this == VALID_WITH_WARNING
 				|| this == REJECTED_EDITABLE
 				|| this == SUBMITTED
 				|| this == ACCEPTED_DWH
@@ -260,8 +260,8 @@ public enum RCLDatasetStatus {
 		case VALID:
 			newStatus = VALID;
 			break;
-		case VALID_WITH_WARNINGS:
-			newStatus = VALID_WITH_WARNINGS;
+		case VALID_WITH_WARNING:
+			newStatus = VALID_WITH_WARNING;
 			break;
 		case UPDATED_BY_DATA_RECEIVER:
 			newStatus = UPDATED_BY_DATA_RECEIVER;

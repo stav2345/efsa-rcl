@@ -120,6 +120,8 @@ public class Formula {
 		print(value, "FUNCTIONS");
 
 		this.solvedFormula = value.trim();
+		//debug the formula
+		//System.out.println("shahaal "+formula+", "+solvedFormula);
 		
 		return solvedFormula;
 	}

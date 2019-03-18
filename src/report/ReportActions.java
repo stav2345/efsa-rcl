@@ -236,7 +236,7 @@ public abstract class ReportActions {
 
 		case REJECTED_EDITABLE:
 		case VALID:
-		case VALID_WITH_WARNINGS:
+		case VALID_WITH_WARNING:
 			// replace
 			goOn = askReplaceConfirmation(dcfDataset);
 			break;

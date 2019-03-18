@@ -286,7 +286,7 @@ public class ReportService implements IReportService {
 				return;
 
 			case VALID: // dataset id needs to be copied to replace
-			case VALID_WITH_WARNINGS:
+			case VALID_WITH_WARNING:
 			case REJECTED:
 			case REJECTED_EDITABLE:
 
@@ -584,7 +584,7 @@ public class ReportService implements IReportService {
 			code = "WARN302";
 			break;
 		case VALID:
-		case VALID_WITH_WARNINGS:
+		case VALID_WITH_WARNING:
 		case REJECTED_EDITABLE:
 			code = "WARN303";
 			break;
@@ -639,7 +639,7 @@ public class ReportService implements IReportService {
 		switch (status) {
 		case REJECTED_EDITABLE:
 		case VALID:
-		case VALID_WITH_WARNINGS:
+		case VALID_WITH_WARNING:
 		case REJECTED:
 			opType = OperationType.REPLACE;
 			break;
@@ -832,7 +832,7 @@ public class ReportService implements IReportService {
 		case REJECTED:
 		case REJECTED_EDITABLE:
 		case VALID:
-		case VALID_WITH_WARNINGS:
+		case VALID_WITH_WARNING:
 			// auto draft
 			report.makeEditable();
 			mb = Warnings
