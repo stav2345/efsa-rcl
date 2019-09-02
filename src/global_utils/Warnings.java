@@ -127,6 +127,8 @@ public class Warnings {
 			message = Messages.get("send.message.failed");
 			code = "ERR104";
 			break;
+		default:
+			break;
 		}
 		
 		return new String[] {title, message, code};

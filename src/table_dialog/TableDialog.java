@@ -101,8 +101,8 @@ public abstract class TableDialog {
 	private boolean autoSave; // if rows should be auto saved in the db
 
 	private EditorListener editorListener;
-	
-	private String type="type";
+
+	private String type = "type";
 
 	/**
 	 * Create a dialog with a {@link HelpViewer}, a {@link TableView} and possibly a
@@ -246,7 +246,7 @@ public abstract class TableDialog {
 				public void widgetSelected(SelectionEvent arg0) {
 
 					boolean ok = apply(panel.getSchema(), panel.getTableElements(), panel.getSelection());
-					
+
 					if (ok)
 						dialog.close();
 				}
@@ -613,10 +613,10 @@ public abstract class TableDialog {
 		// call external function
 		processNewRow(row);
 	}
-	
+
 	/**
-	 * shahaal
-	 * create a clone row of the passed row
+	 * shahaal create a clone row of the passed row
+	 * 
 	 * @param selectedItem
 	 * @param row
 	 */
@@ -639,11 +639,11 @@ public abstract class TableDialog {
 		cloneRow.initialize();
 
 		// fill editable fields
-		for(TableColumn col:this.getSchema()) {
-			if(col.isEditable(row))
+		for (TableColumn col : this.getSchema()) {
+			if (col.isEditable(row))
 				cloneRow.put(col.getId(), row.get(col.getId()));
 		}
-		
+
 		// update the formulas
 		cloneRow.updateFormulas();
 
@@ -672,31 +672,30 @@ public abstract class TableDialog {
 	public void removeSelectedRow() {
 		panel.removeSelectedRow();
 	}
-	
+
 	/**
-	 * shahaal 
-	 * clone the selected rows
+	 * shahaal clone the selected rows
 	 */
 	public void cloneSelectedRow() {
-		
+
 		// return if table null
-		if(panel.getTable()==null)
+		if (panel.getTable() == null)
 			return;
-		
-		//get the selcted elements in the table
+
+		// get the selected elements in the table
 		TableRowList list = panel.getTable().getAllSelectedRows();
-		
-		//return if list empty
+
+		// return if list empty
 		if (list == null || list.isEmpty())
 			return;
-		
-		for(TableRow row : list) {
-			
-			//get the type of the row
-			TableCell cell=row.get(type);
-			
-			//create a new clone row
-			if(!cell.isEmpty())
+
+		for (TableRow row : list) {
+
+			// get the type of the row
+			TableCell cell = row.get(type);
+
+			// create a new clone row
+			if (!cell.isEmpty())
 				addNewCloneRow(new Selection(cell), row);
 		}
 	}

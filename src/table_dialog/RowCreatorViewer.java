@@ -6,8 +6,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -61,7 +61,7 @@ public class RowCreatorViewer {
 	
 	private void open() {
 		this.composite.setVisible(true);
-		((GridData) this.composite.getLayoutData()).exclude = false;
+		((RowData) this.composite.getLayoutData()).exclude = false;
 		this.composite.getParent().layout();
 	}
 	
@@ -116,11 +116,14 @@ public class RowCreatorViewer {
 	 */
 	private void create() {
 		
-		GridData gd = new GridData();
+		RowData gd = new RowData();
 		gd.exclude = true;
 		
 		this.composite = new Composite(parent, SWT.NONE);
-		this.composite.setLayout(new GridLayout(3,false));
+		RowLayout layout = new RowLayout();
+		layout.center = true;
+		layout.justify = true;
+		this.composite.setLayout(layout);
 		
 		// make composite invisible
 		this.composite.setVisible(false);

@@ -171,7 +171,7 @@ public class ReportService implements IReportService {
 
 	public File export(Report report, MessageConfigBuilder messageConfig, ProgressListener progressListener)
 			throws ParserConfigurationException, SAXException, IOException, ReportException, AmendException {
-		
+
 		if (messageConfig.needEmptyDataset()) {
 			return ReportXmlBuilder.createEmptyReport(messageConfig);
 		} else {
@@ -181,9 +181,9 @@ public class ReportService implements IReportService {
 			// get the previous report version to process amendments
 			try (ReportXmlBuilder creator = new ReportXmlBuilder(report, messageConfig, report.getRowIdFieldName(),
 					daoService, formulaService);) {
-				
+
 				creator.setProgressListener(progressListener);
-				
+
 				return creator.exportReport();
 			}
 		}
@@ -199,21 +199,9 @@ public class ReportService implements IReportService {
 	 */
 	private MessageResponse send(File file, OperationType opType) throws DetailedSOAPException, IOException {
 
-		MessageResponse response;
+		// send the report and get the response to the message
+		MessageResponse response = sendMessage.send(Config.getEnvironment(), User.getInstance(), file);
 
-		if (opType.getOpType().contains("Accept")) {
-			System.out.println(
-					"shahaal accepted and sending with Training!\nShould be removed for security reason after the testing.");
-
-			// TODO this is only for testing accepted DWH
-			// User user = User.getInstance();
-			// user.login("usr", "pswd");
-
-			response = sendMessage.send(Config.getEnvironment(), User.getInstance(), file);
-		} else {
-			// send the report and get the response to the message
-			response = sendMessage.send(Config.getEnvironment(), User.getInstance(), file);
-		}
 		return response;
 	}
 
@@ -386,8 +374,7 @@ public class ReportService implements IReportService {
 
 	@Override
 	public TableRowList getAllVersions(String senderId) {
-		return daoService.getByStringField(TableSchemaList.getByName(AppPaths.REPORT_SHEET), AppPaths.REPORT_SENDER_ID,
-				senderId);
+		return daoService.getByStringField(TableSchemaList.getByName(AppPaths.REPORT_SHEET), AppPaths.REPORT_SENDER_ID, senderId);
 	}
 
 	/**
@@ -448,7 +435,7 @@ public class ReportService implements IReportService {
 		// if no message id => the report was never sent
 		if (detailedResId.isEmpty())
 			return null;
-		
+
 		// get state
 		DcfAckDetailedResId ack = getAck.getAckDetailedResId(Config.getEnvironment(), User.getInstance(),
 				detailedResId);
@@ -460,7 +447,7 @@ public class ReportService implements IReportService {
 	public DatasetList getDatasetsOf(String senderDatasetId, String dcYear) throws DetailedSOAPException {
 
 		DatasetList output = new DatasetList();
-		
+
 		getDatasetsList.getList(Config.getEnvironment(), User.getInstance(),
 				PropertiesReader.getDataCollectionCode(dcYear), output);
 
@@ -511,7 +498,6 @@ public class ReportService implements IReportService {
 
 	@Override
 	public boolean isLocallyPresent(String senderDatasetId) {
-
 		for (TableRow row : daoService.getAll(TableSchemaList.getByName(AppPaths.REPORT_SHEET))) {
 
 			String otherSenderId = row.getLabel(AppPaths.REPORT_SENDER_ID);
@@ -886,7 +872,7 @@ public class ReportService implements IReportService {
 			m.setCode("ERR803");
 			return new DisplayAckResult(messageId, m);
 		}
-		
+
 		// get the file using the detailed ack res id
 		File fileLog = null;
 		try {
@@ -904,7 +890,7 @@ public class ReportService implements IReportService {
 
 		// get the stx file which will process the xml one
 		File stxFile = new File(AppPaths.TSE_ERROR_DETAILS);
-
+		
 		// process the xml file and write it in output
 		processXmlInStx(fileLog, stxFile, targetFile);
 

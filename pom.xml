@@ -4,7 +4,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>EFSA-RCL</groupId>
 	<artifactId>EFSA-RCL</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+
+	<version>1.0.0</version>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>Cp1252</project.build.sourceEncoding>
+	</properties>
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>tests</testSourceDirectory>
@@ -29,14 +37,13 @@
 			</resource>
 		</resources>
 		<plugins>
+
 			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.2</version>
 			</plugin>
+
 		</plugins>
 	</build>
 	<repositories>
@@ -50,7 +57,7 @@
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>[10.14.2.0,)</version>
+			<version>10.14.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -114,22 +121,48 @@
 			<artifactId>commons-io</artifactId>
 			<version>[2.6,)</version>
 		</dependency>
-		<!-- uncomment for swt 32bit
+		<!-- uncomment for swt 32bit <dependency> <groupId> org.eclipse.swt </groupId> 
+			<artifactId>swt32</artifactId> <version>[3.7.1,)</version> </dependency> -->
+		<!-- uncomment for swt 64bit -->
 		<dependency>
-			<groupId>
-				org.eclipse.swt.org.eclipse.swt.win32.win32.x86.4.3.swt
-			</groupId>
-			<artifactId>org.eclipse.swt.win32.win32.x86</artifactId>
-			<version>[4.3,)</version>
+			<groupId> org.eclipse.swt</groupId>
+			<artifactId>swt64</artifactId>
+			<version>[3.7.1,)</version>
 		</dependency>
-		 -->
-		<!-- uncomment for swt 64bit
 		<dependency>
-			<groupId> org.eclipse.swt.org.eclipse.swt.win32.win32.x86_64.4.3.swt 
-			</groupId>
-			<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-			<version>[4.3,)</version>
+			<groupId> org.eclipse.jface</groupId>
+			<artifactId>jface</artifactId>
+			<version>[3.7.0,)</version>
 		</dependency>
-		-->
+		<dependency>
+			<groupId>DCF_webservice_framework</groupId>
+			<artifactId>DCF_webservice_framework</artifactId>
+			<version>[1.0.0,)</version>
+		</dependency>
+		<dependency>
+			<groupId>progress_bar</groupId>
+			<artifactId>progress_bar</artifactId>
+			<version>[1.0.0,)</version>
+		</dependency>
+		<dependency>
+			<groupId>window_size_save_and_restore</groupId>
+			<artifactId>window_size_save_and_restore</artifactId>
+			<version>[1.0.0,)</version>
+		</dependency>
+		<dependency>
+			<groupId>version_manager</groupId>
+			<artifactId>VersionManager</artifactId>
+			<version>[1.0.0,)</version>
+		</dependency>
+		<dependency>
+			<groupId>java_exception_manager</groupId>
+			<artifactId>java_exception_manager</artifactId>
+			<version>[1.0.0,)</version>
+		</dependency>
+		<dependency>
+			<groupId>email_generator</groupId>
+			<artifactId>email_generator</artifactId>
+			<version>[1.0.0,)</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Stack;
 
-import org.eclipse.jface.viewers.CellEditor.LayoutData;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.swt.SWT;
@@ -207,7 +206,7 @@ public class DialogBuilder {
 	}
 	
 	
-	public DialogBuilder addComposite(String code, Layout layout, LayoutData data) {
+	public DialogBuilder addComposite(String code, Layout layout, GridData data) {
 		return addCompositeToComposite(code, null, layout, data);
 	}
 	
@@ -219,7 +218,7 @@ public class DialogBuilder {
 	 * @param data
 	 * @return
 	 */
-	public DialogBuilder addCompositeToComposite(String code, String compositeCode, Layout layout, LayoutData data) {
+	public DialogBuilder addCompositeToComposite(String code, String compositeCode, Layout layout, GridData data) {
 		
 		Composite parent;
 		if (compositeCode != null)
@@ -235,12 +234,12 @@ public class DialogBuilder {
 		return this;
 	}
 	
-	public DialogBuilder addGroup(String code, String groupTitle, Layout layout, LayoutData data) {
+	public DialogBuilder addGroup(String code, String groupTitle, Layout layout, GridData data) {
 		return addGroupToComposite(code, null, groupTitle, layout, data);
 	}
 	
 	public DialogBuilder addGroupToComposite(String code, String compositeCode, 
-			String groupTitle, Layout layout, LayoutData data) {
+			String groupTitle, Layout layout, GridData data) {
 		
 		Composite parent;
 		if (compositeCode != null)

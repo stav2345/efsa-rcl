@@ -104,7 +104,7 @@ public class Formula {
 		// solve columns values if a row was passed
 		value = solveColumnsFormula(value);
 		print(value, "COLUMNS");
-
+		
 		// solve relations formulas
 		value = solveRelationFormula(value);
 		

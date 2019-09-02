@@ -24,7 +24,8 @@ import xml_catalog_reader.XmlLoader;
 /**
  * Generic element of a {@link Report}.
  * 
- * @author avonva && shahaal
+ * @author avonva
+ * @author shahaal
  *
  */
 public class TableRow implements Checkable {
@@ -248,7 +249,7 @@ public class TableRow implements Checkable {
 	private String getField(String field, boolean label) {
 
 		TableCell value = this.get(field);
-
+		
 		if (value == null || value.isEmpty())
 			return "";
 

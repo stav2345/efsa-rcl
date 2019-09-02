@@ -71,7 +71,7 @@ public class DatasetComparisonParser implements AutoCloseable {
 		this.isResultBlock = false;
 		this.endRecord = false;
 		
-		// initialize xml parser
+		// initialise xml parser
 		XMLInputFactory factory = XMLInputFactory.newInstance();
 		factory.setProperty(XMLInputFactory.IS_COALESCING, true);
 		this.eventReader = factory.createXMLEventReader(input);

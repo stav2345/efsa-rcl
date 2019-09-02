@@ -15,23 +15,23 @@ import table_relations.RelationParser;
 public class TableSchemaList extends ArrayList<TableSchema> {
 
 	private static final Logger LOGGER = LogManager.getLogger(TableSchemaList.class);
-	
+
 	private static final long serialVersionUID = 1L;
 
 	private static HashMap<String, TableSchemaList> schemasCache;
 
 	public static TableSchemaList getAll(String tablesSchemaFilename) throws IOException {
-		
+
 		// if first time
 		if (schemasCache == null) {
 			schemasCache = new HashMap<>();
 		}
-		
+
 		// if the schema was not loaded yet
 		if (schemasCache.get(tablesSchemaFilename) == null) {
 
 			TableSchemaList list = new TableSchemaList();
-			
+
 			SchemaReader parser = new SchemaReader(tablesSchemaFilename);
 
 			for (int i = 0; i < parser.getNumberOfSheets(); ++i) {
@@ -50,11 +50,11 @@ public class TableSchemaList extends ArrayList<TableSchema> {
 
 				// get parsed schema
 				TableSchema schema = parser.getSchema();
-				
+
 				// add to cache
 				list.add(schema);
 			}
-			
+
 			schemasCache.put(tablesSchemaFilename, list);
 
 			parser.close();
@@ -65,26 +65,27 @@ public class TableSchemaList extends ArrayList<TableSchema> {
 
 	/**
 	 * Get all the table schemas which were defined by the user
+	 * 
 	 * @return
 	 * @throws IOException
 	 */
 	public static TableSchemaList getAll() throws IOException {
 		return getAll(AppPaths.TABLES_SCHEMA_FILE);
 	}
-	
+
 	public TableSchema getSchemaByName(String name) {
-		
+
 		for (TableSchema schema : this) {
 
 			if (schema.getSheetName().equals(name))
 				return schema;
 		}
-		
+
 		return null;
 	}
 
 	public static TableSchema getByName(String tablesSchemaFilename, String sheetName) {
-		
+
 		TableSchemaList schemas;
 		try {
 			schemas = getAll(tablesSchemaFilename);
@@ -102,10 +103,11 @@ public class TableSchemaList extends ArrayList<TableSchema> {
 
 		return null;
 	}
-	
+
 	/**
 	 * Load a generic schema from the {@link CustomPaths#TABLES_SCHEMA_FILE} file
 	 * using the {@code sheetName} sheet
+	 * 
 	 * @param sheetName
 	 * @return
 	 * @throws IOException

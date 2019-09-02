@@ -32,34 +32,37 @@ import xlsx_reader.TableSchema;
 import xlsx_reader.TableSchemaList;
 
 /**
- * This class contains a table which shows all the information
- * related to a summarized information table. In particular,
- * it allows also to change its contents dynamically.
- * @author avonva && shahaal
+ * This class contains a table which shows all the information related to a
+ * summarised information table. In particular, it allows also to change its
+ * contents dynamically.
+ * 
+ * @author avonva
+ * @author shahaal
  *
  */
 public class TableView {
 
 	private static final Logger LOGGER = LogManager.getLogger(TableView.class);
-	
-	private static final String TABLE_COLUMN_DATA_KEY = "schema";
-	
-	private Composite parent;                    // parent widget
-	private TableViewer tableViewer;             // main table
-	private List<TableViewerColumn> columns;     // columns of the table
-	private TableSchema schema;                  // defines the table columns
-	private TableRowList tableElements;   // cache of the table elements to do sorting by column
-	private boolean editable;                    // table is editable or not?
-	private Listener inputChangedListener;       // called when table data changes
-	private Collection<EditorListener> editorListeners;       // called when editor starts/ends
-	private TableViewerColumn validator;         // data validator, only if needed
 
-	private Collection<TableRow> parents;        // parents of the table (tables from which this table was created)
-	
+	private static final String TABLE_COLUMN_DATA_KEY = "schema";
+
+	private Composite parent; // parent widget
+	private TableViewer tableViewer; // main table
+	private List<TableViewerColumn> columns; // columns of the table
+	private TableSchema schema; // defines the table columns
+	private TableRowList tableElements; // cache of the table elements to do sorting by column
+	private boolean editable; // table is editable or not?
+	private Listener inputChangedListener; // called when table data changes
+	private Collection<EditorListener> editorListeners; // called when editor starts/ends
+	private TableViewerColumn validator; // data validator, only if needed
+
+	private Collection<TableRow> parents; // parents of the table (tables from which this table was created)
+
 	/**
 	 * Create a report table using a predefined schema for the columns
+	 * 
 	 * @param parent
-	 * @param schema schema which specifies the columns 
+	 * @param schema schema which specifies the columns
 	 */
 	public TableView(Composite parent, String schemaSheetName, boolean editable) {
 
@@ -76,13 +79,13 @@ public class TableView {
 	public void addParentTable(TableRow parent) {
 		parents.add(parent);
 	}
-	
+
 	public void clearParents() {
 		parents.clear();
 	}
-	
+
 	/**
-	 * Create the interface into the composite 
+	 * Create the interface into the composite
 	 */
 	public void create() {
 
@@ -91,11 +94,11 @@ public class TableView {
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		// create the table
-		this.tableViewer = new TableViewer(composite, SWT.VIRTUAL | SWT.BORDER | SWT.MULTI
-				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
-		
+		this.tableViewer = new TableViewer(composite,
+				SWT.VIRTUAL | SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.NONE);
+
 		this.tableViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
+
 		this.tableViewer.getTable().setHeaderVisible(true);
 		this.tableViewer.setContentProvider(new TableContentProvider());
 		this.tableViewer.setUseHashlookup(true);
@@ -106,8 +109,8 @@ public class TableView {
 	}
 
 	/**
-	 * Create all the columns which are related to the schema
-	 * Only visible columns are added
+	 * Create all the columns which are related to the schema Only visible columns
+	 * are added
 	 */
 	private void createColumns() {
 
@@ -119,34 +122,33 @@ public class TableView {
 		}
 
 		for (TableColumn col : schema) {
-			
+
 			// skip non visible columns
 			if (!col.isVisible(schema, parents))
 				continue;
 
 			if (col.getLabel() == null || col.getLabel().isEmpty()) {
-				LOGGER.warn("Column " 
-						+ col 
-						+ " is set as visible but it has not a label set.");
+				LOGGER.warn("Column " + col + " is set as visible but it has not a label set.");
 				col.setLabel("MISSING_" + col.getId());
 			}
-		
+
 			// create the column
 			TableViewerColumn columnViewer = createColumn(col);
 
 			// save the column
 			columns.add(columnViewer);
 		}
-		
+
 		setEditable(editable);
 	}
-	
+
 	/**
 	 * Create a table column given the column properties
+	 * 
 	 * @param col
 	 */
 	private TableViewerColumn createColumn(TableColumn col) {
-		
+
 		// Add the column to the parent table
 		TableViewerColumn columnViewer = new TableViewerColumn(this.tableViewer, SWT.NONE);
 
@@ -155,21 +157,21 @@ public class TableView {
 
 		// set width according to type and label
 		columnViewer.getColumn().setWidth(getColumnWidth(col));
-		
+
 		// set text
 		if (col.getLabel() != null) {
 
 			String label = col.getLabel();
 
 			// if the mandatory depends on the row (and it is not a formula)
-			//if (col.isConditionallyMandatory() && !col.isComposite()) {
-			if (col.isMandatory())//) && !col.isComposite()) 
+			// if (col.isConditionallyMandatory() && !col.isComposite()) {
+			if (col.isMandatory())// ) && !col.isComposite())
 				label = label + Messages.get("mandatory.column.marker");
 
-			//shahaal: if conditional mandatory then put the tilde aside the label
-			if (col.isConditionallyMandatory()) 
+			// shahaal: if conditional mandatory then put the tilde aside the label
+			if (col.isConditionallyMandatory())
 				label = label + Messages.get("conditionally.mandatory.column.marker");
-			
+
 			columnViewer.getColumn().setText(label);
 		}
 
@@ -180,7 +182,7 @@ public class TableView {
 		// add possibility to sort record by clicking
 		// in the column name
 		addColumnSorter(col, columnViewer);
-		
+
 		// add the column schema to the column viewer
 		columnViewer.getColumn().setData(TABLE_COLUMN_DATA_KEY, col);
 
@@ -189,6 +191,7 @@ public class TableView {
 
 	/**
 	 * Get the width of a column
+	 * 
 	 * @param column
 	 * @return
 	 */
@@ -210,8 +213,8 @@ public class TableView {
 	}
 
 	/**
-	 * Add a click to the column header that sorts
-	 * the table by the clicked field
+	 * Add a click to the column header that sorts the table by the clicked field
+	 * 
 	 * @param columnViewer
 	 */
 	private void addColumnSorter(TableColumn column, TableViewerColumn columnViewer) {
@@ -236,12 +239,14 @@ public class TableView {
 			}
 
 			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {}
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
 		});
 	}
 
 	/**
 	 * Sort the table elements by a column
+	 * 
 	 * @param column
 	 * @param ascendant if true ascendant order, otherwise descendant
 	 */
@@ -256,6 +261,7 @@ public class TableView {
 
 	/**
 	 * Get all the table rows
+	 * 
 	 * @return
 	 */
 	public TableRowList getTableElements() {
@@ -264,6 +270,7 @@ public class TableView {
 
 	/**
 	 * Get the table viewer
+	 * 
 	 * @return
 	 */
 	public TableViewer getViewer() {
@@ -272,6 +279,7 @@ public class TableView {
 
 	/**
 	 * Get the table
+	 * 
 	 * @return
 	 */
 	public Table getTable() {
@@ -280,6 +288,7 @@ public class TableView {
 
 	/**
 	 * Get the selected element if present
+	 * 
 	 * @return
 	 */
 	public TableRow getSelection() {
@@ -290,17 +299,18 @@ public class TableView {
 			return null;
 
 		TableRow lightRow = (TableRow) selection.getFirstElement();
-		
+
 		return this.tableElements.getElementById(lightRow.getDatabaseId());
 	}
-	
+
 	public TableRow getCompleteRow(int id) {
 		TableRow completeRow = this.tableElements.getElementById(id);
 		return completeRow;
 	}
-	
+
 	/**
 	 * Get the selected elements if present
+	 * 
 	 * @return
 	 */
 	public TableRowList getAllSelectedRows() {
@@ -309,26 +319,27 @@ public class TableView {
 
 		if (selection.isEmpty())
 			return null;
-		
+
 		TableRowList list = new TableRowList(schema);
-		
+
 		Iterator<?> iter = selection.iterator();
-		
+
 		while (iter.hasNext()) {
-			
+
 			TableRow lightRow = (TableRow) iter.next();
-			
+
 			TableRow completeRow = getCompleteRow(lightRow.getDatabaseId());
-			
+
 			if (completeRow != null)
 				list.add(completeRow);
 		}
-		
+
 		return list;
 	}
-	
+
 	/**
 	 * Get the number of elements contained in the table
+	 * 
 	 * @return
 	 */
 	public int getItemCount() {
@@ -342,9 +353,9 @@ public class TableView {
 		return getItemCount() == 0;
 	}
 
-
 	/**
 	 * Check if the table is editable or not
+	 * 
 	 * @return
 	 */
 	public boolean isEditable() {
@@ -353,15 +364,16 @@ public class TableView {
 
 	/**
 	 * Show/hide a password field
+	 * 
 	 * @param colId
 	 * @param visible
 	 */
 	public void setPasswordVisibility(String colId, boolean visible) {
-		
+
 		for (TableViewerColumn colViewer : columns) {
-			
+
 			TableColumn column = (TableColumn) colViewer.getColumn().getData(TABLE_COLUMN_DATA_KEY);
-			
+
 			if (column.getId().equals(colId)) {
 				TableLabelProvider labelProvider = new TableLabelProvider(colId);
 				labelProvider.setPasswordVisibility(visible);
@@ -371,9 +383,10 @@ public class TableView {
 			}
 		}
 	}
-	
+
 	/**
 	 * Set if the table can be edited or not
+	 * 
 	 * @param editable
 	 */
 	public void setEditable(boolean editable) {
@@ -385,61 +398,53 @@ public class TableView {
 
 		// if disable editing remove editors
 		for (TableViewerColumn column : columns) {
-			
+
 			TableEditor editor = null;
-			
+
 			if (editable) {
-				
+
 				TableColumn columnSchema = (TableColumn) column.getColumn().getData(TABLE_COLUMN_DATA_KEY);
-				
+
 				editor = new TableEditor(this, columnSchema);
-				
-				for(EditorListener listener : editorListeners)
+
+				for (EditorListener listener : editorListeners)
 					editor.addListener(listener);
 			}
-			
+
 			// remove editor if editable is false
 			column.setEditingSupport(editor);
 		}
 
 		/*
-		 * TODO shahaal
-		 * here starting to implement the traverse of the cell in a row with TAB key
-		 
-		tableViewer.getTable().addKeyListener(new KeyListener() {
-			
-			@Override
-			public void keyReleased(KeyEvent arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void keyPressed(KeyEvent arg0) {
-				// TODO Auto-generated method stub
-				if (arg0.keyCode == SWT.TAB)
-		        {
-		            // There are numerous setSelection methods.  I'll leave this to you. 
-		            //tableViewer.getTable().setSelection(index+=1);
-		            System.out.println("shahaal "+tableViewer.getTable().getSelectionIndex());
-		        }
-			}
-		});
-		
-		tableViewer.getTable().addTraverseListener(new TraverseListener() {
-			
-			@Override
-			public void keyTraversed(TraverseEvent arg0) {
-				// TODO Auto-generated method stub
-				
-		        if (arg0.keyCode == SWT.TAB)
-		        	arg0.doit = false;
-			}
-		});*/
+		 * TODO shahaal here starting to implement the traverse of the cell in a row
+		 * with TAB key
+		 * 
+		 * tableViewer.getTable().addKeyListener(new KeyListener() {
+		 * 
+		 * @Override public void keyReleased(KeyEvent arg0) { // TODO Auto-generated
+		 * method stub
+		 * 
+		 * }
+		 * 
+		 * @Override public void keyPressed(KeyEvent arg0) { // TODO Auto-generated
+		 * method stub if (arg0.keyCode == SWT.TAB) { // There are numerous setSelection
+		 * methods. I'll leave this to you.
+		 * //tableViewer.getTable().setSelection(index+=1);
+		 * System.out.println("shahaal "+tableViewer.getTable().getSelectionIndex()); }
+		 * } });
+		 * 
+		 * tableViewer.getTable().addTraverseListener(new TraverseListener() {
+		 * 
+		 * @Override public void keyTraversed(TraverseEvent arg0) { // TODO
+		 * Auto-generated method stub
+		 * 
+		 * if (arg0.keyCode == SWT.TAB) arg0.doit = false; } });
+		 */
 	}
 
 	/**
 	 * Get the table schema
+	 * 
 	 * @return
 	 */
 	public TableSchema getSchema() {
@@ -448,6 +453,7 @@ public class TableView {
 
 	/**
 	 * Check if the whole table is correct
+	 * 
 	 * @return
 	 */
 	public boolean areMandatoryFilled() {
@@ -460,6 +466,7 @@ public class TableView {
 
 	/**
 	 * Add an element to the table viewer
+	 * 
 	 * @param row
 	 */
 	public void addRow(TableRow row) {
@@ -477,9 +484,10 @@ public class TableView {
 		this.tableViewer.getTable().showSelection();
 		this.tableViewer.getTable().deselectAll();
 	}
-	
+
 	/**
 	 * Add an element to the table viewer
+	 * 
 	 * @param row
 	 */
 	public void addAll(Collection<TableRow> rows) {
@@ -491,6 +499,7 @@ public class TableView {
 
 	/**
 	 * Remove an element from the table viewer
+	 * 
 	 * @param row
 	 */
 	public void removeRow(TableRow row) {
@@ -498,14 +507,14 @@ public class TableView {
 		this.tableElements.remove(row);
 		row.delete();
 	}
-	
+
 	public void removeRows(TableRowList rows) {
-		
+
 		this.tableViewer.getTable().setRedraw(false);
-		
+
 		for (TableRow row : rows)
 			this.tableViewer.remove(row);
-		
+
 		this.tableViewer.getTable().setRedraw(true);
 		this.tableElements.removeAll(rows);
 		rows.deleteAll();
@@ -515,12 +524,12 @@ public class TableView {
 	 * Remove the selected rows
 	 */
 	public void removeSelectedRows() {
-		
+
 		TableRowList list = getAllSelectedRows();
-		
+
 		if (list == null || list.isEmpty())
 			return;
-		
+
 		// remove all the rows from the table
 		removeRows(list);
 	}
@@ -535,6 +544,7 @@ public class TableView {
 
 	/**
 	 * Set the input of the table
+	 * 
 	 * @param elements
 	 */
 	public void setInput(TableRowList elements) {
@@ -545,6 +555,7 @@ public class TableView {
 
 	/**
 	 * Set menu to the table
+	 * 
 	 * @param menu
 	 */
 	public void setMenu(Menu menu) {
@@ -553,6 +564,7 @@ public class TableView {
 
 	/**
 	 * Set the validator label provider
+	 * 
 	 * @param validatorLabelProvider
 	 */
 	public void setValidatorLabelProvider(RowValidatorLabelProvider validatorLabelProvider) {
@@ -562,18 +574,18 @@ public class TableView {
 
 		this.validator.setLabelProvider(validatorLabelProvider);
 	}
-	
+
 	/**
 	 * Refresh a single row of the table
+	 * 
 	 * @param row
 	 */
 	public void refreshAndSave(TableRow row, boolean saveInDb) {
-		
+
 		TableRow oldRow = this.tableElements.getElementById(row.getDatabaseId());
-		
+
 		if (oldRow == null) {
-			LOGGER.warn("Cannot refresh row " 
-					+ row.getDatabaseId() + " since it is not present in the table.");
+			LOGGER.warn("Cannot refresh row " + row.getDatabaseId() + " since it is not present in the table.");
 			return;
 		}
 
@@ -584,7 +596,7 @@ public class TableView {
 		if (saveInDb) {
 			// update also the formulas using the new values
 			oldRow.updateFormulas();
-	
+
 			// save in db the changed values
 			oldRow.update();
 		}
@@ -598,9 +610,10 @@ public class TableView {
 			inputChangedListener.handleEvent(event);
 		}
 	}
-	
+
 	/**
 	 * Select a row of the table
+	 * 
 	 * @param index
 	 */
 	public void select(int index) {
@@ -610,17 +623,16 @@ public class TableView {
 
 		tableViewer.setSelection(new StructuredSelection(tableViewer.getElementAt(index)), true);
 	}
-	
+
 	public void refresh(TableRow row) {
 		this.tableViewer.refresh(row);
 	}
-	
+
 	public void replaceRow(TableRow row) {
 		int index = this.tableElements.indexOf(row);
 		this.tableViewer.replace(row.getVisibleFields(), index);
 	}
 
-	
 	public void refreshValidator(TableRow row) {
 		this.validator.getViewer().refresh(row);
 	}
@@ -634,6 +646,7 @@ public class TableView {
 
 	/**
 	 * Add a listener which is called when the table changes the highlighted element
+	 * 
 	 * @param listener
 	 */
 	public void addSelectionChangedListener(ISelectionChangedListener listener) {
@@ -642,6 +655,7 @@ public class TableView {
 
 	/**
 	 * Add a listener which is called when the table changes the highlighted element
+	 * 
 	 * @param listener
 	 */
 	public void addDoubleClickListener(IDoubleClickListener listener) {
@@ -650,19 +664,21 @@ public class TableView {
 
 	/**
 	 * Called when the input of the table changes
+	 * 
 	 * @param inputChangedListener
 	 */
 	public void setInputChangedListener(Listener inputChangedListener) {
 		this.inputChangedListener = inputChangedListener;
 	}
-	
+
 	/**
 	 * Set listener called when edit starts/ends
+	 * 
 	 * @param editorListener
 	 */
 	public void addEditorListener(EditorListener editorListener) {
 		this.editorListeners.add(editorListener);
-		
+
 		// refresh editor to add the listener
 		this.setEditable(this.editable);
 	}
