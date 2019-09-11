@@ -435,8 +435,7 @@ public class TableView {
 		 * 
 		 * tableViewer.getTable().addTraverseListener(new TraverseListener() {
 		 * 
-		 * @Override public void keyTraversed(TraverseEvent arg0) { // TODO
-		 * Auto-generated method stub
+		 * @Override public void keyTraversed(TraverseEvent arg0) {
 		 * 
 		 * if (arg0.keyCode == SWT.TAB) arg0.doit = false; } });
 		 */

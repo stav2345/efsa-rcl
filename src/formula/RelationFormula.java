@@ -100,7 +100,7 @@ public class RelationFormula implements IFormula {
 			return "";
 			//throw new FormulaException("Formula: " + formula + ": No parent data found for " + r + " in the row " + row);
 		}
-
+		
 		// get from the child row the foreign key for the parent
 		String foreignKey = row.get(r.getForeignKey()).getCode();
 		

@@ -64,8 +64,7 @@ public class TableRow implements Checkable {
 	/**
 	 * Create a report row
 	 * 
-	 * @param schema
-	 *            columns properties of the row
+	 * @param schema columns properties of the row
 	 */
 	public TableRow(TableSchema schema) {
 		this.values = new HashMap<>();
@@ -144,8 +143,8 @@ public class TableRow implements Checkable {
 	/**
 	 * Get the parent of this table row
 	 * 
-	 * @param parentSchema
-	 *            schema of the parent (also identifies the type of parent required)
+	 * @param parentSchema schema of the parent (also identifies the type of parent
+	 *                     required)
 	 * @return
 	 */
 	public TableRow getParent(TableSchema parentSchema) {
@@ -166,8 +165,7 @@ public class TableRow implements Checkable {
 	/**
 	 * Get the rows defined in the child table that are related to this parent row.
 	 * 
-	 * @param childSchema
-	 *            the schema of the child table
+	 * @param childSchema the schema of the child table
 	 * @return
 	 */
 	public Collection<TableRow> getChildren(TableSchema childSchema, boolean solveFormulas) {
@@ -192,8 +190,10 @@ public class TableRow implements Checkable {
 	 * @return
 	 */
 	public TableCell get(String key) {
-		//shahaal edit, return empty cell as default
-		return values.getOrDefault(key, new TableCell());
+		// new table cell if null
+		// return values.getOrDefault(key, new TableCell());
+
+		return values.get(key);
 	}
 
 	/**
@@ -249,7 +249,7 @@ public class TableRow implements Checkable {
 	private String getField(String field, boolean label) {
 
 		TableCell value = this.get(field);
-		
+
 		if (value == null || value.isEmpty())
 			return "";
 
@@ -290,8 +290,8 @@ public class TableRow implements Checkable {
 	}
 
 	/**
-	 * Put a string into the data, only for raw columns not picklists If it is a
-	 * picklist please provide instead of the label the code and the label will be
+	 * Put a string into the data, only for raw columns not pick-lists If it is a
+	 * pick-list please provide instead of the label the code and the label will be
 	 * automatically retrieved
 	 * 
 	 * @param key
@@ -300,9 +300,9 @@ public class TableRow implements Checkable {
 	public void put(String key, String value) {
 
 		TableCell row;
-
+		
 		if (schema != null && schema.getById(key) != null && schema.getById(key).isPicklist()) {
-
+			
 			String picklist = schema.getById(key).getPicklistKey();
 			String picklistFilter = schema.getById(key).getPicklistFilter(this);
 			XmlContents contents = XmlLoader.getByPicklistKey(picklist);
@@ -313,9 +313,8 @@ public class TableRow implements Checkable {
 			}
 
 			SelectionList list = null;
-			if (picklistFilter != null) {
+			if (picklistFilter != null)
 				list = contents.getListById(picklistFilter);
-			}
 
 			Selection selection = null;
 
@@ -375,7 +374,7 @@ public class TableRow implements Checkable {
 		TableCell sel = new TableCell();
 		FormulaSolver solver = new FormulaSolver(this);
 
-		//shahaal: default_value removed, use default code instead!
+		// TODO
 		try {
 			Formula label = solver.solve(col, XlsxHeader.DEFAULT_VALUE.getHeaderName());
 			sel.setLabel(label.getSolvedFormula());
@@ -401,7 +400,7 @@ public class TableRow implements Checkable {
 	}
 
 	/**
-	 * Initialize the row with the default values note that this will override all
+	 * Initialise the row with the default values note that this will override all
 	 * the values of the row with their default values!
 	 */
 	public void initialize() {
@@ -419,17 +418,17 @@ public class TableRow implements Checkable {
 	 * @param fieldHeader
 	 */
 	public void update(TableColumn col, String value, String fieldHeader) {
-		
-		// old: skip editable columns 
-		// shahaal new: skip editable, empty cells which are mandatory on condMand.
+
+		// old: skip editable columns
+		// if (col.isEditable(this))
+		// return;
+
+		// new: skip editable, empty cells which are mandatory on condMand.
 		// because otherwise empty cell when importing old reports in the new version
-		if (col.isEditable(this)&&(col.isMandatory() || col.isConditionallyMandatory())&&!this.getCode(col.getId()).isEmpty())
+		if (col.isEditable(this) && (col.isMandatory() || col.isConditionallyMandatory())
+				&& !this.getCode(col.getId()).isEmpty())
 			return;
-		
-		//if (col.isEditable(this)&&
-		//		(!col.isMandatory() || !this.getCode(col.getId()).isEmpty()))
-		//	return;
-			
+
 		XlsxHeader h = XlsxHeader.fromString(fieldHeader);
 
 		if (h == null)
@@ -445,7 +444,7 @@ public class TableRow implements Checkable {
 
 			TableCell colVal = this.get(col.getId());
 
-			// if no value found, initialize
+			// if no value found, initialise
 			if (colVal == null)
 				colVal = new TableCell();
 
@@ -457,8 +456,7 @@ public class TableRow implements Checkable {
 				colVal.setCode(value);
 
 			this.put(col.getId(), colVal);
-		} else // else do nothing
-			return;
+		}
 	}
 
 	/**
@@ -466,7 +464,7 @@ public class TableRow implements Checkable {
 	 * automatic values)
 	 */
 	public void updateFormulas() {
-		
+
 		// solve the formula for default code and default value
 		FormulaSolver solver = new FormulaSolver(this);
 
@@ -479,7 +477,7 @@ public class TableRow implements Checkable {
 			LOGGER.error("Cannot solve row formulas", e);
 		}
 
-		//shahaal: removed solve formula by label, code should be used instead!
+		// TODO
 		try {
 			solver.solveAll(XlsxHeader.LABEL_FORMULA.getHeaderName());
 		} catch (FormulaException e) {
@@ -497,7 +495,7 @@ public class TableRow implements Checkable {
 		TableDao dao = new TableDao();
 		int id = dao.add(this);
 		this.setId(id);
-		
+
 		return id;
 	}
 
@@ -535,7 +533,7 @@ public class TableRow implements Checkable {
 
 		RowStatus status = RowStatus.OK;
 
-		// shahaal da rivedere!
+		// TODO to better check
 		if (!arePureMandatoryFilled())
 			status = RowStatus.MANDATORY_MISSING;
 		else if (!areMandatoryFilled())
@@ -616,7 +614,6 @@ public class TableRow implements Checkable {
 		return notFilled;
 	}
 
-
 	/**
 	 * Get all the pure mandatory fields that are not filled
 	 * 
@@ -644,7 +641,7 @@ public class TableRow implements Checkable {
 	 * Check if equal
 	 */
 	public boolean sameAs(Object arg0) {
-		
+
 		if (!(arg0 instanceof TableRow))
 			return false;
 
@@ -664,11 +661,11 @@ public class TableRow implements Checkable {
 
 			// get the current column object
 			TableColumn col = this.schema.getById(key);
-			
+
 			// continue searching if we have not a natural key field
 			if (!col.isNaturalKey())
 				continue;
-			
+
 			// here we are comparing a part of the natural key
 			TableCell value1 = this.get(key);
 			TableCell value2 = other.get(key);

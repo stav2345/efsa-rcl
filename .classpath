@@ -18,5 +18,7 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/email-generator"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="JFace"/>
+	<classpathentry kind="var" path="SWT"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
