@@ -2,10 +2,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>EFSA-RCL</groupId>
-	<artifactId>EFSA-RCL</artifactId>
-
-	<version>1.2.3</version>
+	<groupId>openefsa</groupId>
+	<artifactId>efsa-rcl</artifactId>
+	<version>1.0.0</version>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -13,41 +12,47 @@
 		<project.build.sourceEncoding>Cp1252</project.build.sourceEncoding>
 	</properties>
 
-	<build>
-		<sourceDirectory>src</sourceDirectory>
-		<testSourceDirectory>tests</testSourceDirectory>
-		<resources>
-			<resource>
-				<directory>src</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-			<resource>
-				<directory>config</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-			<resource>
-				<directory>log4j-config</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<plugins>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.1.2</version>
-			</plugin>
-
-		</plugins>
-	</build>
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.swt -->
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>dcf-webservice-framework</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>email-generator</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>exceptions-manager</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>http-manager</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>progress-bar</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>sql-script-executor</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>version-manager</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>openefsa</groupId>
+			<artifactId>window-size-save-restore</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
@@ -85,16 +90,16 @@
 			<version>[3.9.200,)</version>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>[4.12,)</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 			<version>[2.11.1,)</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>[5.5.2,)</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.osgi</artifactId>
@@ -115,5 +120,60 @@
 			<artifactId>commons-io</artifactId>
 			<version>[2.6,)</version>
 		</dependency>
+		<dependency>
+			<groupId>swt</groupId>
+			<artifactId>swt</artifactId>
+			<version>3.7.0.x64</version>
+		</dependency>
+		<dependency>
+			<groupId>jface</groupId>
+			<artifactId>jface</artifactId>
+			<version>3.7.0</version>
+		</dependency>
 	</dependencies>
+
+	<build>
+
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<testSourceDirectory>src/main/test</testSourceDirectory>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/test/resources</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.22.2</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<executions>
+					<execution>
+						<id>aggregate-download-licenses</id>
+						<goals>
+							<goal>aggregate-download-licenses</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

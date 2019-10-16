@@ -1,24 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="config"/>
-	<classpathentry kind="src" path="log4j-config"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="tests"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/DCF webservice framework"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/HttpManager"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Java exception manager"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Progress bar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/SQL statements executor"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/VersionManager"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Window size save and restore"/>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcf-webservice-framework"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/email-generator"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="JFace"/>
-	<classpathentry kind="var" path="SWT"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/exceptions-manager"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/http-manager"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/progress-bar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/sql-script-executor"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/version-manager"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/window-size-save-restore"/>
+	<classpathentry kind="src" output="target/test-classes" path="src/main/test">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
