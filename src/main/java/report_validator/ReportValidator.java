@@ -3,7 +3,6 @@ package report_validator;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +18,7 @@ import i18n_messages.Messages;
 /**
  * Validate a report and show the errors to the user
  * 
+ * @author shahaal
  * @author avonva
  *
  */

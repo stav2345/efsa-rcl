@@ -156,7 +156,7 @@ public class TableDaoMock implements ITableDao {
 
 			TableRow row = iterator.next();
 
-			if (row.getSchema().equals(schema) && row.get(fieldName).equals(value)) {
+			if (row.getSchema().equals(schema) && row.get(fieldName).getLabel().equals(value)) {
 				iterator.remove();
 				hasUpdated = true;
 			}

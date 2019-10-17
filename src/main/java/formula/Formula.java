@@ -125,7 +125,7 @@ public class Formula {
 	}
 
 	private void print(String value, String header) {
-		if (column.equals("sampId") && fieldHeader.equals("labelFormula"))
+		if (column.getId().equals("sampId") && fieldHeader.equals("labelFormula"))
 			LOGGER.info("Solving formula=" + value + " Solving formulas=" + header);
 	}
 

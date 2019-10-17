@@ -67,6 +67,7 @@ public class EnumPicker<E extends Enum<E>> {
 			@Override
 			public void dispose() {}
 			
+			@SuppressWarnings("unchecked")
 			@Override
 			public Object[] getElements(Object arg0) {
 				return ((EnumSet<E>) arg0).toArray();
@@ -74,6 +75,7 @@ public class EnumPicker<E extends Enum<E>> {
 		});
 		
 		c.setLabelProvider(new LabelProvider() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public String getText(Object element) {
 				Enum<E> op = (Enum<E>) element;
@@ -98,6 +100,7 @@ public class EnumPicker<E extends Enum<E>> {
 	    
 	    button.addSelectionListener(new SelectionListener() {
 			
+			@SuppressWarnings("unchecked")
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				

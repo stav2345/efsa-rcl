@@ -177,7 +177,7 @@ public class TableSchema extends ArrayList<TableColumn> {
 	public TableColumn getById(String id) {
 
 		for (TableColumn c : this) {
-			if (c.equals(id))
+			if (c.getId().equals(id))
 				return c;
 		}
 		
