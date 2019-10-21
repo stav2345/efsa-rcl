@@ -8,7 +8,7 @@ with an user interface with a table structure, which is based on an external con
 In particular, the library contains also several procedures to manage the complex communication process with the EFSA data collection framework (DCF).
 More precisely, it is possible to send/submit/reject/amend a report and to see its acknowledgment when needed.
 
-# Dependencies
+## Dependencies
 All project dependencies are listed in the [pom.xml](pom.xml) file.
 
 ## Import the project
@@ -34,7 +34,7 @@ At this stage you can simply open the IDE and import back the parent project whi
 _Please note that the "SWT.jar" and the "Jface.jar" libraries (if used) must be downloaded and installed manually in the Maven local repository since are custom versions used in the tool ((install 3rd party jars)[https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html]). 
 Download the exact version by checking the Catalogue browser pom.xml file._
 
-# Documentation
+## Documentation
 ### User interface package
 The EFSA-RCL contains a package to easily create a configurable user interface. In particular, it is possible to generate tables to collect data (similar to excel spreadsheets) according to the configuration. In particular, the file config/tablesSchema.xlsx must contain the structure of every RCL table which should be created.
 
