@@ -14,24 +14,24 @@ All project dependencies are listed in the [pom.xml](pom.xml) file.
 ## Import the project
 In order to import the project correctly into the integrated development environment (e.g. Eclipse), it is necessary to download the project together with all its dependencies.
 The project and all its dependencies are based on the concept of "project object model" and hence Apache Maven is used for the specific purpose.
-In order to correctly import the project into the IDE it is firstly required to create a parent POM Maven project (check the following [link](https://maven.apache.org/guides/introduction/introduction-to-the-pom.html) for further information). 
-Once the parent project has been created add the project and all the dependencies as "modules" into the pom.xml file as shown below: 
+In order to correctly import the project into the IDE it is firstly required to download or clone all the required dependencies as stated in the list below: 
 
-	<modules>
-
-		<!-- dependency modules -->
-		<module>module_1</module>
-		...
-		...
-		...
-		<module>module_n</module>
-		
-	</modules>
+	<dependencies>
+		<module>email-generator</module>
+		<module>dcf-webservice-framework</module>
+		<module>exceptions-manager</module>
+		<module>http-manager</module>
+		<module>progress-bar</module>
+		<module>sql-script-executor</module>
+		<module>version-manager</module>
+		<module>window-size-save-restore</module>
+	</dependencies>
 	
-Next, close the IDE and extract all the zip packets inside the parent project.
-At this stage you can simply open the IDE and import back the parent project which will automatically import also the project and all its dependencies.
+Next, extract all the zip packages inside your workspace. At this stage you can simply open the IDE and import all projects available in the workspace.
 
-_Please note that the "SWT.jar" and the "Jface.jar" libraries (if used) must be downloaded and installed manually in the Maven local repository since are custom versions used in the tool ((install 3rd party jars)[https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html])._
+_Please note that Maven is required in order to download the libraries required by the TSE tool._
+
+_Please note that the "SWT (swt_3.7.1.v3738a.jar)" and the "Jface (org.eclipse.jface_3.7.0.I20110522-1430.jar)" libraries must be downloaded and added to the project's build path._
 
 ## Documentation
 ### User interface package
