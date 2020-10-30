@@ -2,11 +2,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>openefsa</groupId>
-		<artifactId>all-projects</artifactId>
-		<version>${global.version}</version>
-	</parent>
+	<groupId>openefsa</groupId>
+	<version>1.2.2</version>
 	<artifactId>efsa-rcl</artifactId>
 
 	<properties>
@@ -17,62 +14,24 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>dcf-webservice-framework</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>email-generator</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>exceptions-manager</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>http-manager</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>progress-bar</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>sql-script-executor</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>version-manager</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>openefsa</groupId>
-			<artifactId>window-size-save-restore</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-			<version>10.14.2.0</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
+			<version>[4.1.2,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
+			<version>[4.1.2,)</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.xmlbeans</groupId>
-			<artifactId>xmlbeans</artifactId>
-			<version>[3.0.2,)</version>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml-schemas</artifactId>
+			<version>[4.1.2,)</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>[4.4,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
@@ -80,18 +39,19 @@
 			<version>[3.9.200,)</version>
 		</dependency>
 		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>[2.6,)</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
+			<version>[2.12.1,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>[5.5.2,)</version>
-			<scope>test</scope>
+			<version>[2.12.1,)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
@@ -103,17 +63,22 @@
 			<artifactId>joost</artifactId>
 			<version>[0.9.1,)</version>
 		</dependency>
+		
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+			<version>[5.5.2,)</version>
 		</dependency>
 		<dependency>
-			<groupId>swt</groupId>
-			<artifactId>swt</artifactId>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>3.1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>jface</groupId>
-			<artifactId>jface</artifactId>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<version>10.14.2.0</version>
 		</dependency>
 	</dependencies>
 

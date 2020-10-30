@@ -13,7 +13,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import app_config.BooleanValue;
 
@@ -36,7 +36,7 @@ public abstract class XlsxReader implements Closeable {
 	public XlsxReader(String filename) throws IOException {
 		this.filename = filename;
 		this.inputStream = new FileInputStream(new File(filename));
-		this.workbook = new XSSFWorkbook(inputStream);
+		this.workbook = WorkbookFactory.create(inputStream);
 		this.headers = new ArrayList<>();
 	}
 

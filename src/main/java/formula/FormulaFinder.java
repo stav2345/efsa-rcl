@@ -37,7 +37,11 @@ public class FormulaFinder {
 		// regex to match functions that have from 1 parameter to n parameters
 
 		regex.append("\\(") // open function bracket
-				.append("(").append(operand).append(",)*?").append(operand).append("\\)"); // close function bracket
+				.append("(")
+				.append(operand)
+				.append(",)*?")
+				.append(operand)
+				.append("\\)"); // close function bracket
 
 		String pattern = regex.toString();
 
@@ -49,7 +53,7 @@ public class FormulaFinder {
 			FunctionFormula funcFormula = new FunctionFormula(formula);
 			formulas.add(funcFormula);
 		}
-
+		
 		return formulas;
 	}
 
@@ -70,7 +74,8 @@ public class FormulaFinder {
 	 * 
 	 * // function name regex.append("(") .append(FunctionFormula.IF).append("|")
 	 * .append(FunctionFormula.IF_NOT_NULL).append("|")
-	 * .append(FunctionFormula.END_TRIM).append("|")
+	 * .append(FunctionFormula.RIGHT_TRIM).append("|")
+	 * .append(FunctionFormula.LEFT_TRIM).append("|")
 	 * .append(FunctionFormula.ZERO_PADDING).append("|")
 	 * .append(FunctionFormula.SUM).append(")");
 	 * 

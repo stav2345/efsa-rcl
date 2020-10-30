@@ -300,9 +300,9 @@ public class TableRow implements Checkable {
 	public void put(String key, String value) {
 
 		TableCell row;
-		
+
 		if (schema != null && schema.getById(key) != null && schema.getById(key).isPicklist()) {
-			
+
 			String picklist = schema.getById(key).getPicklistKey();
 			String picklistFilter = schema.getById(key).getPicklistFilter(this);
 			XmlContents contents = XmlLoader.getByPicklistKey(picklist);
@@ -368,8 +368,9 @@ public class TableRow implements Checkable {
 		TableColumn col = schema.getById(colId);
 
 		// skip foreign keys
-		if (col.isForeignKey())
+		if (col.isForeignKey()) {
 			return;
+		}
 
 		TableCell sel = new TableCell();
 		FormulaSolver solver = new FormulaSolver(this);
@@ -589,6 +590,23 @@ public class TableRow implements Checkable {
 	 */
 	public boolean arePureMandatoryFilled() {
 		return getPureMandatoryFieldNotFilled().isEmpty();
+	}
+
+	/**
+	 * Get the list of visible columns in the schema
+	 * 
+	 * @return
+	 */
+	public Collection<TableColumn> getVisibleColumns() {
+		Collection<TableColumn> visibleCols = new ArrayList<>();
+
+		for (TableColumn column : schema) {
+			if (column.isVisible(this)) {
+					visibleCols.add(column);
+			}
+		}
+		
+		return visibleCols;
 	}
 
 	/**

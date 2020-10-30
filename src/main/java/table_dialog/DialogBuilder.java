@@ -20,8 +20,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Text;
-
 import table_dialog.RowCreatorViewer.CatalogChangedListener;
 import table_skeleton.TableRow;
 import table_skeleton.TableRowList;
@@ -122,45 +120,6 @@ public class DialogBuilder {
 		}
 
 		return found;
-	}
-
-	/**
-	 * Add a text box to the dialog
-	 * 
-	 * @param text
-	 * @param editable
-	 * @return
-	 */
-	public DialogBuilder addText(String text, boolean editable) {
-		Text textBox = new Text(composite, SWT.NONE);
-		textBox.setEditable(editable);
-		textBox.setText(text);
-		return this;
-	}
-
-	/**
-	 * Add a label to the dialog
-	 * 
-	 * @param code code to identify the label
-	 * @param text
-	 * @return
-	 */
-	public DialogBuilder addLabel(String code, String text) {
-		Label label = new Label(composite, SWT.NONE);
-		label.setText(text);
-		label.setData("code", code);
-		return this;
-	}
-
-	/**
-	 * Add an hidden label (it will be shown by calling
-	 * {@link #setLabelText(String, String)})
-	 * 
-	 * @param code
-	 * @return
-	 */
-	public DialogBuilder addLabel(String code) {
-		return addLabelToComposite(code, null);
 	}
 
 	/**

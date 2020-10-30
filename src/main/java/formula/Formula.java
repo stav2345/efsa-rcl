@@ -96,7 +96,7 @@ public class Formula {
 
 		if (formula == null || formula.isEmpty())
 			return "";
-
+		
 		String value = formula;
 
 		// solve special characters
@@ -120,7 +120,7 @@ public class Formula {
 		print(value, "FUNCTIONS");
 
 		this.solvedFormula = value.trim();
-
+		
 		return solvedFormula;
 	}
 
@@ -140,12 +140,20 @@ public class Formula {
 
 		String command = value;
 
-		String[] functionsOrder = new String[] { FunctionFormula.AND, FunctionFormula.OR, FunctionFormula.SUM,
-				FunctionFormula.ZERO_PADDING, FunctionFormula.END_TRIM, FunctionFormula.IF, FunctionFormula.IF_NOT_NULL,
-				FunctionFormula.HASH, FunctionFormula.NEXT };
+		String[] functionsOrder = new String[] { 
+				FunctionFormula.AND, 
+				FunctionFormula.OR, 
+				FunctionFormula.SUM,
+				FunctionFormula.ZERO_PADDING, 
+				FunctionFormula.RIGHT_TRIM, 
+				FunctionFormula.LEFT_TRIM, 
+				FunctionFormula.IF, 
+				FunctionFormula.IF_NOT_NULL,
+				FunctionFormula.HASH, 
+				FunctionFormula.NEXT };
 
 		for (String function : functionsOrder) {
-
+			
 			FormulaList list = FormulaFinder.findFunctionFormulas(command, function);
 
 			if (!list.isEmpty()) {
@@ -243,12 +251,13 @@ public class Formula {
 		String command = text;
 
 		for (IFormula f : formulas) {
+
 			String solved = useRow ? f.solve(row) : f.solve();
 
 			if (solved != null)
 				command = command.replace(f.getUnsolvedFormula(), solved);
 		}
-
+		
 		return command;
 	}
 

@@ -26,7 +26,8 @@ public class FunctionFormula implements IFormula {
 	private static final Logger LOGGER = LogManager.getLogger(FunctionFormula.class);
 	
 	public static final String ZERO_PADDING = "ZERO_PADDING";
-	public static final String END_TRIM = "END_TRIM";
+	public static final String RIGHT_TRIM = "RIGHT_TRIM";
+	public static final String LEFT_TRIM = "LEFT_TRIM";
 	public static final String IF = "IF";
 	public static final String IF_NOT_NULL = "IF_NOT_NULL";
 	public static final String SUM = "SUM";
@@ -60,8 +61,7 @@ public class FunctionFormula implements IFormula {
 		
 		// split on the first bracket to get the function name
 		String split[] = formula.split("\\(");
-
-		//TODO: to better check
+		
 		if (split.length != 2) {
 			throw new FormulaException("Wrong function formula: " + formula);
 		}
@@ -96,8 +96,11 @@ public class FunctionFormula implements IFormula {
 		case ZERO_PADDING:
 			solvedFormula = solvePadding();
 			break;
-		case END_TRIM:
-			solvedFormula = solveEndTrim();
+		case RIGHT_TRIM:
+			solvedFormula = solveRightTrim();
+			break;
+		case LEFT_TRIM:
+			solvedFormula = solveLeftTrim();
 			break;
 		case IF:
 			solvedFormula = solveIf();
@@ -175,7 +178,7 @@ public class FunctionFormula implements IFormula {
 	 * @return
 	 * @throws FormulaException
 	 */
-	private String solveEndTrim() throws FormulaException {
+	private String solveRightTrim() throws FormulaException {
 		
 		if (operands.size() != 2) {
 			throw new FormulaException("Wrong number of parameters " + formula 
@@ -201,6 +204,41 @@ public class FunctionFormula implements IFormula {
 		
 		// trim the text
 		String trimmedText = text.substring(text.length() - charNum, text.length());
+		
+		return trimmedText;
+	}
+	
+	/**
+	 * Solve left trim
+	 * @return
+	 * @throws FormulaException
+	 */
+	private String solveLeftTrim() throws FormulaException {
+		
+		if (operands.size() != 2) {
+			throw new FormulaException("Wrong number of parameters " + formula 
+					+ ". Expected 2, found " + operands.size());
+		}
+		
+		// get the text to be trimmed
+		String text = operands.get(0);
+		
+		// get number of characters to trim
+		int charNum;
+		try {
+			charNum = Integer.valueOf(operands.get(1));
+		}
+		catch (NumberFormatException e) {
+			throw new FormulaException("Wrong parameters for " + formula);
+		}
+		
+		// error check
+		if (charNum > text.length()) {
+			charNum = text.length();
+		}
+		
+		// trim the text
+		String trimmedText = text.substring(0, charNum);
 		
 		return trimmedText;
 	}
@@ -391,6 +429,8 @@ public class FunctionFormula implements IFormula {
 	
 	public static void main(String[] args) throws FormulaException {
 		FunctionFormula f = new FunctionFormula("AND(Yes,Yes,No)");
+		System.out.println(f.solve());
+		f = new FunctionFormula("AND(no,no)|AND(no,yes)");
 		System.out.println(f.solve());
 	}
 }
