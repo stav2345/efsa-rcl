@@ -212,7 +212,7 @@ public class ReportXmlBuilder implements AutoCloseable {
 		// export the xml file
 		try(MessageXmlBuilder creator = new MessageXmlBuilder(
 				messageConfig.getOut(), this.messageConfig);) {
-			
+			LOGGER.debug("Creating the xml file of the dataset");
 			return creator.export(comps);
 		}
 	}
@@ -234,6 +234,8 @@ public class ReportXmlBuilder implements AutoCloseable {
 		
 		DatasetComparisonDao dao = new DatasetComparisonDao();
 		dao.executeQuery(query.toString());
+		
+		LOGGER.debug("Removing all the records which belonged to an old version");
 	}
 	
 	/**
@@ -309,6 +311,7 @@ public class ReportXmlBuilder implements AutoCloseable {
 
 	@Override
 	public void close() {
+		LOGGER.debug("Clearing temp table");
 		// clear the temporary table
 		clearTable();
 	}

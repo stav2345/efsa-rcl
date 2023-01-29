@@ -25,6 +25,9 @@ import soap.DetailedSOAPException;
 import soap.GetDataCollectionsList;
 import user.User;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Download a report into the database
  * @author avonva
@@ -32,6 +35,8 @@ import user.User;
  *
  */
 public abstract class ReportDownloaderDialog {
+	
+	static final Logger LOGGER = LogManager.getLogger(ReportDownloaderDialog.class);
 
 	private Shell shell;
 	private DatasetList allVersions;
@@ -86,6 +91,7 @@ public abstract class ReportDownloaderDialog {
 		try {
 			list = getAvailableDcList();
 		} catch(DetailedSOAPException e) {
+			e.printStackTrace();
 			shell.setCursor(shell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 			throw e;
 		}
